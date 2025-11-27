@@ -68,7 +68,7 @@ jobs:
 
             # Restart or start the app with pm2
             if command -v pm2 >/dev/null 2>&1; then
-              pm2 describe mytest >/dev/null 2>&1 && pm2 restart mytest --update-env || PORT=3002 pm2 start npm --name "mytest" -- start
+              pm2 describe unicomapp >/dev/null 2>&1 && pm2 restart unicomapp --update-env || PORT=3002 pm2 start npm --name "unicomapp" -- start
               pm2 save
             else
               echo "pm2 not found; please install 'pm2' globally: npm i -g pm2"
