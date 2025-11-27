@@ -423,7 +423,7 @@ export default function Home() {
               <h1
                 className={`text-5xl md:text-7xl font-bold bg-gradient-to-r ${gradients.heading.primary} bg-clip-text text-transparent animate-fade-in`}
               >
-                Multi-Dashboard Platform
+                Multi Platform
               </h1>
               <Zap
                 className="w-10 h-10 text-yellow-500 animate-pulse"
