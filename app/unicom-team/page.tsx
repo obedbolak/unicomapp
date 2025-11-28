@@ -2252,8 +2252,8 @@ export default function UnicomTeamWebsite() {
       </div>
 
       {/* Header/Navigation */}
-      <header className="sticky top-0 z-50 bg-opacity-95">
-        <nav className={`${theme.card} border-b backdrop-blur-xl shadow-lg`}>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-opacity-95 w-full">
+        <nav className={`${theme.card} border-b backdrop-blur-xl shadow-lg w-full transition-shadow duration-200`}>
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -2331,6 +2331,9 @@ export default function UnicomTeamWebsite() {
           )}
         </nav>
       </header>
+
+      {/* spacer to prevent content being hidden behind fixed header */}
+      <div aria-hidden="true" className="h-20" />
 
       {/* Main Content */}
       <main>{renderContent()}</main>
