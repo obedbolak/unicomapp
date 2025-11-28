@@ -114,9 +114,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeType>(() => {
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme");
-      return savedTheme === "light" || savedTheme === "dark"
-        ? savedTheme
-        : "dark";
+      if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
+      // Fall back to system preference when no explicit choice is saved
+      try {
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        return prefersDark ? "dark" : "light";
+      } catch (e) {
+        return "dark";
+      }
     }
     return "dark";
   });
@@ -157,6 +164,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     isDark: theme === "dark",
     isLight: theme === "light",
   };
+
+  // Apply the chosen theme to the document so CSS `[data-theme]` rules
+  // and `color-scheme` work consistently (important for iOS/Safari)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

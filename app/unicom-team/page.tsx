@@ -216,6 +216,35 @@ export default function UnicomTeamWebsite() {
 
   const CurrentIcon = slides[currentSlide].icon;
 
+  // Update the document title dynamically based on active tab/section
+  useEffect(() => {
+    const base = "Unicom Team";
+
+    const capitalize = (s: string) => s?.charAt(0).toUpperCase() + s?.slice(1);
+
+    function getTitle() {
+      const tab = capitalize(activeTab || "");
+
+      if (activeTab === "home") {
+        const slideTitle = slides[currentSlide]?.title ?? "";
+        return slideTitle ? `${slideTitle} — ${base}` : `${tab} — ${base}`;
+      }
+
+      if (activeTab === "projects" && selectedProject?.title) {
+        return `${selectedProject.title} — ${tab} — ${base}`;
+      }
+
+      // Fallback: show tab and app name
+      return tab ? `${tab} — ${base}` : base;
+    }
+
+    try {
+      document.title = getTitle();
+    } catch (e) {
+      // If document isn't available (very unlikely in this client component), ignore
+    }
+  }, [activeTab, currentSlide, selectedProject]);
+
   // UPDATED: Removed "Happy Clients" stat
   const teamStats = [
     {
