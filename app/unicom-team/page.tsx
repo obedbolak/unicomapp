@@ -114,7 +114,7 @@ export default function UnicomTeamWebsite() {
   // Updated slides with Unsplash images
   const slides = [
     {
-      title: "Stunning Websites",
+      title: "Stunning Websites for Your Online Presence",
       subtitle: "Crafted with precision and passion",
       icon: Globe,
       image:
@@ -673,7 +673,7 @@ export default function UnicomTeamWebsite() {
   const nextImage = () => {
     if (selectedProject) {
       setSelectedImageIndex((prev) =>
-        prev < selectedProject.details.images.length - 1 ? prev + 1 : 0
+        prev < selectedProject.details.images.length - 1 ? prev + 1 : 0,
       );
     }
   };
@@ -681,7 +681,7 @@ export default function UnicomTeamWebsite() {
   const prevImage = () => {
     if (selectedProject) {
       setSelectedImageIndex((prev) =>
-        prev > 0 ? prev - 1 : selectedProject.details.images.length - 1
+        prev > 0 ? prev - 1 : selectedProject.details.images.length - 1,
       );
     }
   };
@@ -866,7 +866,7 @@ export default function UnicomTeamWebsite() {
                     <Zap className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <span className={`${theme.textMuted}`}>{challenge}</span>
                   </li>
-                )
+                ),
               )}
             </ul>
           </div>
@@ -883,7 +883,7 @@ export default function UnicomTeamWebsite() {
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <span className={`${theme.textMuted}`}>{result}</span>
                   </li>
-                )
+                ),
               )}
             </ul>
           </div>
@@ -963,7 +963,7 @@ export default function UnicomTeamWebsite() {
                     </div>
                   </div>
                 </div>
-              )
+              ),
             )}
           </div>
 
@@ -2015,7 +2015,7 @@ export default function UnicomTeamWebsite() {
                       key={i}
                       className="w-5 h-5 text-amber-500 fill-amber-500"
                     />
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -2253,7 +2253,9 @@ export default function UnicomTeamWebsite() {
 
       {/* Header/Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-opacity-95 w-full">
-        <nav className={`${theme.card} border-b backdrop-blur-xl shadow-lg w-full transition-shadow duration-200`}>
+        <nav
+          className={`${theme.card} border-b backdrop-blur-xl shadow-lg w-full transition-shadow duration-200`}
+        >
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
