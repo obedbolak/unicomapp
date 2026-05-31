@@ -1,14 +1,11 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Replace with your actual production domain when you deploy
-  const baseUrl = "https://unicomteam.com";
-
   return [
     {
-      url: baseUrl,
+      url: "https://www.unicomteam.com/",
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "monthly",
       priority: 1.0,
     },
   ];
