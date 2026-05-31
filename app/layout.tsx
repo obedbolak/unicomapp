@@ -20,17 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <head>
-        {/*
-          Clash Display isn't on Google Fonts — load it from Fontshare.
-          Using a plain <link> in <head> is the correct approach for
-          non-google-fonts in Next.js App Router.
-        */}
+        {/* Clash Display for headings (optional extra weight) */}
         <link
           href="https://api.fontshare.com/v2/css?f[]=clash-display@700,800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className={dmSans.className}>{children}</body>
+      <body className={dmSans.className}>
+        <div className="app-wrapper">{children}</div>
+      </body>
     </html>
   );
 }

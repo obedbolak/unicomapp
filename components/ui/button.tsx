@@ -1,182 +1,177 @@
 "use client";
 
-import { useCallback } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, HTMLMotionProps, TargetAndTransition } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import React from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+/* ============================================================================
+   TYPES
+   ============================================================================ */
 
-export type ButtonVariant = "primary" | "outline" | "ghost" | "danger";
-export type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = "primary" | "ghost" | "outline" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps {
-  /** Visual style */
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: ButtonVariant;
-  /** Size preset */
   size?: ButtonSize;
-  /** Pill / rounded-full shape (default: true) */
-  pill?: boolean;
-  /** Adds a subtle magnetic hover pull effect */
-  magnetic?: boolean;
-  /** Disabled state */
-  disabled?: boolean;
-  /** Shows a spinner and disables interaction */
   loading?: boolean;
-  /** Icon placed before the label */
-  iconLeft?: React.ReactNode;
-  /** Icon placed after the label */
-  iconRight?: React.ReactNode;
-  /** Full-width block button */
+  icon?: React.ReactNode;
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
-  /** HTML button type */
-  type?: "button" | "submit" | "reset";
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   children: React.ReactNode;
-  /** Extra Tailwind classes for one-off overrides */
-  className?: string;
 }
 
-// ─── Style maps ──────────────────────────────────────────────────────────────
+/* ============================================================================
+   STYLE MAPS
+   ============================================================================ */
 
-const VARIANT_STYLES: Record<ButtonVariant, string> = {
-  primary:
-    "bg-gradient-to-br from-[#1A4FA0] to-[#4CB8E0] text-white border-transparent " +
-    "shadow-[0_8px_32px_rgba(26,79,160,0.45)] hover:shadow-[0_12px_40px_rgba(26,79,160,0.65)]",
-  outline:
-    "bg-white/[0.06] text-white border border-[#4CB8E0]/50 backdrop-blur-lg " +
-    "hover:bg-[#4CB8E0]/10 hover:border-[#4CB8E0]/80",
-  ghost:
-    "bg-transparent text-[#4CB8E0] border border-transparent " +
-    "hover:bg-[#4CB8E0]/10",
-  danger:
-    "bg-gradient-to-br from-[#C93B2A] to-[#e05c4a] text-white border-transparent " +
-    "shadow-[0_8px_28px_rgba(201,59,42,0.4)] hover:shadow-[0_12px_36px_rgba(201,59,42,0.6)]",
+const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
+  primary: {
+    background: "linear-gradient(135deg, #FFB300 0%, #FF8C00 100%)",
+    color: "#000814",
+    boxShadow: "0 4px 20px rgba(255,140,0,0.25)",
+    border: "none",
+  },
+  ghost: {
+    background: "rgba(255,255,255,0.05)",
+    color: "rgba(255,255,255,0.8)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    boxShadow: "none",
+  },
+  outline: {
+    background: "transparent",
+    color: "#FF8C00",
+    border: "1px solid rgba(255,140,0,0.5)",
+    boxShadow: "none",
+  },
+  danger: {
+    background: "linear-gradient(135deg, #ff4444 0%, #cc0000 100%)",
+    color: "#ffffff",
+    border: "none",
+    boxShadow: "0 4px 20px rgba(255,0,0,0.2)",
+  },
 };
 
-const SIZE_STYLES: Record<ButtonSize, { btn: string; spinner: string }> = {
-  sm: { btn: "px-5 py-2 text-xs gap-1.5", spinner: "w-3 h-3 border" },
-  md: { btn: "px-8 py-3 text-sm gap-2", spinner: "w-4 h-4 border-2" },
-  lg: { btn: "px-12 py-4 text-base gap-2.5", spinner: "w-5 h-5 border-2" },
+const variantHover: Record<ButtonVariant, TargetAndTransition> = {
+  primary: {
+    y: -3,
+    boxShadow: "0 10px 30px rgba(255,140,0,0.4)",
+  },
+  ghost: {
+    y: -2,
+    borderColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  outline: {
+    y: -2,
+    boxShadow: "0 6px 20px rgba(255,140,0,0.2)",
+    borderColor: "rgba(255,140,0,0.9)",
+  },
+  danger: {
+    y: -2,
+    boxShadow: "0 8px 24px rgba(255,0,0,0.35)",
+  },
 };
 
-// ─── Spinner ─────────────────────────────────────────────────────────────────
+const sizeStyles: Record<
+  ButtonSize,
+  { padding: string; fontSize: string; gap: string; iconSize: number }
+> = {
+  sm: { padding: "8px 18px", fontSize: "12px", gap: "6px", iconSize: 14 },
+  md: { padding: "12px 28px", fontSize: "14px", gap: "8px", iconSize: 16 },
+  lg: { padding: "16px 36px", fontSize: "16px", gap: "10px", iconSize: 18 },
+};
 
-function Spinner({ className }: { className: string }) {
-  return (
-    <span
-      aria-hidden
-      className={`${className} rounded-full border-white/30 border-t-white animate-spin inline-block`}
-    />
-  );
-}
+/* ============================================================================
+   COMPONENT
+   ============================================================================ */
 
-// ─── Core button (no magnetic wrapper) ───────────────────────────────────────
-
-function CoreButton({
+export function Button({
   variant = "primary",
   size = "md",
-  pill = true,
-  disabled,
-  loading,
-  iconLeft,
-  iconRight,
-  fullWidth,
-  type = "button",
-  onClick,
+  loading = false,
+  icon,
+  iconPosition = "left",
+  fullWidth = false,
   children,
-  className = "",
-}: Omit<ButtonProps, "magnetic">) {
+  disabled,
+  style,
+  ...props
+}: ButtonProps) {
   const isDisabled = disabled || loading;
+  const sz = sizeStyles[size];
+  const vStyle = variantStyles[variant];
+  const vHover = variantHover[variant];
 
   return (
     <motion.button
-      type={type}
+      whileHover={isDisabled ? {} : vHover}
+      whileTap={isDisabled ? {} : { scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       disabled={isDisabled}
-      onClick={onClick}
-      whileHover={isDisabled ? undefined : { scale: 1.05 }}
-      whileTap={isDisabled ? undefined : { scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className={[
-        // base
-        "relative inline-flex items-center justify-center font-bold tracking-wide",
-        "transition-all duration-200 select-none outline-none",
-        "focus-visible:ring-2 focus-visible:ring-[#4CB8E0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1B2E]",
-        // shape
-        pill ? "rounded-full" : "rounded-xl",
-        // variant + size
-        VARIANT_STYLES[variant],
-        SIZE_STYLES[size].btn,
-        // state
-        isDisabled
-          ? "opacity-50 cursor-not-allowed pointer-events-none"
-          : "cursor-pointer",
-        fullWidth ? "w-full" : "",
-        // font
-        "font-[Clash_Display,DM_Sans,sans-serif]",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={{ fontFamily: "'Clash Display','DM Sans',sans-serif" }}
+      style={{
+        /* layout */
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: sz.gap,
+        width: fullWidth ? "100%" : "auto",
+
+        /* shape */
+        padding: sz.padding,
+        borderRadius: "10px",
+        cursor: isDisabled ? "not-allowed" : "pointer",
+
+        /* type */
+        fontSize: sz.fontSize,
+        fontWeight: 700,
+        fontFamily: "'Poppins', system-ui, sans-serif",
+        letterSpacing: "0.01em",
+        whiteSpace: "nowrap",
+
+        /* variant */
+        ...vStyle,
+
+        /* disabled wash */
+        opacity: isDisabled ? 0.45 : 1,
+
+        /* transitions */
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        transition: "background 0.2s, border-color 0.2s, opacity 0.2s",
+
+        /* caller overrides */
+        ...style,
+      }}
+      {...props}
     >
-      {loading && <Spinner className={SIZE_STYLES[size].spinner} />}
-      {!loading && iconLeft && <span className="shrink-0">{iconLeft}</span>}
+      {/* Left icon / spinner */}
+      {loading ? (
+        <Loader2
+          size={sz.iconSize}
+          style={{ animation: "spin 0.8s linear infinite", flexShrink: 0 }}
+        />
+      ) : (
+        icon &&
+        iconPosition === "left" && (
+          <span style={{ display: "flex", flexShrink: 0 }}>{icon}</span>
+        )
+      )}
+
+      {/* Label */}
       <span>{children}</span>
-      {!loading && iconRight && <span className="shrink-0">{iconRight}</span>}
+
+      {/* Right icon */}
+      {!loading && icon && iconPosition === "right" && (
+        <span style={{ display: "flex", flexShrink: 0 }}>{icon}</span>
+      )}
+
+      {/* Inline keyframes for spinner */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </motion.button>
   );
 }
 
-// ─── Public component ─────────────────────────────────────────────────────────
-
-/**
- * `<Button>` — reusable across all pages.
- *
- * @example
- * // Primary CTA
- * <Button variant="primary" size="lg" iconRight="✦">Start a Project</Button>
- *
- * // Outline (ghost-bordered)
- * <Button variant="outline" onClick={handleClick}>See Our Work →</Button>
- *
- * // Danger with loading state
- * <Button variant="danger" loading={isPending}>Delete</Button>
- *
- * // Magnetic pull on hover (hero sections)
- * <Button magnetic>Hover me</Button>
- */
-export default function Button({ magnetic = false, ...props }: ButtonProps) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 200, damping: 20 });
-  const sy = useSpring(y, { stiffness: 200, damping: 20 });
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const r = e.currentTarget.getBoundingClientRect();
-      x.set((e.clientX - r.left - r.width / 2) * 0.35);
-      y.set((e.clientY - r.top - r.height / 2) * 0.35);
-    },
-    [x, y],
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    x.set(0);
-    y.set(0);
-  }, [x, y]);
-
-  if (!magnetic) return <CoreButton {...props} />;
-
-  return (
-    <motion.div
-      style={{
-        x: sx,
-        y: sy,
-        display: props.fullWidth ? "block" : "inline-block",
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <CoreButton {...props} />
-    </motion.div>
-  );
-}
+export default Button;
