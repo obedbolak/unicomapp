@@ -17,8 +17,11 @@ import {
   ShareIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { FaInstagram, FaFacebookF } from "react-icons/fa";
+import { SiTiktok } from "react-icons/si";
+import { Icon } from "@iconify/react";
 
-/* ── Types ───────────────────────────────────────────────────────────────── */
+/*───────────────────────────────────────────────────────────────── */
 
 type FormData = {
   name: string;
@@ -715,37 +718,53 @@ export default function ContactPage() {
                     label: "Instagram",
                     href: "https://www.instagram.com/unicomteam1",
                     color: "#E1306C",
+                    iconName: "mdi:instagram", // Material Design Icons set
                   },
                   {
                     label: "Facebook",
                     href: "https://www.facebook.com/share/18keP13dmW",
                     color: "#1877F2",
+                    iconName: "mdi:facebook",
                   },
                   {
                     label: "TikTok",
                     href: "https://tiktok.com/@unicomteam0",
                     color: "#69C9D0",
+                    iconName: "ri:tiktok-fill", // Remix Icons set
                   },
-                ].map(({ label, href, color }) => (
+                ].map(({ label, href, color, iconName }) => (
                   <a
                     key={label}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      padding: "0.5rem 1rem",
-                      borderRadius: "999px",
-                      border: `1px solid ${color}30`,
-                      background: `${color}0d`,
-                      color,
+                      /* your styles */
                       fontFamily: "var(--font-display)",
-                      fontSize: "0.8125rem",
-                      fontWeight: 600,
+                      gap: "0.5rem",
+                      padding: "0.5rem 0.75rem",
+                      borderRadius: "999px",
+                      background: `rgba(${color
+                        .slice(1)
+                        .match(/.{2}/g)
+                        ?.map((c) => parseInt(c, 16))
+                        .join(",")},0.1)`,
+                      color,
+                      display: "flex",
                       textDecoration: "none",
-                      transition: "background 0.2s, transform 0.2s",
-                      display: "inline-block",
+                      transition: "background 0.2s, color 0.2s",
+                      cursor: "pointer",
+                      zIndex: 100,
                     }}
                   >
+                    <Icon
+                      icon={iconName}
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        alignSelf: "center",
+                      }}
+                    />
                     {label}
                   </a>
                 ))}
