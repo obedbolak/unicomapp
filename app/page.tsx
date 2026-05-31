@@ -20,9 +20,11 @@ import Header from "@/components/header";
 import HeroSection from "@/components/HeroSection";
 import ServicesPage from "@/components/ServicesPage";
 import ContactPage from "@/components/ContactPage";
+import AboutPage from "@/components/aboutPage";
+import ProjectsPage from "@/components/ourProjects";
 
-export type Page = "home" | "services" | "contact";
-
+// Change this line near the top:
+export type Page = "home" | "about" | "services" | "projects" | "contact";
 /* ============================================================================
    3D SCENE COMPONENTS
    ============================================================================ */
@@ -351,6 +353,28 @@ export default function Page() {
               exit="exit"
             >
               <ContactPage />
+            </motion.div>
+          )}
+          {activePage === "about" && (
+            <motion.div
+              key="about"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <AboutPage />
+            </motion.div>
+          )}
+          {activePage === "projects" && (
+            <motion.div
+              key="projects"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <ProjectsPage />
             </motion.div>
           )}
         </AnimatePresence>

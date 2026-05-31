@@ -6,16 +6,20 @@ import { Menu, X } from "lucide-react";
 import Button from "@/components/ui/button";
 import Image from "next/image";
 
-export type Page = "home" | "services" | "contact";
+// 1. Updated your Page type definitions
+export type Page = "home" | "about" | "services" | "projects" | "contact";
 
 interface HeaderProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
 }
 
+// 2. Updated navLinks with About Us and Our Projects
 const navLinks: { label: string; page: Page }[] = [
   { label: "Home", page: "home" },
+  { label: "About Us", page: "about" },
   { label: "Services", page: "services" },
+  { label: "Our Projects", page: "projects" },
   { label: "Contact", page: "contact" },
 ];
 
@@ -23,9 +27,30 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // New States: Tracking visibility position
+  const [isVisible, setIsVisible] = useState(true);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    let lastScrollY = window.scrollY;
+
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Add solid styled background variant if scrolled down past 20px
+      setScrolled(currentScrollY > 20);
+
+      // Hide if scrolling down, Show if scrolling up.
+      // Keep it visible if near the top edge (< 50px) to prevent layout jumping.
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false); // Scrolling Down -> Hide Header
+      } else {
+        setIsVisible(true); // Scrolling Up -> Show Header
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -36,7 +61,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
 
   return (
     <>
-      {/* Scoped styles — single source of truth, no Tailwind conflicts */}
       <style>{`
         .logo-btn {
           display: flex;
@@ -59,14 +83,12 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           color: var(--color-primary);
         }
 
-        /* Desktop nav: hidden on mobile, flex on md+ */
         .desktop-nav {
           display: none;
           align-items: center;
           gap: 0.25rem;
         }
 
-        /* Nav buttons */
         .nav-btn {
           position: relative;
           padding: 0.5rem 1rem;
@@ -79,7 +101,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           transition: color 0.2s ease;
         }
 
-        /* Hamburger: visible on mobile, hidden on md+ */
         .hamburger-btn {
           display: flex;
           align-items: center;
@@ -93,7 +114,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
         }
         .hamburger-btn:hover { color: var(--color-text); }
 
-        /* md breakpoint = 768px */
         @media (min-width: 768px) {
           .desktop-nav  { display: flex; }
           .hamburger-btn { display: none; }
@@ -102,8 +122,12 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
 
       <motion.header
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        // Dynamic animation values tied directly to scrolling states
+        animate={{
+          opacity: isVisible ? 1 : 0,
+          y: isVisible ? 0 : -80,
+        }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={`header${scrolled ? " scrolled" : ""}`}
       >
         <div className="header-content">
@@ -120,7 +144,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
             </span>
           </button>
 
-          {/* Desktop Nav — controlled purely by .desktop-nav CSS class */}
+          {/* Desktop Nav */}
           <nav className="desktop-nav">
             {navLinks.map(({ label, page }) => (
               <button
@@ -159,7 +183,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
             </Button>
           </nav>
 
-          {/* Hamburger — CSS controls visibility, not Tailwind md:hidden */}
+          {/* Hamburger */}
           <button
             className="hamburger-btn"
             onClick={() => setMenuOpen((v) => !v)}
@@ -194,7 +218,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                 "0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* Subtle orange glow at top edge */}
             <div
               style={{
                 position: "absolute",
@@ -221,7 +244,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{
-                    delay: i * 0.06,
+                    delay: i * 0.04, // Marginally accelerated sequence for more items
                     duration: 0.25,
                     ease: [0.22, 1, 0.36, 1],
                   }}
@@ -250,7 +273,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                     width: "100%",
                   }}
                 >
-                  {/* Active indicator dot */}
                   <span
                     style={{
                       width: "5px",
@@ -268,7 +290,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                 </motion.button>
               ))}
 
-              {/* Divider */}
               <div
                 style={{
                   height: "1px",
@@ -277,7 +298,6 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                 }}
               />
 
-              {/* CTA */}
               <div style={{ padding: "0.25rem" }}>
                 <Button
                   variant="primary"
