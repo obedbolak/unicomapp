@@ -187,9 +187,7 @@ export default function Page() {
         exit="exit"
         className="relative z-10"
       >
-        {activePage === "home" && (
-          <HeroSection onNavigate={handleNavigate} />
-        )}
+        {activePage === "home" && <HeroSection onNavigate={handleNavigate} />}
         {activePage === "services" && <ServicesPage />}
         {activePage === "about" && <AboutPage />}
         {activePage === "projects" && <ProjectsPage />}
