@@ -1,0 +1,165 @@
+/* ⚡ CRITICAL CSS - Inline this in <head>
+   Only includes styles needed for initial paint (above-the-fold content)
+   Everything else goes in deferred styles.css
+*/
+
+/* ── CSS Variables (minimal set) ─────────────────────────────────── */
+:root {
+  --color-primary: #ff8c00;
+  --color-primary-dark: #ff3b00;
+  --color-background-dark: #000814;
+  --color-text: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.5);
+  --header-height-mobile: 64px;
+  --header-height-tablet: 72px;
+  --header-height-desktop: 80px;
+  --font-display: "Poppins", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+}
+
+/* ── Resets (minimal) ────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+  background: var(--color-background-dark);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout (minimal for FCP) ────────────────────────────────────── */
+.app-wrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Header Styles (critical for FCP) ──────────────────────────── */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.logo-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.logo-btn .logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.desktop-nav {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+}
+
+/* ── Hero Section (above-the-fold) ──────────────────────────────– */
+.hero-section {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--header-height-mobile);
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    padding-top: var(--header-height-desktop);
+  }
+}
+
+/* ── 3D Canvas (render blocking fix) ────────────────────────────– */
+.hero-3d-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.hero-3d-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Content on top of canvas ──────────────────────────────────– */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+/* ── Text rendering optimization ────────────────────────────────– */
+body {
+  contain: layout style paint;
+}
+
+/* ── Prevent layout shift ────────────────────────────────────– */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Button styles (minimal, for CTA) ────────────────────────– */
+button {
+  font-family: var(--font-body);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Ensure no layout shift for scrollbar ─────────────────────– */
+html {
+  scrollbar-gutter: stable;
+}
