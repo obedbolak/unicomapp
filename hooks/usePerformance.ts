@@ -195,8 +195,8 @@ export function useScrollListener(onScroll: (scrollY: number) => void): void {
  * if (!isVisible) return <div ref={ref} />;
  * return <HeavyComponent />;
  */
-export function useIntersectionObserver(
-  ref: React.RefObject<HTMLElement>,
+export function useIntersectionObserver<T extends HTMLElement = HTMLElement>(
+  ref: React.RefObject<T | null>,
   options?: IntersectionObserverInit,
 ): boolean {
   const [isVisible, setIsVisible] = useState(false);

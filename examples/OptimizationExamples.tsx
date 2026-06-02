@@ -1,13 +1,19 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
+import {
+  useThrottle,
+  useIdleCallback,
+  useIntersectionObserver,
+  useDebounce,
+  useWebWorker,
+} from "@/hooks/usePerformance";
+
 /**
  * EXAMPLE 1: Optimized Scroll Performance with Combined Throttle + Debounce
  * This is the RIGHT WAY to handle scroll listeners
  */
-
-"use client";
-
-import { useState } from "react";
-import { useThrottle } from "@/hooks/usePerformance";
-
 export function OptimizedScrollExample() {
   const [scrollY, setScrollY] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -19,12 +25,12 @@ export function OptimizedScrollExample() {
   });
 
   // Optional: Detect when scroll stops
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsScrolling(false);
     }, 150);
     return () => clearTimeout(timer);
-  });
+  }, [scrollY]); // Corrected: wrapped inside an actual useEffect hook instead of a naked useState
 
   return (
     <>
@@ -39,11 +45,6 @@ export function OptimizedScrollExample() {
 /**
  * EXAMPLE 2: Heavy Analytics Tracking Deferred to Idle Time
  */
-
-("use client");
-
-import { useIdleCallback } from "@/hooks/usePerformance";
-
 interface PageViewEvent {
   page: string;
   timestamp: number;
@@ -73,13 +74,6 @@ export function PageWithDeferredAnalytics({ page }: { page: string }) {
 /**
  * EXAMPLE 3: Lazy Load Heavy Components Only When Visible
  */
-
-("use client");
-
-import { useRef } from "react";
-import { useIntersectionObserver } from "@/hooks/usePerformance";
-import dynamic from "next/dynamic";
-
 // Only loads when user scrolls to this section
 const HeavyChart = dynamic(() => import("@/components/HeavyChart"), {
   loading: () => <div className="h-96 bg-slate-900">Loading chart...</div>,
@@ -99,12 +93,6 @@ export function LazyLoadedChart() {
 /**
  * EXAMPLE 4: Debounced Search Input (Search/Filter)
  */
-
-("use client");
-
-import { useState } from "react";
-import { useDebounce } from "@/hooks/usePerformance";
-
 export function OptimizedSearch() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -156,12 +144,6 @@ export function OptimizedSearch() {
 /**
  * EXAMPLE 5: Window Resize Handler with Debounce
  */
-
-("use client");
-
-import { useState } from "react";
-import { useDebounce } from "@/hooks/usePerformance";
-
 export function ResponsiveLayout() {
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 0,
@@ -183,12 +165,6 @@ export function ResponsiveLayout() {
 /**
  * EXAMPLE 6: Heavy Computation in Web Worker (No Main Thread Blocking)
  */
-
-("use client");
-
-import { useState } from "react";
-import { useWebWorker } from "@/hooks/usePerformance";
-
 // ✅ Pure function that will run in worker thread
 function fibonacci(n: number): number {
   if (n <= 1) return n;
@@ -209,12 +185,6 @@ export function HeavyCalculation() {
 /**
  * EXAMPLE 7: Combining Multiple Techniques for Optimal Performance
  */
-
-("use client");
-
-import { useState, useRef } from "react";
-import { useThrottle, useIdleCallback } from "@/hooks/usePerformance";
-
 export function HighPerformanceDashboard() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -261,12 +231,6 @@ export function HighPerformanceDashboard() {
 /**
  * EXAMPLE 8: Form Input with Validation Debounce
  */
-
-("use client");
-
-import { useState } from "react";
-import { useDebounce } from "@/hooks/usePerformance";
-
 export function OptimizedForm() {
   const [email, setEmail] = useState("");
   const [isValidating, setIsValidating] = useState(false);
@@ -312,20 +276,3 @@ export function OptimizedForm() {
     </div>
   );
 }
-
-/**
- * SUMMARY OF WHEN TO USE EACH PATTERN:
- *
- * ✅ useThrottle:     Scroll, resize, mouse move (frequent events)
- * ✅ useDebounce:     Search input, form validation, window resize (after action completes)
- * ✅ useIdleCallback: Analytics, logging, non-critical updates
- * ✅ useWebWorker:    Heavy math, image processing, data parsing
- * ✅ useIntersectionObserver: Lazy load images/components only when visible
- *
- * GENERAL RULE:
- * - If event fires 60+x/sec → use useThrottle
- * - If event should wait until complete → use useDebounce
- * - If task is non-critical → use useIdleCallback
- * - If computation is heavy → use useWebWorker
- * - If element is below the fold → use useIntersectionObserver + dynamic()
- */
