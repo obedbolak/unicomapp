@@ -134,7 +134,7 @@ const pageVariants = {
     y: 0,
     transition: {
       duration: 0.45,
-      ease: [0.22, 1, 0.36, 1],
+      ease: [0.22, 1, 0.36, 1] as const,
     },
   },
   exit: {
@@ -142,7 +142,7 @@ const pageVariants = {
     y: -20,
     transition: {
       duration: 0.3,
-      ease: [0.22, 1, 0.36, 1],
+      ease: [0.22, 1, 0.36, 1] as const,
     },
   },
 };
@@ -187,7 +187,9 @@ export default function Page() {
         exit="exit"
         className="relative z-10"
       >
-        {activePage === "home" && <HeroSection />}
+        {activePage === "home" && (
+          <HeroSection onNavigate={handleNavigate} />
+        )}
         {activePage === "services" && <ServicesPage />}
         {activePage === "about" && <AboutPage />}
         {activePage === "projects" && <ProjectsPage />}
