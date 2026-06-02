@@ -2,27 +2,30 @@
 
 ## 📊 Your Situation
 
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| FCP | 4.0s | < 1.2s | ❌ TOO SLOW |
-| Root Cause | Fonts block CSS parsing | - | 🔴 CRITICAL |
-| Solution | Critical CSS inlining | - | ✅ IMPLEMENTED |
+| Metric     | Value                   | Target | Status         |
+| ---------- | ----------------------- | ------ | -------------- |
+| FCP        | 4.0s                    | < 1.2s | ❌ TOO SLOW    |
+| Root Cause | Fonts block CSS parsing | -      | 🔴 CRITICAL    |
+| Solution   | Critical CSS inlining   | -      | ✅ IMPLEMENTED |
 
 ---
 
 ## 🚀 3-Step Deployment
 
 ### Step 1: Deploy Files (1 min)
+
 ```bash
 cp app/layout-fcp-optimized.tsx app/layout.tsx
 ```
 
 ### Step 2: Build (2 min)
+
 ```bash
 npm run build
 ```
 
 ### Step 3: Measure (5 min)
+
 ```
 DevTools → Lighthouse → Analyze
 Check: FCP should be 0.8-1.2s
@@ -95,18 +98,19 @@ Go Live:
 
 ## 🔧 What Changed
 
-| Before | After |
-|--------|-------|
+| Before                    | After                    |
+| ------------------------- | ------------------------ |
 | ❌ `@import` fonts in CSS | ✅ `preconnect` to fonts |
-| ❌ All CSS blocks render | ✅ Critical CSS inline |
-| ❌ Non-critical CSS waits | ✅ Deferred CSS async |
-| ❌ Scripts block page | ✅ Scripts deferred |
+| ❌ All CSS blocks render  | ✅ Critical CSS inline   |
+| ❌ Non-critical CSS waits | ✅ Deferred CSS async    |
+| ❌ Scripts block page     | ✅ Scripts deferred      |
 
 ---
 
 ## 💡 Key Techniques
 
 ### 1. Critical CSS Inlining
+
 ```html
 <style>
   /* Only above-the-fold styles */
@@ -117,18 +121,24 @@ Go Live:
 ```
 
 ### 2. Deferred CSS (async loading)
+
 ```html
-<link rel="stylesheet" href="/deferred.css" 
-      media="print" 
-      onload="this.media='all'">
+<link
+  rel="stylesheet"
+  href="/deferred.css"
+  media="print"
+  onload="this.media='all'"
+/>
 ```
 
 ### 3. Font Preconnect
+
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
 ```
 
 ### 4. Script Deferring
+
 ```typescript
 <Script src="..." strategy="lazyOnload" />
 ```
@@ -143,10 +153,10 @@ Go Live:
   --color-primary: #ff8c00;
   --color-bg: #000814;
   --color-text: #ffffff;
-  
+
   /* Sizing */
   --header-height: 64px;
-  
+
   /* Fonts */
   --font-display: "Poppins", system-ui;
   --font-body: "DM Sans", system-ui;
@@ -173,6 +183,7 @@ Go Live:
 ## 📊 Lighthouse Metrics
 
 ### Before
+
 ```
 FCP:  4.0s ❌
 LCP:  5.2s ❌
@@ -181,6 +192,7 @@ Score: ~45
 ```
 
 ### After
+
 ```
 FCP:  0.8-1.2s ✅
 LCP:  2.0-2.5s ✅
@@ -193,19 +205,20 @@ Score: ~85
 ## ⚠️ Common Mistakes
 
 ### ❌ DON'T
+
 ```html
 <!-- Don't wait for fonts -->
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 
-/* style.css */
-@import url("https://fonts.googleapis.com/...");  ← Blocks!
+/* style.css */ @import url("https://fonts.googleapis.com/..."); ← Blocks!
 ```
 
 ### ✅ DO
+
 ```html
 <!-- Preconnect first -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="style.css" />
 ```
 
 ---
@@ -213,6 +226,7 @@ Score: ~85
 ## 🧪 Testing
 
 ### Quick FCP Check
+
 ```
 1. DevTools → Lighthouse
 2. Click "Analyze page load"
@@ -221,6 +235,7 @@ Score: ~85
 ```
 
 ### Slow Network Test
+
 ```
 1. DevTools → Network
 2. Set throttling: "Slow 4G"
@@ -233,16 +248,19 @@ Score: ~85
 ## 📞 Troubleshooting
 
 ### Build fails
+
 ```bash
 npx tsc --noEmit
 npm run build
 ```
 
 ### Page doesn't look right
+
 → Check DevTools: Elements → Styles
 → Verify inline `<style>` in head
 
 ### FCP didn't improve
+
 → Check Network tab for blocking resources
 → Check Performance tab for long tasks
 
@@ -251,6 +269,7 @@ npm run build
 ## 🎯 Success Criteria
 
 ✅ **All true = Success!**
+
 - [ ] FCP < 1.2s (was 4.0s)
 - [ ] LCP < 2.5s (was 5.2s)
 - [ ] CLS < 0.1 (was 0.15)
@@ -311,25 +330,25 @@ cp backups/layout.tsx.backup app/layout.tsx
 
 ## 🔗 Learn More
 
-| Topic | File |
-|-------|------|
-| How to deploy | FCP_DEPLOYMENT_GUIDE.md |
+| Topic             | File                      |
+| ----------------- | ------------------------- |
+| How to deploy     | FCP_DEPLOYMENT_GUIDE.md   |
 | Technical details | FCP_OPTIMIZATION_GUIDE.md |
-| Script strategies | SCRIPT_LOADING_GUIDE.md |
-| HTML template | HEAD_TEMPLATE.html |
+| Script strategies | SCRIPT_LOADING_GUIDE.md   |
+| HTML template     | HEAD_TEMPLATE.html        |
 
 ---
 
 ## ⏱️ Time Estimates
 
-| Task | Time |
-|------|------|
-| Backup files | 1 min |
-| Deploy | 1 min |
-| Build | 2 min |
-| Test | 3 min |
-| Measure | 5 min |
-| **Total** | **~12 min** |
+| Task         | Time        |
+| ------------ | ----------- |
+| Backup files | 1 min       |
+| Deploy       | 1 min       |
+| Build        | 2 min       |
+| Test         | 3 min       |
+| Measure      | 5 min       |
+| **Total**    | **~12 min** |
 
 ---
 

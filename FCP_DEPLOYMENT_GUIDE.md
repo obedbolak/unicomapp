@@ -26,6 +26,7 @@ cp app/globals.css backups/globals.css.backup
 ### ✅ **Step 2: Deploy New Files** (1 min)
 
 New files have already been created for you:
+
 - ✅ `/app/critical.css` - Inline CSS (created)
 - ✅ `/app/deferred.css` - Deferred CSS (created)
 - ✅ `/app/layout-fcp-optimized.tsx` - Optimized layout (created)
@@ -49,12 +50,14 @@ ls -la app/layout.tsx
 The old `globals.css` is still being imported. You have two options:
 
 **Option A: Keep it as reference (recommended)**
+
 ```bash
 # Rename for archival
 mv app/globals.css app/globals.css.old
 ```
 
 **Option B: Replace with new deferred version**
+
 ```bash
 # Delete old
 rm app/globals.css
@@ -101,6 +104,7 @@ npm run dev
 ```
 
 Open in Chrome and check:
+
 - ✅ Page loads without errors
 - ✅ Header visible immediately
 - ✅ 3D scene renders smoothly
@@ -124,10 +128,12 @@ Open in Chrome and check:
 ```
 
 **Expected before:**
+
 - FCP: 4.0s
 - LCP: 5.2s
 
 **Expected after:**
+
 - FCP: 0.8-1.2s
 - LCP: 2.0-2.5s
 
@@ -147,15 +153,15 @@ Test on slow networks to see impact:
 
 ```javascript
 // Add to your page to monitor live
-import { onFCP, onLCP } from 'web-vitals';
+import { onFCP, onLCP } from "web-vitals";
 
 onFCP((metric) => {
-  console.log('FCP:', metric.value, 'ms');
+  console.log("FCP:", metric.value, "ms");
   // Should be 800-1200ms
 });
 
 onLCP((metric) => {
-  console.log('LCP:', metric.value, 'ms');
+  console.log("LCP:", metric.value, "ms");
   // Should be 2000-2500ms
 });
 ```
@@ -203,6 +209,7 @@ Chrome DevTools → Lighthouse:
 ## What Changed in Your Layout
 
 ### BEFORE:
+
 ```typescript
 // ❌ Problem: Fonts block rendering
 import "./globals.css";  // 100+ lines loaded synchronously
@@ -221,6 +228,7 @@ export default function RootLayout() {
 ```
 
 ### AFTER:
+
 ```typescript
 // ✅ Solution: Critical CSS inlined, rest deferred
 import criticalCss from "./critical.css";
@@ -231,10 +239,10 @@ export default function RootLayout() {
       <head>
         {/* Preconnect to speed up fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        
+
         {/* Inline critical CSS - renders immediately */}
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
-        
+
         {/* Deferred CSS loads async - doesn't block */}
         <link rel="stylesheet" href="/deferred.css" media="print"
               onLoad="this.media='all'" />
@@ -304,7 +312,7 @@ Timeline:
 }
 
 body {
-  color: var(--color-primary);  /* Now works */
+  color: var(--color-primary); /* Now works */
 }
 ```
 
@@ -335,11 +343,12 @@ grep "deferred.css" app/layout.tsx
 ```css
 /* Critical CSS */
 body {
-  font-family: system-ui, sans-serif;  /* Fallback first */
+  font-family: system-ui, sans-serif; /* Fallback first */
 }
 ```
 
 **Expected behavior:**
+
 1. Page loads with system font (fast) ✅
 2. Custom fonts load in background
 3. Text smoothly updates (swap)
@@ -349,12 +358,14 @@ body {
 ### ❌ Issue: "FCP didn't improve much"
 
 **Possible causes:**
+
 1. Fonts still blocking - check preconnect working
 2. JavaScript still blocking - use Script component
 3. Heavy 3D scene rendering too early - use lazy loading
 4. Images blocking render - use lazy loading
 
 **Debug steps:**
+
 ```bash
 # 1. Check Network tab for blocking resources
 # DevTools → Network tab → Sort by Type
@@ -372,22 +383,24 @@ body {
 
 ### Expected Improvements
 
-| Metric | Before | After | Gain |
-|--------|--------|-------|------|
-| FCP | 4.0s | 0.8-1.2s | **70-80%** ↓ |
-| LCP | 5.2s | 2.0-2.5s | **50-60%** ↓ |
-| CLS | 0.15 | 0.08 | **47%** ↓ |
-| TTFB | 0.3s | 0.2s | **33%** ↓ |
-| Time to Interactive | 8.1s | 3.2s | **60%** ↓ |
+| Metric              | Before | After    | Gain         |
+| ------------------- | ------ | -------- | ------------ |
+| FCP                 | 4.0s   | 0.8-1.2s | **70-80%** ↓ |
+| LCP                 | 5.2s   | 2.0-2.5s | **50-60%** ↓ |
+| CLS                 | 0.15   | 0.08     | **47%** ↓    |
+| TTFB                | 0.3s   | 0.2s     | **33%** ↓    |
+| Time to Interactive | 8.1s   | 3.2s     | **60%** ↓    |
 
 ### Lighthouse Score Impact
 
 **Before:**
+
 - Performance: ~45-50
 - FCP: 4.0s
 - LCP: 5.2s
 
 **After:**
+
 - Performance: **80-90**
 - FCP: 0.8-1.2s
 - LCP: 2.0-2.5s
@@ -452,6 +465,7 @@ export default function RootLayout() {
 ### Setup Continuous Monitoring
 
 Services for monitoring Core Web Vitals:
+
 - **Vercel Analytics** (built-in if using Vercel)
 - **Google PageSpeed Insights** (free)
 - **Lighthouse CI** (GitHub Actions)

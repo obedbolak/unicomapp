@@ -3,6 +3,7 @@
 ## Your Issue: 4.0 Seconds FCP
 
 **Problem:** Browser is blocked from rendering early because:
+
 1. ❌ External fonts loaded via `@import` (blocks HTML parsing)
 2. ❌ Clash Display font loaded without preload strategy
 3. ❌ All CSS inline (non-critical styles block render)
@@ -35,6 +36,7 @@ mv app/layout-fcp-optimized.tsx app/layout.tsx
 ### Step 2: Use the new CSS files
 
 The three CSS files work together:
+
 - **`critical.css`** - Inline in `<head>` (renders immediately)
 - **`deferred.css`** - Load async with media="print" trick
 - **`globals.css`** - Keep as backup reference (no longer used)
@@ -56,12 +58,15 @@ Open DevTools → **Lighthouse** → Measure performance
 
 ```html
 <head>
-  <link rel="stylesheet" href="/globals.css"> <!-- Blocks until loaded -->
+  <link rel="stylesheet" href="/globals.css" />
+  <!-- Blocks until loaded -->
 </head>
 
 <!-- Browser WAITS here for globals.css to download & parse -->
 <!-- Then finally renders -->
-<body>...</body>
+<body>
+  ...
+</body>
 ```
 
 **Result:** 4.0s FCP (waits for all 100+ lines of CSS)
@@ -80,15 +85,21 @@ Open DevTools → **Lighthouse** → Measure performance
   </style>
 
   <!-- Fonts are preconnected (connection ready) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
   <!-- Deferred CSS loads in background (won't block) -->
-  <link rel="stylesheet" href="/deferred.css" media="print" 
-        onLoad="this.media='all'">
+  <link
+    rel="stylesheet"
+    href="/deferred.css"
+    media="print"
+    onLoad="this.media='all'"
+  />
 </head>
 
 <!-- Browser can PAINT now -->
-<body>...</body>
+<body>
+  ...
+</body>
 ```
 
 **Result:** 0.8-1.2s FCP (renders immediately with essential styles)
@@ -98,14 +109,17 @@ Open DevTools → **Lighthouse** → Measure performance
 ## Script Loading Strategies Explained
 
 ### 1. **`strategy="beforeInteractive"`** (blocks everything)
+
 ```jsx
 <Script src="..." strategy="beforeInteractive" />
 ```
+
 - **When:** Only for security/crash reporting
 - **Example:** Sentry error tracking, feature flags
 - **FCP Impact:** ❌ Blocks rendering (avoid!)
 
 **HTML Output:**
+
 ```html
 <script src="..." async></script>
 <!-- Runs BEFORE React hydration -->
@@ -114,14 +128,17 @@ Open DevTools → **Lighthouse** → Measure performance
 ---
 
 ### 2. **`strategy="afterInteractive"`** (default)
+
 ```jsx
 <Script src="..." strategy="afterInteractive" />
 ```
+
 - **When:** Analytics, important tracking
 - **Example:** Google Analytics, Mixpanel
 - **FCP Impact:** ⚠️ Runs after hydration (still impacts FCP on slow networks)
 
 **HTML Output:**
+
 ```html
 <script src="..." async></script>
 <!-- Runs AFTER React hydration -->
@@ -130,14 +147,17 @@ Open DevTools → **Lighthouse** → Measure performance
 ---
 
 ### 3. **`strategy="lazyOnload"`** (recommended for third-party)
+
 ```jsx
 <Script src="..." strategy="lazyOnload" />
 ```
+
 - **When:** Non-critical features (chat, ads, widgets)
 - **Example:** Dialogflow, Intercom, Drift
 - **FCP Impact:** ✅ Zero impact (loads in background after page interactive)
 
 **HTML Output:**
+
 ```html
 <script src="..." async></script>
 <!-- Added to queue, runs when browser idle -->
@@ -146,9 +166,11 @@ Open DevTools → **Lighthouse** → Measure performance
 ---
 
 ### 4. **`strategy="worker"`** (if script supports)
+
 ```jsx
 <Script src="..." strategy="worker" />
 ```
+
 - **When:** Heavy computations that support Web Workers
 - **Example:** PDF processing, image manipulation
 - **FCP Impact:** ✅ Runs in background thread (no main thread blocking)
@@ -175,12 +197,14 @@ Open DevTools → **Lighthouse** → Measure performance
 ```html
 <head>
   <!-- Establish DNS connection early -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <!-- Tell browser to swap fonts (show fallback first) -->
-  <link rel="stylesheet" 
-        href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap">
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap"
+  />
 </head>
 ```
 
@@ -197,12 +221,13 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700", "900"],
   variable: "--font-dm-sans",
-  display: "swap",    // ⚡ Shows fallback first
-  preload: true,      // ⚡ Preload for current page
+  display: "swap", // ⚡ Shows fallback first
+  preload: true, // ⚡ Preload for current page
 });
 ```
 
 **Why it's best:**
+
 - Fonts are self-hosted (no external server wait)
 - Optimized font files (only weights you use)
 - Automatic font subsetting
@@ -235,7 +260,8 @@ const dmSans = DM_Sans({
 
 ### How Much Should Inline?
 
-**Target:** < 14KB (will be inlined) 
+**Target:** < 14KB (will be inlined)
+
 - Critical CSS: ~2-3KB
 - Fonts: ~8-10KB
 - **Total:** ~11-13KB (fits in one initial response)
@@ -259,6 +285,7 @@ const dmSans = DM_Sans({
 ```
 
 **Before:**
+
 ```
 FCP: 4.0s
 LCP: 5.2s
@@ -266,6 +293,7 @@ CLS: 0.15
 ```
 
 **Expected After:**
+
 ```
 FCP: 0.8-1.2s  (80% faster ✅)
 LCP: 2.0-2.5s  (60% faster ✅)
@@ -277,19 +305,19 @@ CLS: 0.08      (better ✅)
 ### Using Web Vitals API
 
 ```javascript
-import { onFCP, onLCP, onCLS } from 'web-vitals';
+import { onFCP, onLCP, onCLS } from "web-vitals";
 
 onFCP((metric) => {
-  console.log('FCP:', metric.value);  // Should be 0.8-1.2s
+  console.log("FCP:", metric.value); // Should be 0.8-1.2s
   // Send to analytics
 });
 
 onLCP((metric) => {
-  console.log('LCP:', metric.value);
+  console.log("LCP:", metric.value);
 });
 
 onCLS((metric) => {
-  console.log('CLS:', metric.value);
+  console.log("CLS:", metric.value);
 });
 ```
 
@@ -321,7 +349,9 @@ npx lighthouse https://localhost:3000 --save-assets --output json
 }
 
 /* ❌ This won't work - never rendered */
-body { color: var(--color-primary); }
+body {
+  color: var(--color-primary);
+}
 ```
 
 ---
@@ -334,14 +364,14 @@ body { color: var(--color-primary); }
 ```css
 /* Critical CSS */
 body {
-  font-family: system-ui, sans-serif;  /* Fallback */
+  font-family: system-ui, sans-serif; /* Fallback */
 }
 
 /* Deferred CSS */
 @font-face {
-  font-family: 'Custom';
-  src: url('/font.woff2') format('woff2');
-  font-display: swap;  /* Show fallback first */
+  font-family: "Custom";
+  src: url("/font.woff2") format("woff2");
+  font-display: swap; /* Show fallback first */
 }
 ```
 
@@ -354,10 +384,10 @@ body {
 
 ```css
 @font-face {
-  font-family: 'DM Sans';
-  src: url('/dm-sans.woff2');
+  font-family: "DM Sans";
+  src: url("/dm-sans.woff2");
   font-display: swap;
-  size-adjust: 98%;  /* Adjust to match fallback */
+  size-adjust: 98%; /* Adjust to match fallback */
 }
 ```
 
@@ -415,24 +445,23 @@ Timeline:
 ### ❌ Never do this in <head>:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 
-/* style.css */
-@import url("https://fonts.googleapis.com/...");  /* BLOCKS! */
+/* style.css */ @import url("https://fonts.googleapis.com/..."); /* BLOCKS! */
 ```
 
 **Why:** Browser discovers font URL AFTER requesting style.css
+
 - Request CSS → Wait for response → Parse CSS → Discover @import → Request font → **SLOW**
 
 ### ✅ Always do this:
 
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="style.css" />
 
-/* style.css */
-/* No @import - fonts already preconnected */
-body { font-family: 'Custom'; }
+/* style.css */ /* No @import - fonts already preconnected */ body {
+font-family: 'Custom'; }
 ```
 
 ---
@@ -453,20 +482,20 @@ body { font-family: 'Custom'; }
 <script type="module" src="..."></script>
 
 <!-- Next.js: Use strategy prop instead -->
-<Script src="..." strategy="afterInteractive" />
+<script src="..." strategy="afterInteractive" />
 ```
 
 ---
 
 ## Expected Results
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| FCP | 4.0s | 0.8-1.2s | 70-80% ↓ |
-| LCP | 5.2s | 2.0-2.5s | 50-60% ↓ |
-| CLS | 0.15 | 0.08 | Better |
-| Speed Index | 6.2s | 1.5s | 75% ↓ |
-| Time to Interactive | 8.1s | 3.2s | 60% ↓ |
+| Metric              | Before | After    | Improvement |
+| ------------------- | ------ | -------- | ----------- |
+| FCP                 | 4.0s   | 0.8-1.2s | 70-80% ↓    |
+| LCP                 | 5.2s   | 2.0-2.5s | 50-60% ↓    |
+| CLS                 | 0.15   | 0.08     | Better      |
+| Speed Index         | 6.2s   | 1.5s     | 75% ↓       |
+| Time to Interactive | 8.1s   | 3.2s     | 60% ↓       |
 
 ---
 

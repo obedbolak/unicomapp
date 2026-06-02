@@ -74,7 +74,7 @@ function ScrollProgress() {
 
 function BackToTop() {
   const [visible, setVisible] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {

@@ -22,12 +22,12 @@ Is the script critical for page render?
 
 ## Strategy Comparison Table
 
-| Strategy | Load Timing | Execute Timing | FCP Impact | Use Case |
-|----------|-------------|---------------|-----------|-|
-| `beforeInteractive` | Before hydration | Before hydration | ❌ Blocks | Crashes, security |
-| `afterInteractive` | After HTML loads | After hydration | ⚠️ Slight | Analytics, tracking |
-| `lazyOnload` | When idle | When idle | ✅ None | Chat, ads, widgets |
-| `worker` | Parallel thread | In Web Worker | ✅ None | Heavy computation |
+| Strategy            | Load Timing      | Execute Timing   | FCP Impact | Use Case            |
+| ------------------- | ---------------- | ---------------- | ---------- | ------------------- |
+| `beforeInteractive` | Before hydration | Before hydration | ❌ Blocks  | Crashes, security   |
+| `afterInteractive`  | After HTML loads | After hydration  | ⚠️ Slight  | Analytics, tracking |
+| `lazyOnload`        | When idle        | When idle        | ✅ None    | Chat, ads, widgets  |
+| `worker`            | Parallel thread  | In Web Worker    | ✅ None    | Heavy computation   |
 
 ---
 
@@ -198,6 +198,7 @@ export default function RootLayout({
 ```
 
 **Execution order:**
+
 1. Sentry (beforeInteractive) - Blocks everything
 2. Page renders (FCP happens here)
 3. React hydrates
@@ -230,7 +231,7 @@ export default function Page() {
         dangerouslySetInnerHTML={{
           __html: `
             console.log('Page initialized');
-            
+
             // Initialize custom features
             if (window.CustomLib) {
               window.CustomLib.init({ theme: 'dark' });
@@ -500,11 +501,11 @@ npx lighthouse https://localhost:3000 \
 ### Web Vitals Monitoring
 
 ```javascript
-import { onFCP } from 'web-vitals';
+import { onFCP } from "web-vitals";
 
 onFCP((metric) => {
   // Should be < 1.2s
-  console.log('FCP:', metric.value);
+  console.log("FCP:", metric.value);
 });
 ```
 
@@ -560,11 +561,11 @@ onFCP((metric) => {
 
 ## Summary
 
-| Type | Strategy | FCP Impact |
-|------|----------|-----------|
-| Crash reporting | beforeInteractive | ❌ Slow |
-| Analytics | afterInteractive | ⚠️ OK |
-| Chat/Ads | lazyOnload | ✅ Fast |
-| Heavy computation | worker | ✅ Fast |
+| Type              | Strategy          | FCP Impact |
+| ----------------- | ----------------- | ---------- |
+| Crash reporting   | beforeInteractive | ❌ Slow    |
+| Analytics         | afterInteractive  | ⚠️ OK      |
+| Chat/Ads          | lazyOnload        | ✅ Fast    |
+| Heavy computation | worker            | ✅ Fast    |
 
 **Rule of thumb:** Use the least blocking strategy that still works for your use case.

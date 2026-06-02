@@ -11,15 +11,15 @@
 
 ## Files Created for You
 
-| File | Purpose | Action |
-|------|---------|--------|
-| **app/critical.css** | Above-the-fold styles | ✅ Created |
-| **app/deferred.css** | Non-critical styles | ✅ Created |
+| File                             | Purpose                       | Action                                  |
+| -------------------------------- | ----------------------------- | --------------------------------------- |
+| **app/critical.css**             | Above-the-fold styles         | ✅ Created                              |
+| **app/deferred.css**             | Non-critical styles           | ✅ Created                              |
 | **app/layout-fcp-optimized.tsx** | New layout with optimizations | ✅ Created → Deploy as `app/layout.tsx` |
-| **FCP_OPTIMIZATION_GUIDE.md** | Technical explanation | 📖 Reference |
-| **SCRIPT_LOADING_GUIDE.md** | Script strategies | 📖 Reference |
-| **FCP_DEPLOYMENT_GUIDE.md** | Step-by-step deployment | 📖 Follow this! |
-| **HEAD_TEMPLATE.html** | Perfect HTML head | 📖 Reference template |
+| **FCP_OPTIMIZATION_GUIDE.md**    | Technical explanation         | 📖 Reference                            |
+| **SCRIPT_LOADING_GUIDE.md**      | Script strategies             | 📖 Reference                            |
+| **FCP_DEPLOYMENT_GUIDE.md**      | Step-by-step deployment       | 📖 Follow this!                         |
+| **HEAD_TEMPLATE.html**           | Perfect HTML head             | 📖 Reference template                   |
 
 ---
 
@@ -51,6 +51,7 @@ npm run dev
 ## How It Works (Simple Explanation)
 
 ### Before: All CSS Blocks Rendering
+
 ```
 1. Browser downloads HTML
 2. Parses <head> and discovers CSS file
@@ -61,6 +62,7 @@ npm run dev
 ```
 
 ### After: Critical CSS Renders Immediately
+
 ```
 1. Browser downloads HTML
 2. Parses <head> with inline critical CSS
@@ -76,6 +78,7 @@ npm run dev
 ## What's Inside Each CSS File
 
 ### critical.css (~2KB)
+
 ```css
 ✅ Reset styles
 ✅ CSS variables (colors, fonts)
@@ -86,6 +89,7 @@ npm run dev
 ```
 
 ### deferred.css (~8KB)
+
 ```css
 ✅ Extended variables
 ✅ Container layouts
@@ -123,30 +127,36 @@ Your new layout uses Next.js Script component with smart strategies:
 ## Font Optimization Techniques
 
 ### ❌ What Was Blocking (Old)
+
 ```css
 @import url("https://fonts.googleapis.com/...");
 ```
+
 - Browser discovers URL while parsing CSS
 - Blocks rendering for additional network request
 
 ### ✅ What We Use Now (New)
+
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="..." media="print" onLoad="this.media='all'">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="..." media="print" onLoad="this.media='all'" />
 ```
+
 - Preconnect established early
 - Stylesheet loads async (media="print" prevents blocking)
 - Smooth swap when ready
 
 ### ✅ Best: Next.js Font Optimization
+
 ```typescript
 import { DM_Sans } from "next/font/google";
 
 const dmSans = DM_Sans({
-  display: "swap",    // Show fallback first
-  preload: true,      // Preload for this page
+  display: "swap", // Show fallback first
+  preload: true, // Preload for this page
 });
 ```
+
 - Fonts embedded in build (no network request!)
 - Only weights you use
 
@@ -199,10 +209,10 @@ Font loading:      1500ms (doesn't block)
         <head>
 +         {/* Preconnect to fonts early */}
 +         <link rel="preconnect" href="https://fonts.googleapis.com" />
-+         
++
 +         {/* Inline critical CSS - renders immediately */}
 +         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
-+         
++
 +         {/* Deferred CSS loads async */}
 +         <link rel="stylesheet" href="/deferred.css" media="print"
 +               onLoad="this.media='all'" />
@@ -213,7 +223,7 @@ Font loading:      1500ms (doesn't block)
 
 ```diff
 - <link href="https://api.fontshare.com/..." rel="stylesheet" />
-+ <link rel="preload" href="https://api.fontshare.com/..." 
++ <link rel="preload" href="https://api.fontshare.com/..."
 +       onLoad="this.rel='stylesheet'" />
 ```
 
@@ -222,6 +232,7 @@ Font loading:      1500ms (doesn't block)
 ## Verification Steps
 
 ### ✅ Files Deployed
+
 ```bash
 ls -la app/critical.css     # Should exist
 ls -la app/deferred.css     # Should exist
@@ -229,18 +240,21 @@ grep "critical.css" app/layout.tsx  # Should be imported
 ```
 
 ### ✅ Build Succeeds
+
 ```bash
 npm run build
 # Should show: "Compiled successfully ✓"
 ```
 
 ### ✅ Dev Server Works
+
 ```bash
 npm run dev
 # Should load at http://localhost:3000 without errors
 ```
 
 ### ✅ FCP Improved
+
 ```
 DevTools → Lighthouse → Analyze
 Look for: FCP < 1.2s
@@ -250,12 +264,12 @@ Look for: FCP < 1.2s
 
 ## Expected Metrics
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| FCP | 4.0s | < 1.2s | 📊 Should improve 70-80% |
-| LCP | 5.2s | < 2.5s | 📊 Should improve 50-60% |
-| CLS | 0.15 | < 0.1 | 📊 Should improve |
-| TTFB | 0.3s | < 0.8s | ✅ No change (server) |
+| Metric | Current | Target | Status                   |
+| ------ | ------- | ------ | ------------------------ |
+| FCP    | 4.0s    | < 1.2s | 📊 Should improve 70-80% |
+| LCP    | 5.2s    | < 2.5s | 📊 Should improve 50-60% |
+| CLS    | 0.15    | < 0.1  | 📊 Should improve        |
+| TTFB   | 0.3s    | < 0.8s | ✅ No change (server)    |
 
 ---
 
@@ -294,6 +308,7 @@ Mobile:
 ## Troubleshooting
 
 ### Problem: Build fails
+
 ```bash
 # Check for TypeScript errors
 npx tsc --noEmit
@@ -307,6 +322,7 @@ npm run build
 ```
 
 ### Problem: Page doesn't look right
+
 ```bash
 # Critical CSS might be missing styles
 # Check DevTools → Elements → Styles
@@ -318,6 +334,7 @@ import "./deferred.css";
 ```
 
 ### Problem: FCP didn't improve
+
 ```bash
 # Check Network tab (DevTools)
 # Look for blocking resources in <head>
@@ -337,6 +354,7 @@ import "./deferred.css";
 ## Side-by-Side Code Comparison
 
 ### OLD (Blocking):
+
 ```typescript
 import "./globals.css";  // 100+ lines, blocks rendering
 
@@ -354,6 +372,7 @@ export default function RootLayout({ children }) {
 ```
 
 ### NEW (Optimized):
+
 ```typescript
 import criticalCss from "./critical.css";
 import Script from "next/script";
@@ -364,16 +383,16 @@ export default function RootLayout({ children }) {
       <head>
         {/* Preconnect = fast connection */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        
+
         {/* Inline = renders immediately */}
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
-        
+
         {/* Async = doesn't block */}
         <link rel="stylesheet" href="/deferred.css" media="print"
               onLoad="this.media='all'" />
       </head>
       <body>{children}</body>
-      
+
       {/* Scripts deferred */}
       <Script src="..." strategy="lazyOnload" />
     </html>
@@ -386,15 +405,17 @@ export default function RootLayout({ children }) {
 ## Next.js Specific Tips
 
 ### Use `display: swap` for fonts
+
 ```typescript
 import { DM_Sans } from "next/font/google";
 
 const font = DM_Sans({
-  display: "swap",  // ⚡ Show fallback first
+  display: "swap", // ⚡ Show fallback first
 });
 ```
 
 ### Use Script component for third-party
+
 ```typescript
 import Script from "next/script";
 
@@ -402,6 +423,7 @@ import Script from "next/script";
 ```
 
 ### Use dynamic imports for heavy components
+
 ```typescript
 import dynamic from "next/dynamic";
 
@@ -430,25 +452,28 @@ Before deploying to production:
 ## Monitoring Going Forward
 
 ### Weekly Check
+
 ```bash
 # Run Lighthouse audit
 npx lighthouse https://yoursite.com --view
 ```
 
 ### Continuous Monitoring
+
 ```typescript
 // Monitor FCP in production
-import { onFCP } from 'web-vitals';
+import { onFCP } from "web-vitals";
 
 onFCP((metric) => {
   // Send to your analytics platform
-  gtag('event', 'page_view', {
-    'fcp': metric.value,
+  gtag("event", "page_view", {
+    fcp: metric.value,
   });
 });
 ```
 
 ### Set Up Alerts
+
 - Alert if FCP > 1.5s
 - Alert if LCP > 3.0s
 - Alert if CLS > 0.15
@@ -470,12 +495,14 @@ onFCP((metric) => {
 ## Resources
 
 ### Documentation
+
 - 📖 [FCP_OPTIMIZATION_GUIDE.md](FCP_OPTIMIZATION_GUIDE.md) - Complete technical guide
 - 📖 [SCRIPT_LOADING_GUIDE.md](SCRIPT_LOADING_GUIDE.md) - Script strategies explained
 - 📖 [FCP_DEPLOYMENT_GUIDE.md](FCP_DEPLOYMENT_GUIDE.md) - Step-by-step deployment
 - 📖 [HEAD_TEMPLATE.html](HEAD_TEMPLATE.html) - Perfect HTML head template
 
 ### External Resources
+
 - 🌐 [web.dev - First Contentful Paint](https://web.dev/first-contentful-paint/)
 - 🌐 [web.dev - Critical CSS](https://web.dev/critical-css/)
 - 🌐 [MDN - Web Fonts](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face)
@@ -486,11 +513,13 @@ onFCP((metric) => {
 ## Summary
 
 Your optimization journey:
+
 1. **✅ TBT fixed** (previous guide) - 75-85% improvement
 2. **✅ FCP fixed** (this guide) - 70-80% improvement
 3. **Total:** Your site will be **significantly faster!**
 
 **Combined estimated performance:**
+
 - FCP: 4.0s → 0.8s (80% faster)
 - LCP: 5.2s → 2.0s (62% faster)
 - TBT: 28,990ms → 5,000ms (83% faster)
