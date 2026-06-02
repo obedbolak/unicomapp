@@ -5,7 +5,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
  *
  * Usage:
  * const debouncedScroll = useDebounce(() => {
- *   setVisible(window.scrollY > 600);
+ * setVisible(window.scrollY > 600);
  * }, 150);
  *
  * window.addEventListener("scroll", debouncedScroll, { passive: true });
@@ -14,7 +14,8 @@ export function useDebounce<T extends (...args: any[]) => void>(
   callback: T,
   delay: number,
 ): T {
-  const debounceRef = useRef<NodeJS.Timeout>();
+  // ✅ Fixed: Added | null and initialized with null
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedCallback = useCallback(
     (...args: any[]) => {
@@ -44,7 +45,7 @@ export function useDebounce<T extends (...args: any[]) => void>(
  *
  * Usage:
  * const throttledScroll = useThrottle(() => {
- *   setScrolled(window.scrollY > 20);
+ * setScrolled(window.scrollY > 20);
  * });
  *
  * window.addEventListener("scroll", throttledScroll, { passive: true });
@@ -52,7 +53,7 @@ export function useDebounce<T extends (...args: any[]) => void>(
 export function useThrottle<T extends (...args: any[]) => void>(
   callback: T,
 ): T {
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
   const lastCallRef = useRef<number>(0);
 
   const throttledCallback = useCallback(
@@ -89,8 +90,8 @@ export function useThrottle<T extends (...args: any[]) => void>(
  *
  * Usage:
  * useIdleCallback(() => {
- *   // Heavy computation happens when browser is idle
- *   analytics.track("page-viewed");
+ * // Heavy computation happens when browser is idle
+ * analytics.track("page-viewed");
  * });
  */
 export function useIdleCallback(
@@ -157,8 +158,9 @@ export function useWebWorker<T, R>(fn: (data: T) => R, data: T): R | undefined {
  * - Debounce final action with setTimeout
  */
 export function useScrollListener(onScroll: (scrollY: number) => void): void {
-  const debounceRef = useRef<NodeJS.Timeout>();
-  const rafRef = useRef<number>();
+  // ✅ Fixed: Added | null and initialized with null
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -219,7 +221,7 @@ export function useIntersectionObserver<T extends HTMLElement = HTMLElement>(
   return isVisible;
 }
 
-export default {
+const performanceHooks = {
   useDebounce,
   useThrottle,
   useIdleCallback,
@@ -227,3 +229,5 @@ export default {
   useScrollListener,
   useIntersectionObserver,
 };
+
+export default performanceHooks;
