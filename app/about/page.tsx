@@ -77,7 +77,7 @@ const teamMembers = [
   },
   {
     name: "Obed Bolak",
-    role: "CEO & Founder",
+    role: "CEO & FULL-STACK DEVELOPER",
     image: "/team/ceo.png",
   },
 ];
