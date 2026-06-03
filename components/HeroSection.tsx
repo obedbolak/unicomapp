@@ -91,26 +91,32 @@ export default function HeroSection() {
                 className="hero-heading"
                 style={{ color: "var(--color-text)" }}
               >
-                <span className="block whitespace-nowrap">
-                  Digital Solutions.
-                </span>
-                <span className="block mt-1 gradient-text whitespace-nowrap">
+                <span className="block">Digital Solutions.</span>
+                <span className="block mt-1 gradient-text">
                   Empowering Business.
                 </span>
               </h1>
             </motion.div>
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.35 }}
-              className="hero-subtitle"
-            >
-              We are shaping a next-generation ecosystem for our upcoming
-              deployment. Next-tier software engineering designed explicitly for
-              commercial scale.
-            </motion.p>
+            <div className="hero-subtitle-row">
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={visible ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.7, delay: 0.35 }}
+                className="hero-subtitle"
+                style={{ margin: 0 }}
+              >
+                We are shaping a next-generation ecosystem for our upcoming
+                deployment. Next-tier software engineering designed explicitly
+                for commercial scale.
+              </motion.p>
+
+              <div className="hero-images-mobile">
+                <div className="hero-image-card second">
+                  <img src="/team/ceo.png" alt="Modern workspace" />
+                </div>
+              </div>
+            </div>
 
             {/* CTAs */}
             <motion.div
@@ -140,7 +146,7 @@ export default function HeroSection() {
           </div>
           {/* end hero-content */}
 
-          {/* ── RIGHT: image cards ── */}
+          {/* ── RIGHT: desktop image cards (sibling to hero-content) ── */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={visible ? { opacity: 1, x: 0 } : {}}

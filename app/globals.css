@@ -186,6 +186,12 @@ body {
   letter-spacing: -0.02em;
   font-family: var(--font-display);
   margin-bottom: 1rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.hero-heading span {
+  display: block;
 }
 
 .hero-subtitle {
@@ -299,14 +305,7 @@ body {
 }
 
 /* ── Hero image cards ────────────────────────────────────────────────────── */
-.hero-images {
-  display: none;
-  flex-direction: column;
-  gap: 1rem;
-  flex-shrink: 0;
-  width: 340px;
-}
-
+/* ── Hero image cards ────────────────────────────────────────────────────── */
 .hero-image-card {
   border-radius: 1rem;
   overflow: hidden;
@@ -319,29 +318,15 @@ body {
   height: 200px;
   object-fit: cover;
   display: block;
+  object-position: center top;
+  padding-top: 0;
 }
 
-.hero-image-card:first-child {
-  transform: translateX(16px);
-}
-
-.hero-image-card:last-child {
-  transform: translateX(-8px);
-}
-
-.hero-image-card.second {
-  height: 340px;
-}
-
-.hero-image-card.second img {
-  height: 100%;
-}
-
-/* ── Hero layout ────────────────────────────────────────────────────────── */
+/* ── Hero layout ─────────────────────────────────────────────────────────── */
 .hero-layout {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .hero-content {
@@ -349,20 +334,125 @@ body {
   min-width: 0;
 }
 
-@media (min-width: 1024px) {
+/* ── Hero subtitle row (subtitle + mobile image side by side) ────────────── */
+.hero-subtitle-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-subtitle {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* ── Mobile image (shown < 768px, sits beside subtitle) ─────────────────── */
+.hero-images-mobile {
+  flex-shrink: 0;
+  width: 110px;
+  height: 140px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.hero-images-mobile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* ── Desktop image panel (hidden on mobile) ──────────────────────────────── */
+.hero-images {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  flex-shrink: 0;
+  width: 340px;
+}
+
+.hero-image-card:first-child {
+  transform: translateX(16px);
+}
+
+.hero-image-card.second {
+  height: 300px;
+}
+
+.hero-image-card.second img {
+  height: 100%;
+}
+
+.hero-image-card:last-child {
+  transform: translateX(-8px);
+}
+
+/* ── 768px: switch to desktop layout ─────────────────────────────────────── */
+@media (min-width: 768px) {
   .hero-layout {
     flex-direction: row;
     align-items: center;
-    gap: 3rem;
+  }
+
+  .hero-images-mobile {
+    display: none;
+  }
+
+  .hero-images {
+    display: flex;
+  }
+
+  .hero-subtitle-row {
+    display: block;
+    margin-bottom: 2rem;
+  }
+
+  .hero-subtitle {
+    margin-bottom: 0;
+  }
+
+  .hero-image-card:first-child {
+    transform: translateX(10px);
+  }
+
+  .hero-image-card.second {
+    height: 260px;
+  }
+
+  .hero-image-card:last-child {
+    transform: translateX(-6px);
   }
 }
 
 @media (min-width: 1024px) {
   .hero-images {
-    display: flex;
+    width: 340px;
+  }
+
+  .hero-image-card:first-child {
+    transform: translateX(16px);
+  }
+
+  .hero-image-card.second {
+    height: 300px;
+  }
+
+  .hero-image-card:last-child {
+    transform: translateX(-8px);
   }
 }
 
+@media (min-width: 1280px) {
+  .hero-images {
+    width: 380px;
+  }
+
+  .hero-image-card.second {
+    height: 340px;
+  }
+}
 /* ──────────────────────────────────────────────────────────────────────── */
 /* RESPONSIVE BREAKPOINTS                                                   */
 /* ──────────────────────────────────────────────────────────────────────── */
