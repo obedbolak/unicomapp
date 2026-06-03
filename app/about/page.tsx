@@ -56,7 +56,7 @@ const teamMembers = [
     image: "/team/bbty.png",
   },
   {
-    name: "Nguan Babara",
+    name: "Ngwang Barbara",
     role: "Creative Director",
     image: "/team/nguan.png",
   },

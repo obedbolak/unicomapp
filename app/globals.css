@@ -329,7 +329,15 @@ body {
   transform: translateX(-8px);
 }
 
-/* ── Hero layout ─────────────────────────────────────────────────────────── */
+.hero-image-card.second {
+  height: 340px;
+}
+
+.hero-image-card.second img {
+  height: 100%;
+}
+
+/* ── Hero layout ────────────────────────────────────────────────────────── */
 .hero-layout {
   display: flex;
   flex-direction: column;

@@ -153,11 +153,8 @@ export default function HeroSection() {
                 alt="Team collaborating"
               />
             </div>
-            <div className="hero-image-card">
-              <img
-                src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80"
-                alt="Modern workspace"
-              />
+            <div className="hero-image-card second">
+              <img src="/team/ceo.png" alt="Modern workspace" />
             </div>
           </motion.div>
         </div>
