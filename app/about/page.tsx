@@ -390,7 +390,9 @@ export default function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginTop: "4rem" }}
+          style={{
+            marginTop: "4rem",
+          }}
         >
           <div style={{ marginBottom: "2.5rem" }}>
             <span className="section-eyebrow">The Minds Behind UnicomTeam</span>
@@ -401,100 +403,188 @@ export default function AboutPage() {
               Meet Our <span className="gradient-text">Experts</span>
             </h2>
           </div>
-
-          <div
-            className="team-members-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "2rem",
-            }}
-          >
-            {teamMembers.map((member, idx) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                whileHover={{ y: -6 }}
-                className="card"
+        </motion.div>
+        {/* Team Members Grid */}
+        <div
+          className="team-members-grid"
+          style={{
+            display: "grid",
+            gap: "2rem",
+          }}
+        >
+          {teamMembers.map((member, idx) => (
+            <motion.div
+              key={member.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1, duration: 0.5 }}
+              whileHover={{ y: -6 }}
+              className="card"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "2.5rem 1.5rem",
+                background: "rgba(255, 255, 255, 0.02)",
+                transition: "background 0.3s ease, border-color 0.3s ease",
+              }}
+            >
+              <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                  padding: "2.5rem 1.5rem",
-                  background: "rgba(255, 255, 255, 0.02)",
-                  transition: "background 0.3s ease, border-color 0.3s ease",
+                  position: "relative",
+                  width: "130px",
+                  height: "130px",
+                  borderRadius: "50%",
+                  marginBottom: "1.5rem",
+                  padding: "4px",
+                  background:
+                    "linear-gradient(135deg, rgba(255,140,0,0.3) 0%, rgba(255,255,255,0.05) 100%)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
                 }}
               >
-                {/* Circular Frame */}
                 <div
                   style={{
-                    position: "relative",
-                    width: "130px",
-                    height: "130px",
+                    width: "100%",
+                    height: "100%",
                     borderRadius: "50%",
-                    marginBottom: "1.5rem",
-                    padding: "4px",
-                    background:
-                      "linear-gradient(135deg, rgba(255,140,0,0.3) 0%, rgba(255,255,255,0.05) 100%)",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                    overflow: "hidden",
                   }}
                 >
-                  <div
+                  <img
+                    src={member.image}
+                    alt={member.name}
                     style={{
                       width: "100%",
                       height: "100%",
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      background: "transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      objectFit: "contain",
+                      objectPosition: "center",
                     }}
-                  >
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain", // IMPORTANT FIX
-                        objectPosition: "center",
-                      }}
-                    />
-                  </div>
+                  />
                 </div>
+              </div>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: "1.125rem",
+                  color: "var(--color-text)",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                {member.name}
+              </h3>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.05em",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                {member.role}
+              </span>
+            </motion.div>
+          ))}
 
-                {/* Name & Role */}
-                <h3
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 700,
-                    fontSize: "1.125rem",
-                    color: "var(--color-text)",
-                    marginBottom: "0.25rem",
-                  }}
-                >
-                  {member.name}
-                </h3>
-                <span
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.05em",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  {member.role}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+          {/* ── Join the team card ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: teamMembers.length * 0.1, duration: 0.5 }}
+            className="team-card-cta"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              padding: "2.5rem 1.75rem",
+              borderRadius: "1rem",
+              background: "rgba(255,140,0,0.04)",
+              border: "1px dashed rgba(255,140,0,0.25)",
+              gap: "1rem",
+            }}
+          >
+            {/* Pulse dot */}
+            <div
+              style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "var(--color-primary)",
+                boxShadow: "0 0 10px rgba(255,140,0,0.6)",
+                animation: "pulseDot 2s ease-in-out infinite",
+              }}
+            />
+
+            <div>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.6875rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--color-primary)",
+                  display: "block",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Growing Team
+              </span>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: "1.25rem",
+                  color: "var(--color-text)",
+                  lineHeight: 1.3,
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Want to build the future with us?
+              </h3>
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.875rem",
+                  color: "var(--color-text-muted)",
+                  lineHeight: 1.6,
+                }}
+              >
+                We are always looking for passionate engineers, designers, and
+                strategists to join our remote-first collective. If that sounds
+                like you, reach out.
+              </p>
+            </div>
+
+            <a
+              href="/contact"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginTop: "0.5rem",
+                padding: "0.6rem 1.25rem",
+                borderRadius: "0.5rem",
+                background: "rgba(255,140,0,0.12)",
+                border: "1px solid rgba(255,140,0,0.3)",
+                color: "var(--color-primary)",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.8125rem",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textDecoration: "none",
+                transition: "background 0.2s ease",
+              }}
+            >
+              Get in touch →
+            </a>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -569,6 +569,33 @@ body {
   }
 }
 
+.team-members-grid {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+}
+
+.team-card-cta {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 900px) {
+  /* When 3+ columns, only span remaining slots */
+  .team-members-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .team-card-cta {
+    grid-column: 3 / -1; /* fills from 3rd column to end — 7 members = col 1&2 on row 3, cta fills col 3 */
+  }
+}
+
+@media (min-width: 1200px) {
+  .team-members-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .team-card-cta {
+    grid-column: 4 / -1; /* 7 members = cols 1-3 on row 2, cta fills col 4 */
+  }
+}
+
 /* ── Keyframes ───────────────────────────────────────────────────────────── */
 @keyframes gradientFlow {
   0%,
