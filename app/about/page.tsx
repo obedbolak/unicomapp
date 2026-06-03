@@ -56,6 +56,12 @@ const teamMembers = [
     image: "/team/bbty.png",
   },
   {
+    name: "Fomusoh Stephanie",
+    role: "Frontend & UI/UX Designer",
+    image: "/team/steph.png",
+  },
+
+  {
     name: "Ngwang Barbara",
     role: "Creative Director",
     image: "/team/nguan.png",
