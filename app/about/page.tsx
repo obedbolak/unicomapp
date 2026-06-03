@@ -66,14 +66,19 @@ const teamMembers = [
     image: "/team/rosin.png",
   },
   {
-    name: "Chidi Ngozi",
-    role: "Product Strategist",
+    name: " lilian martin",
+    role: "Frontend & UI Specialist",
     image: "/team/lili.png",
   },
   {
     name: "Longe Antia",
-    role: "Frontend Developer",
-    image: "/team/anti.png",
+    role: "Marketing Director",
+    image: "/team/along.png",
+  },
+  {
+    name: "Obed Bolak",
+    role: "CEO & Founder",
+    image: "/team/ceo.png",
   },
 ];
 
