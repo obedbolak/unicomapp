@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Button from "@/components/ui/button";
@@ -10,8 +11,8 @@ import Image from "next/image";
 export type Page = "home" | "about" | "services" | "projects" | "contact";
 
 interface HeaderProps {
-  activePage: Page;
-  onNavigate: (page: Page) => void;
+  activePage?: Page;
+  onNavigate?: (page: Page) => void;
 }
 
 // 2. Updated navLinks with About Us and Our Projects
@@ -55,8 +56,30 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const resolvedActive: Page =
+    activePage ??
+    ((): Page => {
+      const p = pathname || "/";
+      if (p === "/" || p === "") return "home";
+      if (p.startsWith("/about")) return "about";
+      if (p.startsWith("/services")) return "services";
+      if (p.startsWith("/projects")) return "projects";
+      if (p.startsWith("/contact")) return "contact";
+      return "home";
+    })();
+
+  const navigate =
+    onNavigate ??
+    ((page: Page) => {
+      const path = page === "home" ? "/" : `/${page}`;
+      router.push(path);
+    });
+
   const handleNav = (page: Page) => {
-    onNavigate(page);
+    navigate(page);
     setMenuOpen(false); // Closes the mobile navigation element automatically on route pick
   };
 
@@ -168,12 +191,12 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                 className="nav-btn"
                 style={{
                   color:
-                    activePage === page
+                    resolvedActive === page
                       ? "var(--color-primary)"
                       : "var(--color-text-muted)",
                 }}
               >
-                {activePage === page && (
+                {resolvedActive === page && (
                   <motion.span
                     layoutId="nav-pill"
                     className="absolute inset-0 rounded-lg"
@@ -289,11 +312,11 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                       border: "none",
                       transition: "background 0.2s, color 0.2s",
                       color:
-                        activePage === page
+                        resolvedActive === page
                           ? "var(--color-primary)"
                           : "rgba(255,255,255,0.75)",
                       background:
-                        activePage === page
+                        resolvedActive === page
                           ? "rgba(255,140,0,0.1)"
                           : "transparent",
                       width: "100%",
@@ -306,7 +329,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                         borderRadius: "999px",
                         flexShrink: 0,
                         background:
-                          activePage === page
+                          resolvedActive === page
                             ? "var(--color-primary)"
                             : "rgba(255,255,255,0.2)",
                         transition: "background 0.2s",

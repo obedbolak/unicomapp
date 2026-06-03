@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import ClientLayout from "./ClientLayout";
+import Header from "@/components/header";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -105,7 +107,10 @@ export default function RootLayout({
         />
       </head>
       <body className={dmSans.className}>
-        <div className="app-wrapper">{children}</div>
+        <Header />
+        <div className="app-wrapper">
+          <ClientLayout>{children}</ClientLayout>
+        </div>
       </body>
     </html>
   );

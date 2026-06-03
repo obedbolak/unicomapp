@@ -26,10 +26,16 @@
   padding: 0;
 }
 
-html,
-body {
+html {
   height: 100%;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
   background: var(--color-background-dark);
   color: var(--color-text);
   font-family: var(--font-body);

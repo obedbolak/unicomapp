@@ -123,25 +123,31 @@ function MouseLightOptimized() {
   });
 
   return (
-    <pointLight
-      ref={lightRef}
-      intensity={4}
-      color="#FF8C00"
-      distance={20}
-      decay={2}
-    />
+    <>
+      {/* eslint-disable-next-line react/no-unknown-property */}
+      <pointLight
+        ref={lightRef}
+        intensity={4}
+        color="#FF8C00"
+        distance={20}
+        decay={2}
+      />
+    </>
   );
 }
 
-function Scene3DOptimized() {
+function SceneContent() {
   return (
     <>
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <ambientLight intensity={0.4} />
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <directionalLight
         position={[10, 10, 5]}
         intensity={1.2}
         color="#3385ff"
       />
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <pointLight position={[-10, -10, -5]} intensity={0.8} color="#FF8C00" />
       <MouseLightOptimized />
       <Stars
@@ -166,4 +172,20 @@ function Scene3DOptimized() {
   );
 }
 
-export default Scene3DOptimized;
+export default function Scene3DOptimized() {
+  return (
+    <Canvas
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      }}
+      camera={{ position: [0, 0, 15], fov: 75 }}
+      gl={{ antialias: true, alpha: true }}
+    >
+      <SceneContent />
+    </Canvas>
+  );
+}
