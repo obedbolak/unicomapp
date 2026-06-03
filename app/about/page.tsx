@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
   UserGroupIcon,
   LightBulbIcon,
-  RocketLaunchIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
@@ -31,7 +30,7 @@ const values = [
   },
 ];
 
-const team = [
+const departments = [
   {
     name: "Core Engineering",
     role: "Full-Stack & Systems",
@@ -46,6 +45,35 @@ const team = [
     name: "Growth Strategy",
     role: "Marketing & Operations",
     bio: "Driving massive user acquisition via targeted digital marketing setups and data-backed business growth.",
+  },
+];
+
+// Team Members
+const teamMembers = [
+  {
+    name: "Alvine Malyka",
+    role: "Core Systems Engineer",
+    image: "/team/bbty.png",
+  },
+  {
+    name: "Nguan Babara",
+    role: "Creative Director",
+    image: "/team/nguan.png",
+  },
+  {
+    name: "Rosine Mvondo",
+    role: "Marketing & Business Strategist",
+    image: "/team/rosin.png",
+  },
+  {
+    name: "Chidi Ngozi",
+    role: "Product Strategist",
+    image: "/team/lili.png",
+  },
+  {
+    name: "Longe Antia",
+    role: "Frontend Developer",
+    image: "/team/anti.png",
   },
 ];
 
@@ -80,13 +108,13 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        {/* Two Column Section (Mission + Core Values) */}
+        {/* Two Column Section */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr",
             gap: "2rem",
-            marginBottom: "4rem",
+            marginBottom: "5rem",
           }}
           className="about-grid"
         >
@@ -99,7 +127,7 @@ export default function AboutPage() {
             }
           `}</style>
 
-          {/* Left: Our Philosophy & Values Loop */}
+          {/* Left Column */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
@@ -215,7 +243,7 @@ export default function AboutPage() {
             </div>
           </motion.div>
 
-          {/* Right: Operational Strengths & Glow Note */}
+          {/* Right Column */}
           <motion.div
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
@@ -240,7 +268,7 @@ export default function AboutPage() {
               The Collective Team
             </p>
 
-            {team.map(({ name, role, bio }, i) => (
+            {departments.map(({ name, role, bio }, i) => (
               <motion.div
                 key={name}
                 initial={{ opacity: 0, y: 16 }}
@@ -287,7 +315,7 @@ export default function AboutPage() {
               </motion.div>
             ))}
 
-            {/* Glowing Accent Banner */}
+            {/* Glow Banner */}
             <div
               style={{
                 padding: "1.25rem 1.5rem",
@@ -344,6 +372,118 @@ export default function AboutPage() {
             </div>
           </motion.div>
         </div>
+
+        {/* Team Members Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{ marginTop: "4rem" }}
+        >
+          <div style={{ marginBottom: "2.5rem" }}>
+            <span className="section-eyebrow">The Minds Behind UnicomTeam</span>
+            <h2
+              className="section-heading"
+              style={{ color: "var(--color-text)", fontSize: "2rem" }}
+            >
+              Meet Our <span className="gradient-text">Experts</span>
+            </h2>
+          </div>
+
+          <div
+            className="team-members-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "2rem",
+            }}
+          >
+            {teamMembers.map((member, idx) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+                whileHover={{ y: -6 }}
+                className="card"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  padding: "2.5rem 1.5rem",
+                  background: "rgba(255, 255, 255, 0.02)",
+                  transition: "background 0.3s ease, border-color 0.3s ease",
+                }}
+              >
+                {/* Circular Frame */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: "130px",
+                    height: "130px",
+                    borderRadius: "50%",
+                    marginBottom: "1.5rem",
+                    padding: "4px",
+                    background:
+                      "linear-gradient(135deg, rgba(255,140,0,0.3) 0%, rgba(255,255,255,0.05) 100%)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      background: "transparent",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain", // IMPORTANT FIX
+                        objectPosition: "center",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Name & Role */}
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: "1.125rem",
+                    color: "var(--color-text)",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {member.name}
+                </h3>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  {member.role}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

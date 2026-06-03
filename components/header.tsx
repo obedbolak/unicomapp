@@ -166,7 +166,12 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
         }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={`header${scrolled ? " scrolled" : ""}`}
-        style={{ zIndex: 50 }} // Keeps global positioning over normal grid layouts
+        style={{
+          zIndex: 50,
+          borderBottomColor: isVisible
+            ? "rgba(255, 255, 255, 0.06)"
+            : "transparent",
+        }}
       >
         <div className="header-content">
           {/* Logo */}
