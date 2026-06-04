@@ -77,11 +77,6 @@ export const metadata: Metadata = {
     images: [`${siteUrl}/images/og-image.jpg`],
   },
 
-  /* Facebook App ID */
-  other: {
-    "fb:app_id": "3207412259647848",
-  },
-
   /* App Icons Configuration */
   icons: {
     icon: "/favicon.ico",
@@ -106,6 +101,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <head>
+        <meta property="fb:app_id" content="3207412259647848" />
         {/* Clash Display for headings */}
         <link
           href="https://api.fontshare.com/v2/css?f[]=clash-display@700,800&display=swap"
