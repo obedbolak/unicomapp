@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     },
   },
 
-  /* Open Graph (Facebook, LinkedIn, WhatsApp) */
+  /* Open Graph (Facebook, Instagram, WhatsApp) */
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -59,10 +59,11 @@ export const metadata: Metadata = {
     siteName: "UnicomTeam",
     images: [
       {
-        url: "/images/og-image.jpg", // Create and place a 1200x630px image in public/images/
+        url: `${siteUrl}/images/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "UnicomTeam Premium Digital Infrastructure",
+        alt: "UnicomTeam — Premium Software Engineering",
+        type: "image/png",
       },
     ],
   },
@@ -73,7 +74,7 @@ export const metadata: Metadata = {
     title: "UnicomTeam — Premium Software Engineering",
     description:
       "Bespoke engineering, interactive design, and premium growth strategy handled by a single seamless team.",
-    images: ["/images/og-image.jpg"],
+    images: ["/images/og-image.png"],
   },
 
   /* App Icons Configuration */
