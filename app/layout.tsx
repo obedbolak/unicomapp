@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import Header from "@/components/header";
+import ChatBot from "@/components/ChatBot";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -113,6 +114,7 @@ export default function RootLayout({
         <div className="app-wrapper">
           <ClientLayout>{children}</ClientLayout>
         </div>
+        <ChatBot />
       </body>
     </html>
   );
