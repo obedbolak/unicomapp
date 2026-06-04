@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
+import ProjectsCarousel from "@/components/ProjectsCarousel";
+import TrainingSection from "@/components/TrainingSection";
 
 /* ============================================================================
    SCROLL PROGRESS BAR
@@ -93,6 +95,8 @@ export default function Page() {
     <main className="relative min-h-screen overflow-x-hidden">
       <ScrollProgress />
       <HeroSection />
+      <ProjectsCarousel />
+      <TrainingSection />
       <BackToTop />
     </main>
   );

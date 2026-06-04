@@ -244,12 +244,10 @@ body {
 
 /* ── Stats ───────────────────────────────────────────────────────────────── */
 .stats-container {
-  position: absolute;
-  bottom: 2rem;
-  left: 0;
-  right: 0;
+  position: static;
   padding-left: var(--padding-xs);
   padding-right: var(--padding-xs);
+  margin-top: 2.5rem;
 }
 
 .stats-content {
@@ -516,6 +514,14 @@ body {
   .stats-container {
     padding-left: var(--padding-md);
     padding-right: var(--padding-md);
+  }
+
+  .stats-container {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    margin-top: 0;
   }
 
   .section {
