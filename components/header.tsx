@@ -17,8 +17,8 @@ interface HeaderProps {
 const serviceLinks = [
   { label: "Software Solutions", slug: "software-solutions", icon: Code },
   { label: "Digital Marketing", slug: "digital-marketing", icon: Globe },
-  { label: "Mobile & Web Dev", slug: "mobile-web", icon: Smartphone },
-  { label: "Social Media", slug: "social-media", icon: Share2 },
+  { label: "Mobile & Web Dev", slug: "mobile-web-development", icon: Smartphone },
+  { label: "Social Media", slug: "social-media-management", icon: Share2 },
   { label: "Business Strategy", slug: "business-strategy", icon: TrendingUp },
 ];
 
@@ -223,7 +223,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                           <button
                             key={slug}
                             className="svc-dropdown-item"
-                            onClick={() => { router.push("/services"); setServicesOpen(false); }}
+                            onClick={() => { router.push(`/services/${slug}`); setServicesOpen(false); }}
                           >
                             <Icon size={14} style={{ flexShrink: 0, color: "var(--color-primary)", opacity: 0.7 }} />
                             {label}
@@ -341,7 +341,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                               <button
                                 key={slug}
                                 className="svc-dropdown-item"
-                                onClick={() => { router.push("/services"); setMenuOpen(false); }}
+                                onClick={() => { router.push(`/services/${slug}`); setMenuOpen(false); }}
                               >
                                 <Icon size={13} style={{ flexShrink: 0, color: "var(--color-primary)", opacity: 0.7 }} />
                                 {label}

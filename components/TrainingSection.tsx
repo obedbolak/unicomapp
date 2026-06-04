@@ -88,7 +88,7 @@ function PlanCard({ plan, index, isInView }: { plan: typeof plans[0]; index: num
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
       transition={{ delay: index * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       style={{
         borderRadius: "1.25rem",
@@ -386,7 +386,7 @@ export default function TrainingSection() {
     >
       <motion.div
         initial={{ opacity: 0, y: 24 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         style={{ textAlign: "center", marginBottom: "3.5rem" }}
       >

@@ -7,6 +7,7 @@ import { ChevronUp } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import ProjectsCarousel from "@/components/ProjectsCarousel";
 import TrainingSection from "@/components/TrainingSection";
+import FAQSection from "@/components/FAQSection";
 
 /* ============================================================================
    SCROLL PROGRESS BAR
@@ -97,6 +98,7 @@ export default function Page() {
       <HeroSection />
       <ProjectsCarousel />
       <TrainingSection />
+      <FAQSection />
       <BackToTop />
     </main>
   );

@@ -173,15 +173,36 @@ function SceneContent() {
 }
 
 export default function Scene3DOptimized() {
+  const [supported, setSupported] = useState(true);
+
+  useEffect(() => {
+    try {
+      const canvas = document.createElement("canvas");
+      const gl =
+        canvas.getContext("webgl") ||
+        canvas.getContext("experimental-webgl");
+      if (!gl) setSupported(false);
+    } catch {
+      setSupported(false);
+    }
+  }, []);
+
+  if (!supported) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse at 70% 20%, #001f54 0%, #000814 60%, #0d1b2e 100%)",
+        }}
+      />
+    );
+  }
+
   return (
     <Canvas
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-      }}
+      style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
       camera={{ position: [0, 0, 15], fov: 75 }}
       gl={{ antialias: true, alpha: true }}
     >

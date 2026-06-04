@@ -114,7 +114,7 @@ export default function ProjectsCarousel() {
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         style={{
           paddingLeft: "clamp(1rem, 5vw, 4rem)",
