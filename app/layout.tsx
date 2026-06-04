@@ -77,6 +77,11 @@ export const metadata: Metadata = {
     images: ["/images/og-image.png"],
   },
 
+  /* Facebook App ID */
+  other: {
+    "fb:app_id": "3207412259647848",
+  },
+
   /* App Icons Configuration */
   icons: {
     icon: "/favicon.ico",
