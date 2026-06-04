@@ -59,11 +59,11 @@ export const metadata: Metadata = {
     siteName: "UnicomTeam",
     images: [
       {
-        url: `${siteUrl}/images/og-image.png`,
+        url: `${siteUrl}/images/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: "UnicomTeam — Premium Software Engineering",
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title: "UnicomTeam — Premium Software Engineering",
     description:
       "Bespoke engineering, interactive design, and premium growth strategy handled by a single seamless team.",
-    images: ["/images/og-image.png"],
+    images: [`${siteUrl}/images/og-image.jpg`],
   },
 
   /* Facebook App ID */
