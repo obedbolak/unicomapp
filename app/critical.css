@@ -30,6 +30,7 @@ html {
   height: 100%;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -140,7 +141,7 @@ header {
 
 /* ── Text rendering optimization ────────────────────────────────– */
 body {
-  contain: layout style paint;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ── Prevent layout shift ────────────────────────────────────– */
@@ -166,6 +167,6 @@ button:hover {
 }
 
 /* ── Ensure no layout shift for scrollbar ─────────────────────– */
-html {
-  scrollbar-gutter: stable;
+@supports not (-webkit-touch-callout: none) {
+  html { scrollbar-gutter: stable; }
 }
