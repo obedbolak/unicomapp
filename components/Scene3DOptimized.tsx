@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Float, Stars } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 // ── Floating geometry shapes ─────────────────────────────────────────────
@@ -53,8 +52,6 @@ function FloatingShapesOptimized() {
         </mesh>
       </Float>
 
-      {/* FIX 3: Replaced MeshDistortMaterial (shader crashes on WebGL 1.0)
-          with plain meshStandardMaterial */}
       <Float speed={1} rotationIntensity={1} floatIntensity={2}>
         <mesh position={[0, 4, -12]}>
           <sphereGeometry args={[3, 16, 16]} />
@@ -91,12 +88,10 @@ function FloatingShapesOptimized() {
   );
 }
 
-// ── Mouse light — FIX 1: removed requestIdleCallback (not on iOS Safari < 16) ──
+// ── Mouse light — frame-skip throttle, no requestIdleCallback ───────────
 function MouseLightOptimized() {
   const lightRef = useRef<THREE.PointLight>(null);
   const { viewport, mouse } = useThree();
-
-  // Simple throttle via frame skipping — no requestIdleCallback needed
   const frameCount = useRef(0);
 
   useFrame(() => {
@@ -118,8 +113,8 @@ function MouseLightOptimized() {
   );
 }
 
-// ── Scene content ────────────────────────────────────────────────────────
-function SceneContent() {
+// ── Scene content — NO EffectComposer/Bloom on iOS ───────────────────────
+function SceneContent({ usePostProcessing }: { usePostProcessing: boolean }) {
   return (
     <>
       <ambientLight intensity={0.4} />
@@ -140,16 +135,70 @@ function SceneContent() {
         speed={1.2}
       />
       <FloatingShapesOptimized />
-      <EffectComposer>
-        <Bloom
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.9}
-          intensity={0.6}
-          height={300}
-        />
-      </EffectComposer>
+      {/* Bloom is skipped on iOS — framebuffer float extension restricted in iOS 18 */}
+      {usePostProcessing && <PostFX />}
     </>
   );
+}
+
+// ── Postprocessing isolated so it can be tree-shaken on iOS ─────────────
+function PostFX() {
+  // Dynamically imported so the module never even loads on iOS
+  const [Comps, setComps] = useState<{
+    EffectComposer: React.ComponentType<{ children: React.ReactNode }>;
+    Bloom: React.ComponentType<{
+      luminanceThreshold: number;
+      luminanceSmoothing: number;
+      intensity: number;
+      height: number;
+    }>;
+  } | null>(null);
+
+  useEffect(() => {
+    import("@react-three/postprocessing")
+      .then((mod) => {
+        setComps({
+          EffectComposer: mod.EffectComposer as React.ComponentType<{
+            children: React.ReactNode;
+          }>,
+          Bloom: mod.Bloom as React.ComponentType<{
+            luminanceThreshold: number;
+            luminanceSmoothing: number;
+            intensity: number;
+            height: number;
+          }>,
+        });
+      })
+      .catch(() => {
+        // postprocessing unavailable — silently skip
+      });
+  }, []);
+
+  if (!Comps) return null;
+  const { EffectComposer, Bloom } = Comps;
+
+  return (
+    <EffectComposer>
+      <Bloom
+        luminanceThreshold={0.2}
+        luminanceSmoothing={0.9}
+        intensity={0.6}
+        height={300}
+      />
+    </EffectComposer>
+  );
+}
+
+// ── Device detection ─────────────────────────────────────────────────────
+function detectDevice() {
+  if (typeof navigator === "undefined")
+    return { isIOS: false, isMobile: false };
+  const ua = navigator.userAgent;
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS 13+
+  const isMobile = isIOS || /Mobi|Android/i.test(ua);
+  return { isIOS, isMobile };
 }
 
 // ── WebGL capability check ───────────────────────────────────────────────
@@ -167,16 +216,16 @@ function checkWebGL(): boolean {
 
 // ── Main export ──────────────────────────────────────────────────────────
 export default function Scene3DOptimized() {
-  const [supported, setSupported] = useState<boolean | null>(null); // null = checking
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const [device, setDevice] = useState({ isIOS: false, isMobile: false });
 
   useEffect(() => {
+    setDevice(detectDevice());
     setSupported(checkWebGL());
   }, []);
 
-  // Still checking — render nothing (avoids flash)
   if (supported === null) return null;
 
-  // WebGL unavailable — render a static CSS gradient fallback
   if (!supported) {
     return (
       <div
@@ -193,7 +242,7 @@ export default function Scene3DOptimized() {
   return (
     <Canvas
       style={{
-        position: "fixed",
+        position: "absolute", // not "fixed" — parent div in ClientLayout is already fixed
         top: 0,
         left: 0,
         width: "100%",
@@ -201,23 +250,15 @@ export default function Scene3DOptimized() {
       }}
       camera={{ position: [0, 0, 15], fov: 75 }}
       gl={{
-        // FIX 2: antialias: false on mobile — low-end GPUs silently produce
-        // a black canvas with antialias: true. We detect mobile and disable it.
-        antialias:
-          typeof window !== "undefined" &&
-          !/Mobi|Android/i.test(navigator.userAgent),
+        antialias: !device.isMobile, // off on all mobile (Android fix carried over)
         alpha: true,
-        powerPreference: "low-power", // prevents GPU context loss on mobile
-        failIfMajorPerformanceCaveat: false, // don't fail on software renderers
-      }}
-      onCreated={({ gl }) => {
-        // If the renderer somehow ended up as a stub, bail out cleanly
-        if (!gl.getContext()) {
-          console.warn("[Scene3D] WebGL context lost after creation");
-        }
+        powerPreference: "default", // "low-power" suspends context on iOS
+        failIfMajorPerformanceCaveat: false,
+        preserveDrawingBuffer: false,
       }}
     >
-      <SceneContent />
+      {/* Bloom postprocessing disabled on iOS 18 — float framebuffer restricted */}
+      <SceneContent usePostProcessing={!device.isIOS} />
     </Canvas>
   );
 }
