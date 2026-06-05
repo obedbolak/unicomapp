@@ -2,20 +2,15 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, Stars, MeshDistortMaterial } from "@react-three/drei";
+import { Float, Stars } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 
-/**
- * OPTIMIZED: Use lower geometry complexity
- * Sphere: 64 segs → 16 segs (preserves visual quality at distance)
- * Torus: 128 segs → 32 segs
- */
+// ── Floating geometry shapes ─────────────────────────────────────────────
 function FloatingShapesOptimized() {
   const groupRef = useRef<THREE.Group>(null);
   const frameCount = useRef(0);
 
-  // Optimization: Only update on every 3rd frame instead of every frame
   useFrame((state) => {
     frameCount.current += 1;
     if (frameCount.current % 3 === 0 && groupRef.current) {
@@ -45,9 +40,9 @@ function FloatingShapesOptimized() {
           />
         </mesh>
       </Float>
+
       <Float speed={2} rotationIntensity={3} floatIntensity={4}>
         <mesh position={[-5, -3, -6]}>
-          {/* Reduced from 128 segs to 32 segs */}
           <torusKnotGeometry args={[1.2, 0.4, 32, 16]} />
           <meshStandardMaterial
             color="#3385ff"
@@ -57,14 +52,14 @@ function FloatingShapesOptimized() {
           />
         </mesh>
       </Float>
+
+      {/* FIX 3: Replaced MeshDistortMaterial (shader crashes on WebGL 1.0)
+          with plain meshStandardMaterial */}
       <Float speed={1} rotationIntensity={1} floatIntensity={2}>
         <mesh position={[0, 4, -12]}>
-          {/* Reduced from 64 segs to 16 segs */}
           <sphereGeometry args={[3, 16, 16]} />
-          <MeshDistortMaterial
+          <meshStandardMaterial
             color="#001f54"
-            distort={0.5}
-            speed={1.5}
             roughness={0.2}
             metalness={0.8}
             transparent
@@ -72,6 +67,7 @@ function FloatingShapesOptimized() {
           />
         </mesh>
       </Float>
+
       {cubePositions.map((pos, i) => (
         <Float
           key={i}
@@ -95,65 +91,49 @@ function FloatingShapesOptimized() {
   );
 }
 
-/**
- * OPTIMIZED: Defer mouse tracking with requestIdleCallback
- * Only track mouse when the GPU is idle
- */
+// ── Mouse light — FIX 1: removed requestIdleCallback (not on iOS Safari < 16) ──
 function MouseLightOptimized() {
   const lightRef = useRef<THREE.PointLight>(null);
   const { viewport, mouse } = useThree();
-  const shouldUpdate = useRef(true);
 
-  useEffect(() => {
-    const updateOnIdle = () => {
-      shouldUpdate.current = true;
-    };
-
-    // Request idle callback: only update when browser is not busy
-    const id = requestIdleCallback(updateOnIdle, { timeout: 50 });
-    return () => cancelIdleCallback(id);
-  }, []);
+  // Simple throttle via frame skipping — no requestIdleCallback needed
+  const frameCount = useRef(0);
 
   useFrame(() => {
-    if (lightRef.current && shouldUpdate.current) {
+    frameCount.current += 1;
+    if (lightRef.current && frameCount.current % 4 === 0) {
       lightRef.current.position.x = mouse.x * viewport.width * 0.6;
       lightRef.current.position.y = mouse.y * viewport.height * 0.6;
-      shouldUpdate.current = false;
     }
   });
 
   return (
-    <>
-      {/* eslint-disable-next-line react/no-unknown-property */}
-      <pointLight
-        ref={lightRef}
-        intensity={4}
-        color="#FF8C00"
-        distance={20}
-        decay={2}
-      />
-    </>
+    <pointLight
+      ref={lightRef}
+      intensity={4}
+      color="#FF8C00"
+      distance={20}
+      decay={2}
+    />
   );
 }
 
+// ── Scene content ────────────────────────────────────────────────────────
 function SceneContent() {
   return (
     <>
-      {/* eslint-disable-next-line react/no-unknown-property */}
       <ambientLight intensity={0.4} />
-      {/* eslint-disable-next-line react/no-unknown-property */}
       <directionalLight
         position={[10, 10, 5]}
         intensity={1.2}
         color="#3385ff"
       />
-      {/* eslint-disable-next-line react/no-unknown-property */}
       <pointLight position={[-10, -10, -5]} intensity={0.8} color="#FF8C00" />
       <MouseLightOptimized />
       <Stars
         radius={120}
         depth={60}
-        count={2000} // Reduced from 4000
+        count={2000}
         factor={5}
         saturation={0}
         fade
@@ -172,21 +152,31 @@ function SceneContent() {
   );
 }
 
+// ── WebGL capability check ───────────────────────────────────────────────
+function checkWebGL(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") ||
+      (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
+    return !!gl;
+  } catch {
+    return false;
+  }
+}
+
+// ── Main export ──────────────────────────────────────────────────────────
 export default function Scene3DOptimized() {
-  const [supported, setSupported] = useState(true);
+  const [supported, setSupported] = useState<boolean | null>(null); // null = checking
 
   useEffect(() => {
-    try {
-      const canvas = document.createElement("canvas");
-      const gl =
-        canvas.getContext("webgl") ||
-        canvas.getContext("experimental-webgl");
-      if (!gl) setSupported(false);
-    } catch {
-      setSupported(false);
-    }
+    setSupported(checkWebGL());
   }, []);
 
+  // Still checking — render nothing (avoids flash)
+  if (supported === null) return null;
+
+  // WebGL unavailable — render a static CSS gradient fallback
   if (!supported) {
     return (
       <div
@@ -202,9 +192,30 @@ export default function Scene3DOptimized() {
 
   return (
     <Canvas
-      style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      }}
       camera={{ position: [0, 0, 15], fov: 75 }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{
+        // FIX 2: antialias: false on mobile — low-end GPUs silently produce
+        // a black canvas with antialias: true. We detect mobile and disable it.
+        antialias:
+          typeof window !== "undefined" &&
+          !/Mobi|Android/i.test(navigator.userAgent),
+        alpha: true,
+        powerPreference: "low-power", // prevents GPU context loss on mobile
+        failIfMajorPerformanceCaveat: false, // don't fail on software renderers
+      }}
+      onCreated={({ gl }) => {
+        // If the renderer somehow ended up as a stub, bail out cleanly
+        if (!gl.getContext()) {
+          console.warn("[Scene3D] WebGL context lost after creation");
+        }
+      }}
     >
       <SceneContent />
     </Canvas>
