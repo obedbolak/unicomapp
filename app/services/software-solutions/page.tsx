@@ -1,12 +1,10 @@
-//app/services/software-solutions/page.tsx
-
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
-  Check,
   Code,
   Layers,
   Cloud,
@@ -97,6 +95,221 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
+// ─── Hero Slideshow Component ───────────────────────────────────────────────
+const slides = [
+  {
+    name: "Figma",
+    category: "Design & Prototyping",
+    // Code/design workspace shot from Unsplash
+    img: "https://images.unsplash.com/photo-1618788372246-79faff0c3742?w=900&q=80&auto=format&fit=crop",
+    accent: "#ff7a00",
+  },
+  {
+    name: "Notion",
+    category: "Workspace & Docs",
+    img: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=900&q=80&auto=format&fit=crop",
+    accent: "#e2c787",
+  },
+  {
+    name: "Linear",
+    category: "Issue Tracking",
+    img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80&auto=format&fit=crop",
+    accent: "#7eb3ff",
+  },
+  {
+    name: "Vercel",
+    category: "Deployment & CI/CD",
+    img: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&q=80&auto=format&fit=crop",
+    accent: "#56cfb2",
+  },
+  {
+    name: "Stripe",
+    category: "Payments & Billing",
+    img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=900&q=80&auto=format&fit=crop",
+    accent: "#c084fc",
+  },
+];
+
+function HeroSlideshow() {
+  const [current, setCurrent] = useState(0);
+  const [prev, setPrev] = useState<number | null>(null);
+  const [transitioning, setTransitioning] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPrev(current);
+      setTransitioning(true);
+      setTimeout(() => {
+        setCurrent((c) => (c + 1) % slides.length);
+        setTransitioning(false);
+        setPrev(null);
+      }, 700);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [current]);
+
+  const slide = slides[current];
+  const prevSlide = prev !== null ? slides[prev] : null;
+
+  return (
+    <div
+      style={{
+        width: "460px",
+        height: "360px",
+        flexShrink: 0,
+        borderRadius: "16px",
+        border: "1px solid rgba(255,255,255,0.1)",
+        overflow: "hidden",
+        position: "relative",
+        boxShadow: `0 0 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)`,
+      }}
+    >
+      {/* Previous slide fading out */}
+      {prevSlide && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${prevSlide.img})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: transitioning ? 0 : 1,
+            transition: "opacity 0.7s ease",
+            zIndex: 1,
+          }}
+        />
+      )}
+
+      {/* Current slide */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${slide.img})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: transitioning ? 0 : 1,
+          transition: "opacity 0.7s ease",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Dark gradient overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)",
+          zIndex: 3,
+        }}
+      />
+
+      {/* App label */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          left: 20,
+          zIndex: 4,
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "1.375rem",
+            fontWeight: 700,
+            color: "#fff",
+            lineHeight: 1.2,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {slide.name}
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            color: slide.accent,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          {slide.category}
+        </span>
+      </div>
+
+      {/* Dot indicators */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 24,
+          right: 20,
+          zIndex: 4,
+          display: "flex",
+          gap: 6,
+          alignItems: "center",
+        }}
+      >
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              if (i === current) return;
+              setPrev(current);
+              setTransitioning(true);
+              setTimeout(() => {
+                setCurrent(i);
+                setTransitioning(false);
+                setPrev(null);
+              }, 700);
+            }}
+            style={{
+              width: i === current ? 20 : 6,
+              height: 6,
+              borderRadius: 999,
+              background:
+                i === current ? slide.accent : "rgba(255,255,255,0.35)",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              transition: "all 0.4s ease",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Top-right badge */}
+      <div
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          zIndex: 4,
+          background: "rgba(0,0,0,0.45)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 8,
+          padding: "5px 10px",
+          fontFamily: "var(--font-display)",
+          fontSize: "0.6875rem",
+          fontWeight: 600,
+          color: "rgba(255,255,255,0.6)",
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+        }}
+      >
+        We Integrate With
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
 export default function SoftwareSolutionsPage() {
   const router = useRouter();
 
@@ -134,70 +347,97 @@ export default function SoftwareSolutionsPage() {
           <ArrowLeft size={16} /> Back to Services
         </motion.button>
 
-        {/* Hero */}
-        <motion.div {...fadeUp(0.05)} style={{ marginBottom: "4rem" }}>
-          <span className="section-eyebrow">Engineering</span>
-          <h1
-            className="section-heading"
-            style={{ color: "var(--color-text)", maxWidth: "700px" }}
-          >
-            Software Solutions Built for{" "}
-            <span className="gradient-text">Commercial Scale</span>
-          </h1>
-          <p
-            className="hero-subtitle"
-            style={{ maxWidth: "600px", marginBottom: "2rem" }}
-          >
-            We design and build tailored software architectures that handle
-            real-world load, integrate with your existing tools, and evolve with
-            your business.
-          </p>
-          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-            <a
-              href="/contact"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 1.5rem",
-                borderRadius: "0.75rem",
-                background: "var(--color-primary)",
-                color: "#000",
-                fontFamily: "var(--font-display)",
-                fontSize: "0.875rem",
-                fontWeight: 700,
-                textDecoration: "none",
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.opacity = "0.85")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.opacity = "1")
-              }
+        {/* ── Hero ── */}
+        <motion.div
+          {...fadeUp(0.05)}
+          style={{
+            marginBottom: "4rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "3rem",
+            flexWrap: "wrap",
+          }}
+        >
+          {/* Left — copy */}
+          <div style={{ flex: "1 1 320px", minWidth: 0 }}>
+            <span className="section-eyebrow">Engineering</span>
+            <h1
+              className="section-heading"
+              style={{ color: "var(--color-text)", maxWidth: "700px" }}
             >
-              Start a Project <ArrowUpRight size={16} />
-            </a>
-            <a
-              href="/projects"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 1.5rem",
-                borderRadius: "0.75rem",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-                fontFamily: "var(--font-display)",
-                fontSize: "0.875rem",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
+              Software Solutions Built for{" "}
+              <span className="gradient-text">Commercial Scale</span>
+            </h1>
+            <p
+              className="hero-subtitle"
+              style={{ maxWidth: "520px", marginBottom: "2rem" }}
             >
-              View Our Work
-            </a>
+              We design and build tailored software architectures that handle
+              real-world load, integrate with your existing tools, and evolve
+              with your business.
+            </p>
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <a
+                href="/contact"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "0.75rem",
+                  background: "var(--color-primary)",
+                  color: "#000",
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.875rem",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  transition: "opacity 0.2s",
+                }}
+                onMouseEnter={(e) =>
+                  ((e.currentTarget as HTMLAnchorElement).style.opacity =
+                    "0.85")
+                }
+                onMouseLeave={(e) =>
+                  ((e.currentTarget as HTMLAnchorElement).style.opacity = "1")
+                }
+              >
+                Start a Project <ArrowUpRight size={16} />
+              </a>
+              <a
+                href="/projects"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "0.75rem",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid var(--color-border)",
+                  color: "var(--color-text)",
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                View Our Work
+              </a>
+            </div>
           </div>
+
+          {/* Right — Slideshow */}
+          <motion.div
+            initial={{ opacity: 0, x: 32 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              flex: "0 0 auto",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <HeroSlideshow />
+          </motion.div>
         </motion.div>
 
         {/* Features Grid */}
@@ -296,7 +536,6 @@ export default function SoftwareSolutionsPage() {
                 {...fadeUp(i * 0.08)}
                 style={{ display: "flex", gap: "1.5rem", position: "relative" }}
               >
-                {/* Line */}
                 <div
                   style={{
                     display: "flex",
@@ -335,7 +574,6 @@ export default function SoftwareSolutionsPage() {
                     />
                   )}
                 </div>
-                {/* Content */}
                 <div
                   style={{
                     paddingBottom: i < process.length - 1 ? "1.75rem" : 0,

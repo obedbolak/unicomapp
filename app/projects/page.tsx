@@ -10,12 +10,12 @@ import {
 
 const projects = [
   {
-    title: "VIHIPEX Academy Portal",
+    title: "VIHIPEX University Portal",
     category: "Software Development",
     description:
-      "An advanced, fully bespoke school management infrastructure designed with stylized UI initials, real-time grading metrics, and high-security administrative controls.",
+      "An enterprise-grade university campus management infrastructure featuring secure student information systems, real-time grading metrics, and high-security administrative controls.",
     tags: ["Next.js", "TypeScript", "PostgreSQL", "Framer Motion"],
-    link: "#",
+    link: "https://vihipex.com",
   },
   {
     title: "E-Commerce Fluid Architecture",
@@ -24,6 +24,54 @@ const projects = [
       "A conversion-optimized custom store platform featuring serverless instant checkouts, high-fidelity responsive filters, and sub-100ms render speeds.",
     tags: ["React Native", "TailwindCSS", "Node.js", "GraphQL"],
     link: "#",
+  },
+  {
+    title: "Gracy Global Ecosystem",
+    category: "Mobile / Web App",
+    description:
+      "A multi-faceted community platform bridging telehealth counseling workflows, remote job acquisition pipelines, and digital skill education databases.",
+    tags: ["Next.js", "TypeScript", "TailwindCSS", "Real-time Chat"],
+    link: "https://gracyglobal.com",
+  },
+  {
+    title: "Legacy Language Center",
+    category: "Mobile / Web App",
+    description:
+      "A specialized exam preparation platform providing expert coaching for IELTS, TOEFL, and French proficiency exams with personalized progress tracking.",
+    tags: ["Next.js", "TypeScript", "TailwindCSS", "UI/UX Design"],
+    link: "https://legacylanguagecenter.com",
+  },
+  {
+    title: "Mr. A Tutoring Agency",
+    category: "Mobile / Web App",
+    description:
+      "A custom K-12 STEM educational engine supporting interactive booking workflows, teacher profiles, and highly targeted lesson scheduling.",
+    tags: ["React", "Node.js", "TailwindCSS", "Web Hosting"],
+    link: "https://mratutoring.com",
+  },
+  {
+    title: "Earth Design Engineering Ltd",
+    category: "Software Development",
+    description:
+      "An enterprise-grade engineering portal optimized for rapid portfolio loads, structural blueprints, and civil project telemetry.",
+    tags: ["Next.js", "TailwindCSS", "Framer Motion", "SEO Optimization"],
+    link: "https://earthdesignengineeringltd.com",
+  },
+  {
+    title: "Chicad-ES Architecture",
+    category: "Software Development",
+    description:
+      "A high-fidelity digital architecture portfolio showcasing minimalist spatial components, spatial design rendering layouts, and interactive case structures.",
+    tags: ["React", "TypeScript", "TailwindCSS", "Creative Coding"],
+    link: "https://chicad-es.com",
+  },
+  {
+    title: "Kingslife Enterprises",
+    category: "Digital Marketing & Strategy",
+    description:
+      "A premium strategic brand ecosystem designed for enterprise growth hacking, cross-network distribution layers, and high-yield asset delivery.",
+    tags: ["Automation", "Data Analytics", "Growth Hacking", "Webflow"],
+    link: "https://kingslifeenterprises.com",
   },
   {
     title: "OmniChannel Strategic Engine",
@@ -119,6 +167,10 @@ export default function ProjectsPage() {
             >
               <a
                 href={link}
+                target={link.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  link.startsWith("http") ? "noopener noreferrer" : undefined
+                }
                 className="card project-card-interactive"
                 style={{
                   display: "flex",
