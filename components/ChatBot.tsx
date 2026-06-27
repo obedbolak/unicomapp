@@ -10,32 +10,26 @@ interface Message {
   text: string;
 }
 
+interface ConversationTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
 const WELCOME: Message = {
   id: 0,
   role: "bot",
   text: "Hi! I'm UnicomBot 👋 How can I help you today?",
 };
 
-// Session ID persisted for the browser tab
-const DIALOGFLOW_SESSION_ID =
-  typeof window !== "undefined"
-    ? (sessionStorage.getItem("df_session") ??
-      (() => {
-        const id = crypto.randomUUID();
-        sessionStorage.setItem("df_session", id);
-        return id;
-      })())
-    : crypto.randomUUID();
-
-async function sendToDialogflow(text: string): Promise<string> {
+async function sendMessage(
+  text: string,
+  history: ConversationTurn[],
+): Promise<string> {
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: text,
-        sessionId: DIALOGFLOW_SESSION_ID,
-      }),
+      body: JSON.stringify({ message: text, history }),
     });
     const data = await res.json();
     return data.reply ?? "I didn't catch that. Could you rephrase?";
@@ -52,6 +46,15 @@ export default function ChatBot() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Build Anthropic-format history from messages (excluding the welcome message)
+  const buildHistory = (msgs: Message[]): ConversationTurn[] =>
+    msgs
+      .filter((m) => m.id !== 0)
+      .map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.text,
+      }));
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -63,10 +66,17 @@ export default function ChatBot() {
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
+
     setInput("");
-    setMessages((m) => [...m, { id: Date.now(), role: "user", text }]);
+
+    const userMessage: Message = { id: Date.now(), role: "user", text };
+    setMessages((m) => [...m, userMessage]);
     setLoading(true);
-    const reply = await sendToDialogflow(text);
+
+    // Pass conversation history (excluding the new user message, which is sent separately)
+    const history = buildHistory(messages);
+    const reply = await sendMessage(text, history);
+
     setMessages((m) => [
       ...m,
       { id: Date.now() + 1, role: "bot", text: reply },
@@ -273,6 +283,7 @@ export default function ChatBot() {
                       fontFamily: "var(--font-display)",
                       fontSize: "0.8125rem",
                       lineHeight: 1.5,
+                      whiteSpace: "pre-wrap",
                     }}
                   >
                     {msg.text}
