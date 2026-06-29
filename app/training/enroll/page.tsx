@@ -225,7 +225,7 @@ export default function EnrollPage() {
                   style={input}
                   value={data.phone}
                   onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+234 800 000 0000"
+                  placeholder="+237 6x xxx xxxx"
                 />
               </Field>
               <Field label="Country" error={errors.country}>
@@ -233,7 +233,7 @@ export default function EnrollPage() {
                   style={input}
                   value={data.country}
                   onChange={(e) => set("country", e.target.value)}
-                  placeholder="Nigeria"
+                  placeholder="e.g. Cameroon"
                 />
               </Field>
             </div>
@@ -244,7 +244,8 @@ export default function EnrollPage() {
             <div style={fieldset}>
               <Field label="Select Course" error={errors.course}>
                 <select
-                  style={input}
+                  className="enroll-select"
+                  style={selectStyle}
                   value={data.course}
                   onChange={(e) => set("course", e.target.value)}
                 >
@@ -265,12 +266,13 @@ export default function EnrollPage() {
               </Field>
               <Field label="Payment Plan">
                 <select
-                  style={input}
+                  className="enroll-select"
+                  style={selectStyle}
                   value={data.plan}
                   onChange={(e) => set("plan", e.target.value)}
                 >
                   {plans.map((p) => (
-                    <option key={p} value={p}>
+                    <option key={p} value={p} style={optionStyle}>
                       {p}
                     </option>
                   ))}
@@ -284,12 +286,13 @@ export default function EnrollPage() {
             <div style={fieldset}>
               <Field label="Your Current Level" error={errors.level}>
                 <select
-                  style={input}
+                  className="enroll-select"
+                  style={selectStyle}
                   value={data.level}
                   onChange={(e) => set("level", e.target.value)}
                 >
                   {levels.map((l) => (
-                    <option key={l} value={l}>
+                    <option key={l} value={l} style={optionStyle}>
                       {l}
                     </option>
                   ))}
@@ -547,4 +550,16 @@ const errStyle: React.CSSProperties = {
   fontFamily: "var(--font-display)",
   fontSize: "0.75rem",
   color: "#ef4444",
+};
+const selectStyle: React.CSSProperties = {
+  ...input,
+  background: "var(--color-surface)", // opaque, not the translucent rgba
+  appearance: "none",
+  WebkitAppearance: "none",
+  MozAppearance: "none",
+  cursor: "pointer",
+};
+const optionStyle: React.CSSProperties = {
+  background: "var(--color-surface)",
+  color: "var(--color-text)",
 };
