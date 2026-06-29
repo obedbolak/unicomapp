@@ -56,6 +56,8 @@ const PAGES_TO_SCRAPE: { label: string; url: string }[] = [
   { label: "FAQ", url: `${BASE}/faq` },
   { label: "Pricing", url: `${BASE}/pricing` },
   { label: "Trainings", url: `${BASE}/trainings` },
+  { label: "Internships", url: `${BASE}/trainings/enroll` },
+  { label: "Internships", url: `${BASE}/trainings/internships` },
 ];
 
 // ── In-memory cache (resets on server restart) ─────────────────────────────────
