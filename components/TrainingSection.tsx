@@ -6,7 +6,7 @@ import { Check, ArrowUpRight, ChevronDown } from "lucide-react";
 
 const plans = [
   {
-    duration: "3 Months",
+    duration: "3M",
     label: "Starter",
     price: "75,000",
     description:
@@ -25,7 +25,7 @@ const plans = [
     includes: ["Live sessions weekly", "1-on-1 mentorship", "Certificate of completion"],
   },
   {
-    duration: "6 Months",
+    duration: "6M",
     label: "Professional",
     price: "150,000",
     description:
@@ -48,7 +48,7 @@ const plans = [
     includes: ["Live sessions 3x/week", "Priority mentorship", "Portfolio review", "Certificate of completion"],
   },
   {
-    duration: "1 Year",
+    duration: "1Y",
     label: "Elite",
     price: "220,000",
     description:

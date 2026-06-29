@@ -3,11 +3,26 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Code, Globe, Smartphone, Share2, TrendingUp } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Code,
+  Globe,
+  Smartphone,
+  Share2,
+  TrendingUp,
+} from "lucide-react";
 import Button from "@/components/ui/button";
 import Image from "next/image";
 
-export type Page = "home" | "about" | "services" | "projects" | "contact";
+export type Page =
+  | "home"
+  | "about"
+  | "services"
+  | "projects"
+  | "training"
+  | "contact";
 
 interface HeaderProps {
   activePage?: Page;
@@ -17,7 +32,11 @@ interface HeaderProps {
 const serviceLinks = [
   { label: "Software Solutions", slug: "software-solutions", icon: Code },
   { label: "Digital Marketing", slug: "digital-marketing", icon: Globe },
-  { label: "Mobile & Web Dev", slug: "mobile-web-development", icon: Smartphone },
+  {
+    label: "Mobile & Web Dev",
+    slug: "mobile-web-development",
+    icon: Smartphone,
+  },
   { label: "Social Media", slug: "social-media-management", icon: Share2 },
   { label: "Business Strategy", slug: "business-strategy", icon: TrendingUp },
 ];
@@ -27,6 +46,7 @@ const navLinks: { label: string; page: Page }[] = [
   { label: "About Us", page: "about" },
   { label: "Services", page: "services" },
   { label: "Our Projects", page: "projects" },
+  { label: "Training", page: "training" },
   { label: "Contact", page: "contact" },
 ];
 
@@ -68,6 +88,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
       if (p.startsWith("/about")) return "about";
       if (p.startsWith("/services")) return "services";
       if (p.startsWith("/projects")) return "projects";
+      if (p.startsWith("/training")) return "training";
       if (p.startsWith("/contact")) return "contact";
       return "home";
     })();
@@ -150,13 +171,25 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
         animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -80 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={`header${scrolled ? " scrolled" : ""}`}
-        style={{ zIndex: 50, borderBottomColor: isVisible ? "rgba(255,255,255,0.06)" : "transparent" }}
+        style={{
+          zIndex: 50,
+          borderBottomColor: isVisible
+            ? "rgba(255,255,255,0.06)"
+            : "transparent",
+        }}
       >
         <div className="header-content">
           {/* Logo */}
           <button className="logo-btn" onClick={() => handleNav("home")}>
-            <Image src="/images/logo.png" alt="UnicomTeam Logo" width={32} height={26} />
-            <span className="logo-text">UNICOM<span className="gradient-text">TEAM</span></span>
+            <Image
+              src="/images/logo.png"
+              alt="UnicomTeam Logo"
+              width={32}
+              height={26}
+            />
+            <span className="logo-text">
+              UNICOM<span className="gradient-text">TEAM</span>
+            </span>
           </button>
 
           {/* Desktop Nav */}
@@ -174,16 +207,28 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                     className="nav-btn"
                     onClick={() => handleNav("services")}
                     style={{
-                      color: resolvedActive === "services" ? "var(--color-primary)" : "var(--color-text-muted)",
-                      display: "flex", alignItems: "center", gap: "0.25rem",
+                      color:
+                        resolvedActive === "services"
+                          ? "var(--color-primary)"
+                          : "var(--color-text-muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.25rem",
                     }}
                   >
                     {resolvedActive === "services" && (
                       <motion.span
                         layoutId="nav-pill"
                         className="absolute inset-0 rounded-lg"
-                        style={{ background: "rgba(255,140,0,0.1)", border: "1px solid var(--color-border-primary)" }}
-                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                        style={{
+                          background: "rgba(255,140,0,0.1)",
+                          border: "1px solid var(--color-border-primary)",
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span className="relative z-10">Services</span>
@@ -207,33 +252,70 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                         onMouseEnter={handleServicesMouseEnter}
                         onMouseLeave={handleServicesMouseLeave}
                         style={{
-                          position: "absolute", top: "calc(100% + 0.5rem)", left: "50%",
-                          transform: "translateX(-50%)", width: "220px",
-                          background: "rgba(0,8,20,0.9)", backdropFilter: "blur(20px)",
+                          position: "absolute",
+                          top: "calc(100% + 0.5rem)",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "220px",
+                          background: "rgba(0,8,20,0.9)",
+                          backdropFilter: "blur(20px)",
                           WebkitBackdropFilter: "blur(20px)",
                           border: "1px solid rgba(255,255,255,0.08)",
-                          borderRadius: "0.875rem", padding: "0.5rem",
+                          borderRadius: "0.875rem",
+                          padding: "0.5rem",
                           boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
                           zIndex: 60,
                         }}
                       >
                         {/* top glow line */}
-                        <div style={{ position: "absolute", top: 0, left: "15%", right: "15%", height: "1px", background: "linear-gradient(90deg,transparent,rgba(255,140,0,0.4),transparent)", borderRadius: "999px" }} />
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: "15%",
+                            right: "15%",
+                            height: "1px",
+                            background:
+                              "linear-gradient(90deg,transparent,rgba(255,140,0,0.4),transparent)",
+                            borderRadius: "999px",
+                          }}
+                        />
                         {serviceLinks.map(({ label, slug, icon: Icon }) => (
                           <button
                             key={slug}
                             className="svc-dropdown-item"
-                            onClick={() => { router.push(`/services/${slug}`); setServicesOpen(false); }}
+                            onClick={() => {
+                              router.push(`/services/${slug}`);
+                              setServicesOpen(false);
+                            }}
                           >
-                            <Icon size={14} style={{ flexShrink: 0, color: "var(--color-primary)", opacity: 0.7 }} />
+                            <Icon
+                              size={14}
+                              style={{
+                                flexShrink: 0,
+                                color: "var(--color-primary)",
+                                opacity: 0.7,
+                              }}
+                            />
                             {label}
                           </button>
                         ))}
-                        <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.25rem 0.25rem" }} />
+                        <div
+                          style={{
+                            height: "1px",
+                            background: "rgba(255,255,255,0.06)",
+                            margin: "0.25rem 0.25rem",
+                          }}
+                        />
                         <button
                           className="svc-dropdown-item"
-                          style={{ color: "var(--color-primary)", fontWeight: 700 }}
-                          onClick={() => { handleNav("services"); }}
+                          style={{
+                            color: "var(--color-primary)",
+                            fontWeight: 700,
+                          }}
+                          onClick={() => {
+                            handleNav("services");
+                          }}
                         >
                           View all services →
                         </button>
@@ -246,21 +328,38 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                   key={page}
                   onClick={() => handleNav(page)}
                   className="nav-btn"
-                  style={{ color: resolvedActive === page ? "var(--color-primary)" : "var(--color-text-muted)" }}
+                  style={{
+                    color:
+                      resolvedActive === page
+                        ? "var(--color-primary)"
+                        : "var(--color-text-muted)",
+                  }}
                 >
                   {resolvedActive === page && (
                     <motion.span
                       layoutId="nav-pill"
                       className="absolute inset-0 rounded-lg"
-                      style={{ background: "rgba(255,140,0,0.1)", border: "1px solid var(--color-border-primary)" }}
-                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                      style={{
+                        background: "rgba(255,140,0,0.1)",
+                        border: "1px solid var(--color-border-primary)",
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 35,
+                      }}
                     />
                   )}
                   <span className="relative z-10">{label}</span>
                 </button>
-              )
+              ),
             )}
-            <Button variant="primary" size="sm" className="ml-4" onClick={() => handleNav("contact")}>
+            <Button
+              variant="primary"
+              size="sm"
+              className="ml-4"
+              onClick={() => handleNav("contact")}
+            >
               Get Started
             </Button>
           </nav>
@@ -282,7 +381,9 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           <>
             <motion.div
               className="mobile-overlay"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
@@ -291,39 +392,98 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
               exit={{ opacity: 0, clipPath: "inset(0 0 100% 0 round 16px)" }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               style={{
-                position: "fixed", top: "calc(var(--header-height-mobile) + 0.5rem)",
-                left: "1rem", right: "1rem", zIndex: 40,
-                background: "rgba(0,8,20,0.65)", backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "16px", padding: "0.75rem",
-                boxShadow: "0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                position: "fixed",
+                top: "calc(var(--header-height-mobile) + 0.5rem)",
+                left: "1rem",
+                right: "1rem",
+                zIndex: 40,
+                background: "rgba(0,8,20,0.65)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "16px",
+                padding: "0.75rem",
+                boxShadow:
+                  "0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
-              <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: "1px", background: "linear-gradient(90deg,transparent,rgba(255,140,0,0.4),transparent)", borderRadius: "999px" }} />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "20%",
+                  right: "20%",
+                  height: "1px",
+                  background:
+                    "linear-gradient(90deg,transparent,rgba(255,140,0,0.4),transparent)",
+                  borderRadius: "999px",
+                }}
+              />
 
-              <nav style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <nav
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.25rem",
+                }}
+              >
                 {navLinks.map(({ label, page }, i) =>
                   page === "services" ? (
                     <div key={page}>
                       <motion.button
-                        initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.04, duration: 0.25 }}
                         onClick={() => setMobileServicesOpen((v) => !v)}
                         style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between",
-                          width: "100%", textAlign: "left", padding: "0.875rem 1rem",
-                          borderRadius: "10px", fontSize: "0.9375rem", fontWeight: 600,
-                          fontFamily: "var(--font-display)", cursor: "pointer",
-                          border: "none", transition: "background 0.2s, color 0.2s",
-                          color: resolvedActive === "services" ? "var(--color-primary)" : "rgba(255,255,255,0.75)",
-                          background: resolvedActive === "services" ? "rgba(255,140,0,0.1)" : "transparent",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          textAlign: "left",
+                          padding: "0.875rem 1rem",
+                          borderRadius: "10px",
+                          fontSize: "0.9375rem",
+                          fontWeight: 600,
+                          fontFamily: "var(--font-display)",
+                          cursor: "pointer",
+                          border: "none",
+                          transition: "background 0.2s, color 0.2s",
+                          color:
+                            resolvedActive === "services"
+                              ? "var(--color-primary)"
+                              : "rgba(255,255,255,0.75)",
+                          background:
+                            resolvedActive === "services"
+                              ? "rgba(255,140,0,0.1)"
+                              : "transparent",
                         }}
                       >
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                          <span style={{ width: "5px", height: "5px", borderRadius: "999px", flexShrink: 0, background: resolvedActive === "services" ? "var(--color-primary)" : "rgba(255,255,255,0.2)" }} />
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.75rem",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "5px",
+                              height: "5px",
+                              borderRadius: "999px",
+                              flexShrink: 0,
+                              background:
+                                resolvedActive === "services"
+                                  ? "var(--color-primary)"
+                                  : "rgba(255,255,255,0.2)",
+                            }}
+                          />
                           {label}
                         </span>
-                        <motion.span animate={{ rotate: mobileServicesOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <motion.span
+                          animate={{ rotate: mobileServicesOpen ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
                           <ChevronDown size={15} />
                         </motion.span>
                       </motion.button>
@@ -334,16 +494,32 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                            style={{ overflow: "hidden", paddingLeft: "1.5rem" }}
+                            transition={{
+                              duration: 0.25,
+                              ease: [0.22, 1, 0.36, 1],
+                            }}
+                            style={{
+                              overflow: "hidden",
+                              paddingLeft: "1.5rem",
+                            }}
                           >
                             {serviceLinks.map(({ label, slug, icon: Icon }) => (
                               <button
                                 key={slug}
                                 className="svc-dropdown-item"
-                                onClick={() => { router.push(`/services/${slug}`); setMenuOpen(false); }}
+                                onClick={() => {
+                                  router.push(`/services/${slug}`);
+                                  setMenuOpen(false);
+                                }}
                               >
-                                <Icon size={13} style={{ flexShrink: 0, color: "var(--color-primary)", opacity: 0.7 }} />
+                                <Icon
+                                  size={13}
+                                  style={{
+                                    flexShrink: 0,
+                                    color: "var(--color-primary)",
+                                    opacity: 0.7,
+                                  }}
+                                />
                                 {label}
                               </button>
                             ))}
@@ -354,28 +530,70 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                   ) : (
                     <motion.button
                       key={page}
-                      initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.04, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: i * 0.04,
+                        duration: 0.25,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
                       onClick={() => handleNav(page)}
                       style={{
-                        display: "flex", alignItems: "center", gap: "0.75rem",
-                        textAlign: "left", padding: "0.875rem 1rem", borderRadius: "10px",
-                        fontSize: "0.9375rem", fontWeight: 600, fontFamily: "var(--font-display)",
-                        cursor: "pointer", border: "none", transition: "background 0.2s, color 0.2s",
-                        color: resolvedActive === page ? "var(--color-primary)" : "rgba(255,255,255,0.75)",
-                        background: resolvedActive === page ? "rgba(255,140,0,0.1)" : "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        textAlign: "left",
+                        padding: "0.875rem 1rem",
+                        borderRadius: "10px",
+                        fontSize: "0.9375rem",
+                        fontWeight: 600,
+                        fontFamily: "var(--font-display)",
+                        cursor: "pointer",
+                        border: "none",
+                        transition: "background 0.2s, color 0.2s",
+                        color:
+                          resolvedActive === page
+                            ? "var(--color-primary)"
+                            : "rgba(255,255,255,0.75)",
+                        background:
+                          resolvedActive === page
+                            ? "rgba(255,140,0,0.1)"
+                            : "transparent",
                         width: "100%",
                       }}
                     >
-                      <span style={{ width: "5px", height: "5px", borderRadius: "999px", flexShrink: 0, background: resolvedActive === page ? "var(--color-primary)" : "rgba(255,255,255,0.2)", transition: "background 0.2s" }} />
+                      <span
+                        style={{
+                          width: "5px",
+                          height: "5px",
+                          borderRadius: "999px",
+                          flexShrink: 0,
+                          background:
+                            resolvedActive === page
+                              ? "var(--color-primary)"
+                              : "rgba(255,255,255,0.2)",
+                          transition: "background 0.2s",
+                        }}
+                      />
                       {label}
                     </motion.button>
-                  )
+                  ),
                 )}
 
-                <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.375rem 0.25rem" }} />
+                <div
+                  style={{
+                    height: "1px",
+                    background: "rgba(255,255,255,0.06)",
+                    margin: "0.375rem 0.25rem",
+                  }}
+                />
                 <div style={{ padding: "0.25rem" }}>
-                  <Button variant="primary" size="md" fullWidth onClick={() => handleNav("contact")}>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    onClick={() => handleNav("contact")}
+                  >
                     Get Started
                   </Button>
                 </div>

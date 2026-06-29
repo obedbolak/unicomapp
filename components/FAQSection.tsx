@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 
 const faqs = [
   {
@@ -46,9 +46,128 @@ const faqs = [
   },
 ];
 
+// ✅ Now receives openIndex and onToggle from parent
+function FAQItem({
+  faq,
+  index,
+  openIndex,
+  onToggle,
+}: {
+  faq: (typeof faqs)[0];
+  index: number;
+  openIndex: number | null;
+  onToggle: (index: number) => void;
+}) {
+  const open = openIndex === index; // ✅ open is derived, not local state
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.07,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      style={{
+        borderRadius: "0.875rem",
+        border: `1px solid ${open ? "rgba(255,140,0,0.25)" : "var(--color-border)"}`,
+        background: open ? "rgba(255,140,0,0.03)" : "var(--color-surface)",
+        overflow: "hidden",
+        transition: "border-color 0.25s, background 0.25s",
+      }}
+    >
+      {/* Question row */}
+      <button
+        onClick={() => onToggle(index)} // ✅ notify parent
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "1rem",
+          padding: "0.65rem 1rem",
+          margin: "1.25rem 1.5rem",
+          width: "calc(100% - 3rem)",
+          cursor: "pointer",
+          borderRadius: "0.75rem",
+          background: open ? "rgba(255,140,0,0.08)" : "rgba(255,255,255,0.04)",
+          border: `1px solid ${open ? "rgba(255,140,0,0.25)" : "var(--color-border)"}`,
+          color: open ? "var(--color-text)" : "var(--color-text-muted)",
+          fontFamily: "var(--font-display)",
+          fontSize: "0.8125rem",
+          fontWeight: 600,
+          textAlign: "left",
+          transition: "background 0.2s, border-color 0.2s, color 0.2s",
+        }}
+      >
+        <span>{faq.question}</span>
+        <span
+          style={{
+            flexShrink: 0,
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: open
+              ? "var(--color-primary)"
+              : "rgba(255,255,255,0.06)",
+            color: open ? "#000" : "var(--color-text-muted)",
+            fontSize: "1.1rem",
+            lineHeight: 1,
+            transform: open ? "rotate(45deg)" : "rotate(0deg)",
+            transition: "background 0.2s, color 0.2s, transform 0.25s",
+          }}
+        >
+          +
+        </span>
+      </button>
+
+      {/* Answer */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <p
+              style={{
+                padding: "0 1.5rem 1.25rem",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.875rem",
+                color: "var(--color-text-muted)",
+                lineHeight: 1.7,
+                margin: 0,
+              }}
+            >
+              {faq.answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 export default function FAQSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
+
+  // ✅ Single source of truth — only one item open at a time
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  // ✅ Clicking the same item again closes it (toggle), clicking another opens it
+  const handleToggle = (index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  };
+
+  const leftCol = faqs.filter((_, i) => i % 2 === 0);
+  const rightCol = faqs.filter((_, i) => i % 2 !== 0);
 
   return (
     <section
@@ -61,72 +180,6 @@ export default function FAQSection() {
         paddingRight: "clamp(1rem, 5vw, 4rem)",
       }}
     >
-      <style>{`
-        .faq-item {
-          border-radius: 0.875rem;
-          border: 1px solid var(--color-border);
-          background: var(--color-surface);
-          transition: border-color 0.25s, background 0.25s;
-          overflow: hidden;
-        }
-        .faq-item[open] {
-          border-color: rgba(255,140,0,0.25);
-          background: rgba(255,140,0,0.03);
-        }
-        .faq-summary {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          padding: 0.65rem 1rem;
-          margin: 1.25rem 1.5rem;
-          cursor: pointer;
-          list-style: none;
-          user-select: none;
-          border-radius: 0.75rem;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid var(--color-border);
-          color: var(--color-text-muted);
-          font-family: var(--font-display);
-          font-size: 0.8125rem;
-          font-weight: 600;
-          transition: background 0.2s;
-          position: relative;
-          z-index: 1;
-        }
-        .faq-item[open] .faq-summary {
-          background: rgba(255,140,0,0.08);
-          border-color: rgba(255,140,0,0.25);
-          color: var(--color-text);
-        }
-        .faq-icon {
-          flex-shrink: 0;
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255,255,255,0.06);
-          color: var(--color-text-muted);
-          font-size: 1.1rem;
-          line-height: 1;
-          transition: background 0.2s, color 0.2s, transform 0.25s;
-        }
-        .faq-item[open] .faq-icon {
-          background: var(--color-primary);
-          color: #000;
-          transform: rotate(45deg);
-        }
-        .faq-answer {
-          padding: 0 1.5rem 1.25rem;
-          font-family: var(--font-display);
-          font-size: 0.875rem;
-          color: var(--color-text-muted);
-          line-height: 1.7;
-        }
-      `}</style>
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -137,45 +190,71 @@ export default function FAQSection() {
         <span className="section-eyebrow">FAQ</span>
         <h2
           className="section-heading"
-          style={{ color: "var(--color-text)", fontSize: "2rem", marginBottom: "0.75rem" }}
+          style={{
+            color: "var(--color-text)",
+            fontSize: "2rem",
+            marginBottom: "0.75rem",
+          }}
         >
           Frequently Asked <span className="gradient-text">Questions</span>
         </h2>
         <p
           style={{
-            fontFamily: "var(--font-display)", fontSize: "0.9375rem",
-            color: "var(--color-text-muted)", maxWidth: "520px",
-            margin: "0 auto", lineHeight: 1.6,
+            fontFamily: "var(--font-display)",
+            fontSize: "0.9375rem",
+            color: "var(--color-text-muted)",
+            maxWidth: "520px",
+            margin: "0 auto",
+            lineHeight: 1.6,
           }}
         >
-          Everything you need to know about UnicomTeam, our services, and how we work.
+          Everything you need to know about UnicomTeam, our services, and how we
+          work.
         </p>
       </motion.div>
 
-      {/* FAQ grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      {/* Two columns */}
+      <div
         style={{
           maxWidth: "960px",
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 420px), 1fr))",
           gap: "0.75rem",
           alignItems: "start",
         }}
       >
-        {faqs.map((faq) => (
-          <details key={faq.question} className="faq-item" name="faq">
-            <summary className="faq-summary">
-              <span>{faq.question}</span>
-              <span className="faq-icon">+</span>
-            </summary>
-            <p className="faq-answer">{faq.answer}</p>
-          </details>
-        ))}
-      </motion.div>
+        {/* Left column */}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+        >
+          {leftCol.map((faq, i) => (
+            <FAQItem
+              key={faq.question}
+              faq={faq}
+              index={i * 2} // ✅ pass the real global index
+              openIndex={openIndex}
+              onToggle={handleToggle}
+            />
+          ))}
+        </div>
+
+        {/* Right column */}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+        >
+          {rightCol.map((faq, i) => (
+            <FAQItem
+              key={faq.question}
+              faq={faq}
+              index={i * 2 + 1} // ✅ pass the real global index
+              openIndex={openIndex}
+              onToggle={handleToggle}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Bottom CTA */}
       <motion.div
@@ -185,21 +264,41 @@ export default function FAQSection() {
         transition={{ duration: 0.5, delay: 0.3 }}
         style={{ textAlign: "center", marginTop: "2.5rem" }}
       >
-        <p style={{ fontFamily: "var(--font-display)", fontSize: "0.875rem", color: "var(--color-text-muted)", marginBottom: "0.75rem" }}>
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.875rem",
+            color: "var(--color-text-muted)",
+            marginBottom: "0.75rem",
+          }}
+        >
           Still have questions?
         </p>
         <a
           href="/contact"
           style={{
-            display: "inline-flex", alignItems: "center", gap: "0.5rem",
-            padding: "0.65rem 1.25rem", borderRadius: "0.75rem",
-            background: "rgba(255,140,0,0.1)", border: "1px solid rgba(255,140,0,0.25)",
-            color: "var(--color-primary)", fontFamily: "var(--font-display)",
-            fontSize: "0.875rem", fontWeight: 700, textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.65rem 1.25rem",
+            borderRadius: "0.75rem",
+            background: "rgba(255,140,0,0.1)",
+            border: "1px solid rgba(255,140,0,0.25)",
+            color: "var(--color-primary)",
+            fontFamily: "var(--font-display)",
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            textDecoration: "none",
             transition: "background 0.2s",
           }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,140,0,0.18)")}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,140,0,0.1)")}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLAnchorElement).style.background =
+              "rgba(255,140,0,0.18)")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLAnchorElement).style.background =
+              "rgba(255,140,0,0.1)")
+          }
         >
           Contact us →
         </a>

@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import Header from "@/components/header";
 import ChatBot from "@/components/ChatBot";
+import Footer from "@/components/Footer";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -114,6 +115,7 @@ export default function RootLayout({
         <div className="app-wrapper">
           <ClientLayout>{children}</ClientLayout>
         </div>
+        <Footer />
         <ChatBot />
       </body>
     </html>
