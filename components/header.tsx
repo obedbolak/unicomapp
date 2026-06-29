@@ -21,7 +21,7 @@ export type Page =
   | "about"
   | "services"
   | "projects"
-  | "training"
+  | "trainings"
   | "contact";
 
 interface HeaderProps {
@@ -46,7 +46,7 @@ const navLinks: { label: string; page: Page }[] = [
   { label: "About Us", page: "about" },
   { label: "Services", page: "services" },
   { label: "Our Projects", page: "projects" },
-  { label: "Training", page: "training" },
+  { label: "Trainings", page: "trainings" },
   { label: "Contact", page: "contact" },
 ];
 
@@ -88,7 +88,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
       if (p.startsWith("/about")) return "about";
       if (p.startsWith("/services")) return "services";
       if (p.startsWith("/projects")) return "projects";
-      if (p.startsWith("/training")) return "training";
+      if (p.startsWith("/trainings")) return "trainings";
       if (p.startsWith("/contact")) return "contact";
       return "home";
     })();

@@ -497,7 +497,7 @@ export default function TrainingSection() {
             </div>
 
             <a
-              href="/training/enroll"
+              href="/trainings/enroll"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -883,7 +883,7 @@ export default function TrainingSection() {
             money-back guarantee, zero risk.
           </p>
           <a
-            href="/training/enroll"
+            href="/trainings/enroll"
             style={{
               display: "inline-block",
               padding: "0.9rem 2rem",
