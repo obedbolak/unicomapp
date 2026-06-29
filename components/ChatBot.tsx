@@ -18,7 +18,7 @@ interface ConversationTurn {
 const WELCOME: Message = {
   id: 0,
   role: "bot",
-  text: "Hi! I'm UnicomBot 👋 How can I help you today?",
+  text: "Hi! I'm UnicomTeam Assistant 👋 How can I help you today?",
 };
 
 async function sendMessage(
@@ -195,7 +195,7 @@ export default function ChatBot() {
                     margin: 0,
                   }}
                 >
-                  UnicomBot
+                  UT Assistant
                 </p>
                 <p
                   style={{

@@ -55,6 +55,7 @@ const PAGES_TO_SCRAPE: { label: string; url: string }[] = [
   { label: "Blog", url: `${BASE}/blog` },
   { label: "FAQ", url: `${BASE}/faq` },
   { label: "Pricing", url: `${BASE}/pricing` },
+  { label: "Trainings", url: `${BASE}/trainings` },
 ];
 
 // ── In-memory cache (resets on server restart) ─────────────────────────────────
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
   const siteContent = await getSiteContext();
 
   const systemPrompt = `
-You are UnicomBot, the official AI assistant for UnicomTeam.com.
+You are UnicomTeam Assistant, the official AI assistant for UnicomTeam.com.
 You are friendly, concise, and professional.
 
 Use ONLY the website content below to answer questions about Unicom Team.
