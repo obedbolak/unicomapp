@@ -140,8 +140,8 @@ export default function ChatBot() {
         whileTap={{ scale: 0.94 }}
         style={{
           position: "fixed",
-          bottom: "1.75rem",
-          right: "1.75rem",
+          bottom: "clamp(0.875rem, 4vw, 1.75rem)",
+          right: "clamp(0.875rem, 4vw, 1.75rem)",
           zIndex: 100,
           width: "52px",
           height: "52px",
@@ -192,10 +192,12 @@ export default function ChatBot() {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: "fixed",
-              bottom: "5.5rem",
-              right: "1.75rem",
+              bottom: "calc(clamp(0.875rem, 4vw, 1.75rem) + 4rem)",
+              right: "clamp(0.5rem, 4vw, 1.75rem)",
+              left: "auto",
               zIndex: 100,
-              width: "clamp(300px, 90vw, 360px)",
+              width:
+                "min(360px, calc(100vw - (clamp(0.5rem, 4vw, 1.75rem) * 2)))",
               borderRadius: "1.25rem",
               background: "rgba(0,8,20,0.92)",
               backdropFilter: "blur(20px)",
@@ -372,11 +374,12 @@ export default function ChatBot() {
             {/* Input */}
             <div
               style={{
-                padding: "0.75rem 1rem",
+                padding: "0.75rem clamp(0.75rem, 3.5vw, 1rem)",
                 borderTop: "1px solid rgba(255,255,255,0.06)",
                 display: "flex",
-                gap: "0.5rem",
+                gap: "clamp(0.375rem, 2vw, 0.5rem)",
                 alignItems: "center",
+                width: "100%",
               }}
             >
               <input
@@ -387,13 +390,15 @@ export default function ChatBot() {
                 placeholder="Type a message…"
                 style={{
                   flex: 1,
+                  minWidth: 0,
+                  height: "42px",
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   borderRadius: "0.625rem",
-                  padding: "0.55rem 0.875rem",
+                  padding: "0 0.875rem",
                   color: "var(--color-text)",
                   fontFamily: "var(--font-display)",
-                  fontSize: "0.8125rem",
+                  fontSize: "16px",
                   outline: "none",
                 }}
               />
@@ -401,8 +406,8 @@ export default function ChatBot() {
                 onClick={send}
                 disabled={!input.trim() || loading}
                 style={{
-                  width: "36px",
-                  height: "36px",
+                  width: "42px",
+                  height: "42px",
                   borderRadius: "0.625rem",
                   flexShrink: 0,
                   background:
