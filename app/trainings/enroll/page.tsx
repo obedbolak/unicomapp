@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const courses = [
   "Frontend Development",
@@ -31,6 +31,8 @@ type FormData = {
   phone: string;
   country: string;
   course: string;
+  category: string;
+  price: string;
   cohort: string;
   level: string;
   goals: string;
@@ -44,6 +46,8 @@ const initialData: FormData = {
   phone: "",
   country: "",
   course: courses[0],
+  category: "",
+  price: "",
   cohort: "",
   level: levels[0],
   goals: "",
@@ -59,6 +63,23 @@ export default function EnrollPage() {
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [serverError, setServerError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const course = params.get("course")?.trim();
+    const category = params.get("category")?.trim() ?? "";
+    const price = params.get("price")?.trim() ?? "";
+
+    if (!course && !category && !price) return;
+
+    setData((current) => ({
+      ...current,
+      course: course || current.course,
+      category,
+      price,
+      level: levels.includes(category) ? category : current.level,
+    }));
+  }, []);
 
   const set = (key: keyof FormData, value: string | boolean) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -145,8 +166,17 @@ export default function EnrollPage() {
             </strong>
             .
           </p>
+          {(data.category || data.price) && (
+            <div style={{ ...summaryCard, marginTop: "1.25rem" }}>
+              <SummaryRow label="Course" value={data.course} />
+              {data.category && (
+                <SummaryRow label="Category" value={data.category} />
+              )}
+              {data.price && <SummaryRow label="Price" value={data.price} />}
+            </div>
+          )}
           <a
-            href="/training"
+            href="/trainings"
             style={{
               ...primaryBtn,
               display: "inline-block",
@@ -162,295 +192,422 @@ export default function EnrollPage() {
 
   return (
     <main className="section-page" style={pageStyle}>
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 1.5rem" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 1.5rem" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <h1 style={h1}>Enroll Now</h1>
-          <p style={muted}>Complete 4 quick steps to secure your seat.</p>
+          <p style={muted}>
+            Complete 4 quick steps to secure your seat
+            {data.course ? ` in ${data.course}` : ""}.
+          </p>
         </div>
 
-        {/* Progress */}
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem" }}>
-          {STEPS.map((label, i) => (
-            <div key={label} style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{
-                  height: 6,
-                  borderRadius: 999,
-                  background:
-                    i <= step
-                      ? "var(--color-primary)"
-                      : "rgba(255,255,255,0.12)",
-                  transition: "background 0.3s",
-                  marginBottom: "0.5rem",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.6875rem",
-                  fontWeight: 600,
-                  color:
-                    i <= step ? "var(--color-text)" : "var(--color-text-muted)",
-                }}
-              >
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr)",
+            gap: "1.25rem",
+          }}
+          className="enroll-layout"
+        >
+          <style>{`
+            @media (min-width: 900px) {
+              .enroll-layout {
+                grid-template-columns: minmax(0, 1fr) 300px !important;
+                align-items: start;
+              }
+            }
+          `}</style>
 
-        <div style={card}>
-          {/* Step 0 — details */}
-          {step === 0 && (
-            <div style={fieldset}>
-              <Field label="Full Name" error={errors.fullName}>
-                <input
-                  style={input}
-                  value={data.fullName}
-                  onChange={(e) => set("fullName", e.target.value)}
-                  placeholder="Jane Doe"
-                />
-              </Field>
-              <Field label="Email" error={errors.email}>
-                <input
-                  style={input}
-                  type="email"
-                  value={data.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  placeholder="jane@example.com"
-                />
-              </Field>
-              <Field label="Phone" error={errors.phone}>
-                <input
-                  style={input}
-                  value={data.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+237 6x xxx xxxx"
-                />
-              </Field>
-              <Field label="Country" error={errors.country}>
-                <input
-                  style={input}
-                  value={data.country}
-                  onChange={(e) => set("country", e.target.value)}
-                  placeholder="e.g. Cameroon"
-                />
-              </Field>
-            </div>
-          )}
-
-          {/* Step 1 — course */}
-          {step === 1 && (
-            <div style={fieldset}>
-              <Field label="Select Course" error={errors.course}>
-                <select
-                  className="enroll-select"
-                  style={selectStyle}
-                  value={data.course}
-                  onChange={(e) => set("course", e.target.value)}
-                >
-                  {courses.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Preferred Start" error={errors.cohort}>
-                <input
-                  style={input}
-                  type="month"
-                  value={data.cohort}
-                  onChange={(e) => set("cohort", e.target.value)}
-                />
-              </Field>
-              <Field label="Payment Plan">
-                <select
-                  className="enroll-select"
-                  style={selectStyle}
-                  value={data.plan}
-                  onChange={(e) => set("plan", e.target.value)}
-                >
-                  {plans.map((p) => (
-                    <option key={p} value={p} style={optionStyle}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-          )}
-
-          {/* Step 2 — goals */}
-          {step === 2 && (
-            <div style={fieldset}>
-              <Field label="Your Current Level" error={errors.level}>
-                <select
-                  className="enroll-select"
-                  style={selectStyle}
-                  value={data.level}
-                  onChange={(e) => set("level", e.target.value)}
-                >
-                  {levels.map((l) => (
-                    <option key={l} value={l} style={optionStyle}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="What do you want to achieve?" error={errors.goals}>
-                <textarea
-                  style={{ ...input, minHeight: 110, resize: "vertical" }}
-                  value={data.goals}
-                  onChange={(e) => set("goals", e.target.value)}
-                  placeholder="e.g. Land a frontend job within 6 months."
-                />
-              </Field>
-            </div>
-          )}
-
-          {/* Step 3 — review */}
-          {step === 3 && (
-            <div style={fieldset}>
-              <h3
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "1rem",
-                  fontWeight: 800,
-                  color: "var(--color-text)",
-                  margin: "0 0 0.5rem",
-                }}
-              >
-                Review your details
-              </h3>
-              {[
-                ["Name", data.fullName],
-                ["Email", data.email],
-                ["Phone", data.phone],
-                ["Country", data.country],
-                ["Course", data.course],
-                ["Preferred Start", data.cohort],
-                ["Payment Plan", data.plan],
-                ["Level", data.level],
-                ["Goals", data.goals],
-              ].map(([k, v]) => (
-                <div
-                  key={k}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    padding: "0.6rem 0",
-                    borderBottom: "1px solid var(--color-border)",
-                  }}
-                >
-                  <span
+          <div>
+            {/* Progress */}
+            <div
+              style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem" }}
+            >
+              {STEPS.map((label, i) => (
+                <div key={label} style={{ flex: 1, textAlign: "center" }}>
+                  <div
                     style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize: "0.8125rem",
-                      color: "var(--color-text-muted)",
+                      height: 6,
+                      borderRadius: 999,
+                      background:
+                        i <= step
+                          ? "var(--color-primary)"
+                          : "rgba(255,255,255,0.12)",
+                      transition: "background 0.3s",
+                      marginBottom: "0.5rem",
                     }}
-                  >
-                    {k}
-                  </span>
+                  />
                   <span
                     style={{
                       fontFamily: "var(--font-display)",
-                      fontSize: "0.8125rem",
+                      fontSize: "0.6875rem",
                       fontWeight: 600,
-                      color: "var(--color-text)",
-                      textAlign: "right",
+                      color:
+                        i <= step
+                          ? "var(--color-text)"
+                          : "var(--color-text-muted)",
                     }}
                   >
-                    {v || "—"}
+                    {label}
                   </span>
                 </div>
               ))}
-              <label
+            </div>
+
+            <div style={card}>
+              {/* Step 0 — details */}
+              {step === 0 && (
+                <div style={fieldset}>
+                  <Field label="Full Name" error={errors.fullName}>
+                    <input
+                      style={input}
+                      value={data.fullName}
+                      onChange={(e) => set("fullName", e.target.value)}
+                      placeholder="Jane Doe"
+                    />
+                  </Field>
+                  <Field label="Email" error={errors.email}>
+                    <input
+                      style={input}
+                      type="email"
+                      value={data.email}
+                      onChange={(e) => set("email", e.target.value)}
+                      placeholder="jane@example.com"
+                    />
+                  </Field>
+                  <Field label="Phone" error={errors.phone}>
+                    <input
+                      style={input}
+                      value={data.phone}
+                      onChange={(e) => set("phone", e.target.value)}
+                      placeholder="+237 6x xxx xxxx"
+                    />
+                  </Field>
+                  <Field label="Country" error={errors.country}>
+                    <input
+                      style={input}
+                      value={data.country}
+                      onChange={(e) => set("country", e.target.value)}
+                      placeholder="e.g. Cameroon"
+                    />
+                  </Field>
+                </div>
+              )}
+
+              {/* Step 1 — course */}
+              {step === 1 && (
+                <div style={fieldset}>
+                  <Field label="Select Course" error={errors.course}>
+                    <select
+                      className="enroll-select"
+                      style={selectStyle}
+                      value={data.course}
+                      onChange={(e) => set("course", e.target.value)}
+                    >
+                      {courses.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Preferred Start" error={errors.cohort}>
+                    <input
+                      style={input}
+                      type="month"
+                      value={data.cohort}
+                      onChange={(e) => set("cohort", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Payment Plan">
+                    <select
+                      className="enroll-select"
+                      style={selectStyle}
+                      value={data.plan}
+                      onChange={(e) => set("plan", e.target.value)}
+                    >
+                      {plans.map((p) => (
+                        <option key={p} value={p} style={optionStyle}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              )}
+
+              {/* Step 2 — goals */}
+              {step === 2 && (
+                <div style={fieldset}>
+                  <Field label="Your Current Level" error={errors.level}>
+                    <select
+                      className="enroll-select"
+                      style={selectStyle}
+                      value={data.level}
+                      onChange={(e) => set("level", e.target.value)}
+                    >
+                      {levels.map((l) => (
+                        <option key={l} value={l} style={optionStyle}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field
+                    label="What do you want to achieve?"
+                    error={errors.goals}
+                  >
+                    <textarea
+                      style={{ ...input, minHeight: 110, resize: "vertical" }}
+                      value={data.goals}
+                      onChange={(e) => set("goals", e.target.value)}
+                      placeholder="e.g. Land a frontend job within 6 months."
+                    />
+                  </Field>
+                </div>
+              )}
+
+              {/* Step 3 — review */}
+              {step === 3 && (
+                <div style={fieldset}>
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "1rem",
+                      fontWeight: 800,
+                      color: "var(--color-text)",
+                      margin: "0 0 0.5rem",
+                    }}
+                  >
+                    Review your details
+                  </h3>
+                  {[
+                    ["Name", data.fullName],
+                    ["Email", data.email],
+                    ["Phone", data.phone],
+                    ["Country", data.country],
+                    ["Course", data.course],
+                    ["Category", data.category],
+                    ["Price", data.price],
+                    ["Preferred Start", data.cohort],
+                    ["Payment Plan", data.plan],
+                    ["Level", data.level],
+                    ["Goals", data.goals],
+                  ].map(([k, v]) => (
+                    <div
+                      key={k}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "1rem",
+                        padding: "0.6rem 0",
+                        borderBottom: "1px solid var(--color-border)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-display)",
+                          fontSize: "0.8125rem",
+                          color: "var(--color-text-muted)",
+                        }}
+                      >
+                        {k}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-display)",
+                          fontSize: "0.8125rem",
+                          fontWeight: 600,
+                          color: "var(--color-text)",
+                          textAlign: "right",
+                        }}
+                      >
+                        {v || "-"}
+                      </span>
+                    </div>
+                  ))}
+                  <label
+                    style={{
+                      display: "flex",
+                      gap: "0.6rem",
+                      alignItems: "flex-start",
+                      marginTop: "1rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={data.agree}
+                      onChange={(e) => set("agree", e.target.checked)}
+                      style={{ marginTop: 3 }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "0.8125rem",
+                        color: "var(--color-text-muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      I agree to the{" "}
+                      <a
+                        href="/terms"
+                        style={{
+                          color: "var(--color-primary)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Terms
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="/privacy"
+                        style={{
+                          color: "var(--color-primary)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Privacy Policy
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  {errors.agree && <span style={errStyle}>{errors.agree}</span>}
+                  {status === "error" && (
+                    <p style={{ ...errStyle, marginTop: "0.75rem" }}>
+                      {serverError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Nav */}
+              <div
                 style={{
                   display: "flex",
-                  gap: "0.6rem",
-                  alignItems: "flex-start",
-                  marginTop: "1rem",
-                  cursor: "pointer",
+                  justifyContent: "space-between",
+                  gap: "1rem",
+                  marginTop: "1.75rem",
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={data.agree}
-                  onChange={(e) => set("agree", e.target.checked)}
-                  style={{ marginTop: 3 }}
-                />
-                <span
+                <button
+                  onClick={back}
+                  disabled={step === 0 || status === "submitting"}
                   style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "0.8125rem",
-                    color: "var(--color-text-muted)",
-                    lineHeight: 1.5,
+                    ...ghostBtn,
+                    opacity: step === 0 ? 0.4 : 1,
+                    cursor: step === 0 ? "not-allowed" : "pointer",
                   }}
                 >
-                  I agree to the{" "}
-                  <a href="/terms" style={{ color: "var(--color-primary)" }}>
-                    Terms
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy" style={{ color: "var(--color-primary)" }}>
-                    Privacy Policy
-                  </a>
-                  .
-                </span>
-              </label>
-              {errors.agree && <span style={errStyle}>{errors.agree}</span>}
-              {status === "error" && (
-                <p style={{ ...errStyle, marginTop: "0.75rem" }}>
-                  {serverError}
-                </p>
-              )}
+                  ← Back
+                </button>
+                {step < STEPS.length - 1 ? (
+                  <button onClick={next} style={primaryBtn}>
+                    Continue →
+                  </button>
+                ) : (
+                  <button
+                    onClick={submit}
+                    disabled={status === "submitting"}
+                    style={{
+                      ...primaryBtn,
+                      opacity: status === "submitting" ? 0.7 : 1,
+                    }}
+                  >
+                    {status === "submitting"
+                      ? "Submitting..."
+                      : "Confirm Enrollment"}
+                  </button>
+                )}
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Nav */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "1rem",
-              marginTop: "1.75rem",
-            }}
-          >
-            <button
-              onClick={back}
-              disabled={step === 0 || status === "submitting"}
+          <aside style={{ ...card, position: "sticky", top: "6rem" }}>
+            <p
               style={{
-                ...ghostBtn,
-                opacity: step === 0 ? 0.4 : 1,
-                cursor: step === 0 ? "not-allowed" : "pointer",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.6875rem",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-primary)",
+                marginBottom: "0.75rem",
               }}
             >
-              ← Back
-            </button>
-            {step < STEPS.length - 1 ? (
-              <button onClick={next} style={primaryBtn}>
-                Continue →
-              </button>
-            ) : (
-              <button
-                onClick={submit}
-                disabled={status === "submitting"}
-                style={{
-                  ...primaryBtn,
-                  opacity: status === "submitting" ? 0.7 : 1,
-                }}
-              >
-                {status === "submitting"
-                  ? "Submitting..."
-                  : "Confirm Enrollment"}
-              </button>
-            )}
-          </div>
+              Selected Program
+            </p>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "1.25rem",
+                fontWeight: 900,
+                color: "var(--color-text)",
+                lineHeight: 1.25,
+                margin: "0 0 1rem",
+              }}
+            >
+              {data.course}
+            </h2>
+            <div style={summaryCard}>
+              {data.category && (
+                <SummaryRow label="Category" value={data.category} />
+              )}
+              {data.price && <SummaryRow label="Price" value={data.price} />}
+              <SummaryRow label="Payment" value={data.plan} />
+              <SummaryRow label="Level" value={data.level} />
+            </div>
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.8125rem",
+                lineHeight: 1.6,
+                color: "var(--color-text-muted)",
+                marginTop: "1rem",
+              }}
+            >
+              After you confirm, your enrollment request is submitted
+              automatically for this course.
+            </p>
+          </aside>
         </div>
       </div>
     </main>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "1rem",
+        padding: "0.45rem 0",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "0.75rem",
+          color: "var(--color-text-muted)",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "0.75rem",
+          fontWeight: 800,
+          color: "var(--color-text)",
+          textAlign: "right",
+        }}
+      >
+        {value}
+      </span>
+    </div>
   );
 }
 
@@ -492,6 +649,12 @@ const card: React.CSSProperties = {
   background: "var(--color-surface)",
   border: "1px solid var(--color-border)",
   padding: "1.75rem",
+};
+const summaryCard: React.CSSProperties = {
+  borderRadius: "0.875rem",
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid var(--color-border)",
+  padding: "0.75rem 1rem",
 };
 const fieldset: React.CSSProperties = {
   display: "flex",

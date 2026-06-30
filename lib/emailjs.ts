@@ -12,6 +12,8 @@ export type EnrollmentPayload = {
   phone: string;
   country: string;
   course: string;
+  category?: string;
+  price?: string;
   cohort: string;
   level: string;
   goals: string;
@@ -31,6 +33,8 @@ function escape(s: string) {
 function buildTable(data: EnrollmentPayload) {
   const rows = [
     ["Course", data.course],
+    ...(data.category ? [["Category", data.category]] : []),
+    ...(data.price ? [["Price", data.price]] : []),
     ["Preferred Start", data.cohort],
     ["Payment Plan", data.plan],
     ["Level", data.level],

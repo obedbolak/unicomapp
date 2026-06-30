@@ -14,6 +14,8 @@ const programs = [
     description:
       "Master the fundamentals of the web. Go from zero to building fully responsive, interactive UIs with React and modern CSS.",
     duration: "3, 6 Months",
+    category: "Beginner",
+    price: "From 75,000 FCFA",
     sessions: "24 Live Sessions",
     mentorship: "1-on-1 Mentorship",
     outcome: "Portfolio + Certificate",
@@ -33,6 +35,8 @@ const programs = [
     description:
       "Build powerful server-side applications. Learn databases, authentication, REST API design, and deploy production-ready backends with confidence.",
     duration: "3, 6 Months",
+    category: "Intermediate",
+    price: "From 75,000 FCFA",
     sessions: "48 Live Sessions",
     mentorship: "Weekly Reviews",
     outcome: "Portfolio + Certificate",
@@ -52,6 +56,8 @@ const programs = [
     description:
       "Learn to design products people love. From wireframes to high-fidelity prototypes, build a designer's eye and a real-world portfolio.",
     duration: "3, 6 Months",
+    category: "Intermediate",
+    price: "From 75,000 FCFA",
     sessions: "20 Live Sessions",
     mentorship: "Portfolio Reviews",
     outcome: "Figma Portfolio + Certificate",
@@ -71,6 +77,8 @@ const programs = [
     description:
       "The complete track. Build, deploy, and scale full-stack web applications end-to-end with industry-grade tooling and battle-tested engineering practices.",
     duration: "3, 6 Months, 1Y",
+    category: "Advanced",
+    price: "From 75,000 FCFA",
     sessions: "96 Live Sessions",
     mentorship: "Dedicated Mentor",
     outcome: "Full Portfolio + Certificate",
@@ -97,6 +105,8 @@ const programs = [
     description:
       "Drive traffic, generate leads, and grow brands online. Master SEO, paid ads, content strategy, and data-driven marketing.",
     duration: "3, 6 Months",
+    category: "Beginner",
+    price: "From 75,000 FCFA",
     sessions: "18 Live Sessions",
     mentorship: "Strategy Reviews",
     outcome: "Campaign Portfolio + Certificate",
@@ -116,6 +126,8 @@ const programs = [
     description:
       "Build cross-platform mobile apps for iOS and Android. Learn React Native, state management, and ship real apps to the stores.",
     duration: "3, 6 Months, 1Y",
+    category: "Intermediate",
+    price: "From 75,000 FCFA",
     sessions: "40 Live Sessions",
     mentorship: "Weekly Reviews",
     outcome: "App Portfolio + Certificate",
@@ -135,6 +147,8 @@ const programs = [
     description:
       "Build native-feeling desktop applications for Windows, macOS, and Linux. Learn Electron and Tauri, packaging, auto-updates, and shipping installable apps.",
     duration: "3, 6 Months, 1Y",
+    category: "Advanced",
+    price: "From 75,000 FCFA",
     sessions: "36 Live Sessions",
     mentorship: "Weekly Reviews",
     outcome: "Desktop App Portfolio + Certificate",
@@ -159,6 +173,8 @@ const crashCourses = [
     description:
       "Design logos, flyers, social posts, and brand kits in weeks. Perfect for freelancers and side hustles.",
     duration: "1,2,4 Weeks",
+    category: "Crash Course",
+    price: "From 25,000 FCFA",
     sessions: "8 Live Sessions",
     icon: "🎨",
     accent: "rgba(236,72,153,0.12)",
@@ -171,6 +187,8 @@ const crashCourses = [
     description:
       "Go from beginner to spreadsheet pro. Master formulas, charts, pivot tables, and automation that employers love.",
     duration: "1,2,3 Weeks",
+    category: "Crash Course",
+    price: "From 25,000 FCFA",
     sessions: "6 Live Sessions",
     icon: "📊",
     accent: "rgba(34,197,94,0.12)",
@@ -183,6 +201,8 @@ const crashCourses = [
     description:
       "Become office-ready fast. Master the everyday tools every workplace expects you to know inside out.",
     duration: "1,2,4 Weeks",
+    category: "Crash Course",
+    price: "From 25,000 FCFA",
     sessions: "8 Live Sessions",
     icon: "🗂️",
     accent: "rgba(59,130,246,0.12)",
@@ -222,6 +242,24 @@ const trustLogos = [
   "MTN",
   "Microsoft",
 ];
+
+function enrollHref({
+  title,
+  category,
+  price,
+}: {
+  title: string;
+  category: string;
+  price: string;
+}) {
+  const params = new URLSearchParams({
+    course: title,
+    category,
+    price,
+  });
+
+  return `/trainings/enroll?${params.toString()}`;
+}
 
 export default function TrainingSection() {
   const [hovered, setHovered] = useState<number | null>(null);
@@ -496,34 +534,57 @@ export default function TrainingSection() {
               ))}
             </div>
 
-            <a
-              href="/trainings/enroll"
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5rem",
-                padding: "0.7rem 1rem",
-                borderRadius: "0.75rem",
-                background:
-                  hovered === i || p.featured
-                    ? "var(--color-primary)"
-                    : "rgba(255,255,255,0.05)",
-                border: `1px solid ${hovered === i || p.featured ? "var(--color-primary)" : "var(--color-border)"}`,
-                color:
-                  hovered === i || p.featured
-                    ? "#000"
-                    : "var(--color-text-muted)",
-                fontFamily: "var(--font-display)",
-                fontSize: "0.8125rem",
-                fontWeight: 700,
-                textDecoration: "none",
-                transition: "background 0.2s, color 0.2s",
+                gap: "0.75rem",
+                flexWrap: "wrap",
                 marginTop: "auto",
               }}
             >
-              Enroll Now →
-            </a>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.8125rem",
+                  fontWeight: 800,
+                  color: hovered === i || p.featured
+                    ? "var(--color-primary)"
+                    : "var(--color-text)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {p.price}
+              </span>
+              <a
+                href={enrollHref(p)}
+                style={{
+                  flex: "1 1 150px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  padding: "0.7rem 1rem",
+                  borderRadius: "0.75rem",
+                  background:
+                    hovered === i || p.featured
+                      ? "var(--color-primary)"
+                      : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${hovered === i || p.featured ? "var(--color-primary)" : "var(--color-border)"}`,
+                  color:
+                    hovered === i || p.featured
+                      ? "#000"
+                      : "var(--color-text-muted)",
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.8125rem",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  transition: "background 0.2s, color 0.2s",
+                }}
+              >
+                Enroll Now →
+              </a>
+            </div>
           </div>
         ))}
       </div>
@@ -682,26 +743,47 @@ export default function TrainingSection() {
                   📡 {c.sessions}
                 </span>
               </div>
-              <a
-                href="/contact"
+              <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  padding: "0.7rem 1rem",
-                  borderRadius: "0.75rem",
-                  background: "var(--color-primary)",
-                  border: "1px solid var(--color-primary)",
-                  color: "#000",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  textDecoration: "none",
+                  gap: "0.75rem",
+                  flexWrap: "wrap",
                   marginTop: "auto",
                 }}
               >
-                Enroll Now →
-              </a>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "0.8125rem",
+                    fontWeight: 800,
+                    color: "var(--color-text)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {c.price}
+                </span>
+                <a
+                  href={enrollHref(c)}
+                  style={{
+                    flex: "1 1 150px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0.7rem 1rem",
+                    borderRadius: "0.75rem",
+                    background: "var(--color-primary)",
+                    border: "1px solid var(--color-primary)",
+                    color: "#000",
+                    fontFamily: "var(--font-display)",
+                    fontSize: "0.8125rem",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                  }}
+                >
+                  Enroll Now →
+                </a>
+              </div>
             </div>
           ))}
         </div>
