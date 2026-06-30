@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Bot, Loader2 } from "lucide-react";
 
@@ -36,6 +37,52 @@ async function sendMessage(
   } catch {
     return "Something went wrong. Please try again.";
   }
+}
+
+function renderMessageText(text: string): ReactNode[] {
+  const linkPattern =
+    /(https?:\/\/[^\s]+|mailto:[^\s]+|tel:\+?[0-9]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s-]{7,}\d)/gi;
+  const linkTest =
+    /^(https?:\/\/[^\s]+|mailto:[^\s]+|tel:\+?[0-9]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s-]{7,}\d)$/i;
+
+  return text.split(linkPattern).map((part, index) => {
+    if (!linkTest.test(part)) return part;
+
+    const trailingPunctuation = part.match(/[.,!?)]$/)?.[0] ?? "";
+    const value = trailingPunctuation ? part.slice(0, -1) : part;
+    const isEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value);
+    const isPhone = /^\+\d[\d\s-]{7,}\d$/.test(value);
+    const href = isEmail
+      ? `mailto:${value}`
+      : isPhone
+        ? `tel:${value.replace(/[^\d+]/g, "")}`
+        : value;
+    const label = href.startsWith("mailto:")
+      ? href.replace("mailto:", "")
+      : href.startsWith("tel:")
+        ? value.replace("tel:", "")
+        : href;
+
+    return (
+      <span key={`${href}-${index}`}>
+        <a
+          href={href}
+          target={href.startsWith("http") ? "_blank" : undefined}
+          rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+          style={{
+            color: "inherit",
+            fontWeight: 700,
+            textDecoration: "underline",
+            textUnderlineOffset: "2px",
+            overflowWrap: "anywhere",
+          }}
+        >
+          {label}
+        </a>
+        {trailingPunctuation}
+      </span>
+    );
+  });
 }
 
 export default function ChatBot() {
@@ -286,7 +333,7 @@ export default function ChatBot() {
                       whiteSpace: "pre-wrap",
                     }}
                   >
-                    {msg.text}
+                    {renderMessageText(msg.text)}
                   </div>
                 </motion.div>
               ))}

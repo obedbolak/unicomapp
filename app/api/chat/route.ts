@@ -45,19 +45,78 @@ async function scrapePageText(url: string): Promise<string> {
 
 const BASE = "https://unicomteam.com";
 
+const SITE_KNOWLEDGE = `
+== OFFICIAL CUSTOMER SERVICE DETAILS ==
+Company: UnicomTeam
+Website: ${BASE}
+Email: contact@unicomteam.com
+Email link: mailto:contact@unicomteam.com
+Phone: +237 681 529 488
+Phone link: tel:+237681529488
+Location: Remote - worldwide
+Typical response time: within 24 hours
+
+Social links:
+- Instagram: https://www.instagram.com/unicomteam1
+- Facebook: https://www.facebook.com/share/18keP13dmW
+- TikTok: https://tiktok.com/@unicomteam0
+
+== BEST PAGES TO SHARE ==
+- Home: ${BASE}/
+- About UnicomTeam: ${BASE}/about
+- Services overview: ${BASE}/services
+- Software Solutions: ${BASE}/services/software-solutions
+- Digital Marketing: ${BASE}/services/digital-marketing
+- Mobile & Web Development: ${BASE}/services/mobile-web-development
+- Social Media Management: ${BASE}/services/social-media-management
+- Business Strategy: ${BASE}/services/business-strategy
+- Projects / case studies: ${BASE}/projects
+- Trainings: ${BASE}/trainings
+- Internship information: ${BASE}/trainings/internships
+- Training enrollment: ${BASE}/trainings/enroll
+- Contact form: ${BASE}/contact
+- Privacy Policy: ${BASE}/privacy
+- Terms of Service: ${BASE}/terms
+
+== WHAT UNICOMTEAM HELPS WITH ==
+UnicomTeam helps businesses, founders, students, and organizations with software solutions, web and mobile development, digital marketing, social media management, business strategy, trainings, and internships.
+
+Services:
+- Software Solutions: custom frontend/backend systems, APIs, cloud integration, observability, CI/CD, secure architecture. Link: ${BASE}/services/software-solutions
+- Digital Marketing: SEO, paid ads, audience research, campaign strategy, analytics, conversion optimization. Link: ${BASE}/services/digital-marketing
+- Mobile & Web Development: responsive websites, progressive web apps, mobile strategy, integrations, payment systems, authentication. Link: ${BASE}/services/mobile-web-development
+- Social Media Management: publishing calendars, creative direction, audience growth, influencer partnerships, reputation management. Link: ${BASE}/services/social-media-management
+- Business Strategy: market positioning, product strategy, digital transformation planning, revenue models, process optimization. Link: ${BASE}/services/business-strategy
+
+Training programs:
+- Frontend Development, Backend Development, UI/UX Design, Full-Stack Engineering, Digital Marketing, Mobile Development, Desktop App Development.
+- Crash courses: Graphics Design, Microsoft Excel, Microsoft Office.
+- Training durations vary by program and include options such as 1-4 week crash courses and 3, 6, or 12 month programs.
+- Send training questions to ${BASE}/trainings and enrollment requests to ${BASE}/trainings/enroll.
+`.trim();
+
 const PAGES_TO_SCRAPE: { label: string; url: string }[] = [
   { label: "Home", url: `${BASE}` },
   { label: "About", url: `${BASE}/about` },
   { label: "Services", url: `${BASE}/services` },
+  { label: "Software Solutions", url: `${BASE}/services/software-solutions` },
+  { label: "Digital Marketing", url: `${BASE}/services/digital-marketing` },
+  {
+    label: "Mobile & Web Development",
+    url: `${BASE}/services/mobile-web-development`,
+  },
+  {
+    label: "Social Media Management",
+    url: `${BASE}/services/social-media-management`,
+  },
+  { label: "Business Strategy", url: `${BASE}/services/business-strategy` },
+  { label: "Projects", url: `${BASE}/projects` },
   { label: "Contact", url: `${BASE}/contact` },
-  { label: "Team", url: `${BASE}/team` },
-  { label: "Portfolio", url: `${BASE}/portfolio` },
-  { label: "Blog", url: `${BASE}/blog` },
-  { label: "FAQ", url: `${BASE}/faq` },
-  { label: "Pricing", url: `${BASE}/pricing` },
   { label: "Trainings", url: `${BASE}/trainings` },
-  { label: "Internships", url: `${BASE}/trainings/enroll` },
   { label: "Internships", url: `${BASE}/trainings/internships` },
+  { label: "Training Enrollment", url: `${BASE}/trainings/enroll` },
+  { label: "Privacy", url: `${BASE}/privacy` },
+  { label: "Terms", url: `${BASE}/terms` },
 ];
 
 // ── In-memory cache (resets on server restart) ─────────────────────────────────
@@ -81,9 +140,14 @@ async function getSiteContext(): Promise<string> {
     }),
   );
 
-  cachedContext = results.filter(Boolean).join("\n");
+  const scrapedContext = results.filter(Boolean).join("\n");
+  cachedContext = `${SITE_KNOWLEDGE}\n\n${scrapedContext}`.trim();
   cacheTimestamp = now;
   return cachedContext;
+}
+
+function normalizeReply(reply: string): string {
+  return reply.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1: $2");
 }
 
 // ── API Route ──────────────────────────────────────────────────────────────────
@@ -102,14 +166,24 @@ export async function POST(req: Request) {
 
   const systemPrompt = `
 You are UnicomTeam Assistant, the official AI assistant for UnicomTeam.com.
-You are friendly, concise, and professional.
+You are friendly, concise, professional, and warmly human. Sound like a helpful customer-service representative, not a search result.
 
-Use ONLY the website content below to answer questions about Unicom Team.
-- If asked for contact info, phone numbers, emails, or addresses — find them in the content and share them directly.
-- If the answer is not found in the provided content, say: "For the most accurate info, please reach out via the Contact page at https://unicomteam.com/contact"
+Use the website content below for facts about UnicomTeam. You may also answer simple general questions about technology, programming, design, marketing, business, internships, and learning paths when they are related to UnicomTeam services or trainings.
+- For related general questions, answer the question first in simple beginner-friendly language, then connect it naturally to the relevant UnicomTeam service or training page.
+- Example: if asked "what is programming?", explain that programming is writing instructions a computer can follow to build websites, apps, automations, and software. Then invite them to explore training at ${BASE}/trainings or software services at ${BASE}/services/software-solutions.
+- For questions unrelated to UnicomTeam's work, politely redirect to UnicomTeam services, trainings, or contact.
+- If asked for contact info, phone numbers, emails, social media, or location, share the official details directly.
+- Always include the most relevant clickable URL when directing someone to a page.
+- For service questions, briefly explain the service and link to the matching service page.
+- For project or portfolio questions, link to ${BASE}/projects.
+- For training questions, link to ${BASE}/trainings. For enrollment, link to ${BASE}/trainings/enroll.
+- For pricing, quotes, timelines, or custom project scope, explain that pricing depends on the work and invite them to contact UnicomTeam at ${BASE}/contact, contact@unicomteam.com, or +237 681 529 488.
+- If a visitor seems ready to buy, enroll, book, or start, ask for the most useful next detail: their name, email/phone, project type, budget, timeline, or preferred course.
+- If the answer is not found in the provided content, say: "For the most accurate info, please reach out via the Contact page: ${BASE}/contact"
 - Never make up or assume information not present in the content.
-- Keep responses short, clear, and helpful.
+- Keep responses short, clear, and helpful: usually 2-5 sentences.
 - When listing multiple items, use short bullet points.
+- Do not use markdown link syntax like [text](url). Write full URLs in plain text so the chat can make them clickable.
 
 WEBSITE CONTENT:
 ${siteContent}
@@ -138,10 +212,17 @@ ${siteContent}
     },
   );
 
+  if (!response.ok) {
+    return NextResponse.json({
+      reply:
+        "I could not reach the assistant service right now. You can still contact UnicomTeam at contact@unicomteam.com, +237 681 529 488, or https://unicomteam.com/contact",
+    });
+  }
+
   const data = await response.json();
   const reply =
     data.output?.[0]?.content?.[0]?.text ??
     "I couldn't generate a response. Please try again.";
 
-  return NextResponse.json({ reply });
+  return NextResponse.json({ reply: normalizeReply(reply) });
 }
