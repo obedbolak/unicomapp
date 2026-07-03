@@ -15,6 +15,32 @@ const courses = [
   "Microsoft Office (Crash Course)",
 ];
 
+const internshipRoles = [
+  "Frontend Engineering Intern",
+  "Backend Engineering Intern",
+  "UI/UX Design Intern",
+  "Digital Marketing Intern",
+  "Mobile Development Intern",
+  "Desktop App Dev Intern",
+];
+type FormData = {
+  fullName: string;
+  email: string;
+  phone: string;
+  country: string;
+  type: "training" | "internship"; // ← NEW
+  course: string;
+  category: string;
+  price: string;
+  months: number;
+  cohort: string;
+  level: string;
+  goals: string;
+  portfolio: string; // ← NEW (CV / GitHub / portfolio link)
+  plan: string;
+  agree: boolean;
+};
+
 const levels = [
   "Complete Beginner",
   "Some Experience",
@@ -25,29 +51,17 @@ const plans = ["Pay in Full", "Monthly Installments"];
 
 const STEPS = ["Your Details", "Choose Course", "Goals", "Review"];
 
-type FormData = {
-  fullName: string;
-  email: string;
-  phone: string;
-  country: string;
-  course: string;
-  category: string;
-  price: string;
-  cohort: string;
-  level: string;
-  goals: string;
-  plan: string;
-  agree: boolean;
-};
-
 const initialData: FormData = {
   fullName: "",
   email: "",
   phone: "",
   country: "",
   course: courses[0],
+  type: "training", // default to training
+  portfolio: "", // default empty
   category: "",
   price: "",
+  months: 3,
   cohort: "",
   level: levels[0],
   goals: "",
@@ -63,28 +77,51 @@ export default function EnrollPage() {
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [serverError, setServerError] = useState("");
+  const isInternship = data.type === "internship";
+  const options = isInternship ? internshipRoles : courses;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const type =
+      params.get("type") === "internship" ? "internship" : "training";
     const course = params.get("course")?.trim();
     const category = params.get("category")?.trim() ?? "";
     const price = params.get("price")?.trim() ?? "";
 
-    if (!course && !category && !price) return;
-
     setData((current) => ({
       ...current,
-      course: course || current.course,
+      type,
+      course:
+        course || (type === "internship" ? internshipRoles[0] : current.course),
       category,
       price,
       level: levels.includes(category) ? category : current.level,
     }));
   }, []);
 
-  const set = (key: keyof FormData, value: string | boolean) => {
+  const set = (key: keyof FormData, value: string | boolean | number) => {
     setData((d) => ({ ...d, [key]: value }));
     setErrors((e) => ({ ...e, [key]: "" }));
   };
+
+  // compute price when type or months changes
+  useEffect(() => {
+    const months = Number(data.months || 0) || 0;
+    if (data.type === "internship") {
+      // internships: 15k per month
+      const per = 15;
+      const total = months * per;
+      const price = `${months} month${months > 1 ? "s" : ""} @ ${per}k/month — ${total}k`;
+      if (price !== data.price) set("price", price);
+    } else {
+      // trainings: fixed tiers
+      const map: Record<number, string> = { 3: "75k", 6: "150k", 12: "220k" };
+      const tier = map[months] || "Custom";
+      const price = `${tier}`;
+      if (price !== data.price) set("price", price);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.months, data.type]);
 
   const validateStep = () => {
     const e: Record<string, string> = {};
@@ -155,12 +192,13 @@ export default function EnrollPage() {
           }}
         >
           <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎉</div>
-          <h1 style={{ ...h1, marginBottom: "0.75rem" }}>You're enrolled!</h1>
+          <h1>{isInternship ? "Application received!" : "You're enrolled!"}</h1>
           <p style={muted}>
             Thanks {data.fullName.split(" ")[0]}! We've sent a confirmation
-            email to{" "}
-            <strong style={{ color: "var(--color-text)" }}>{data.email}</strong>{" "}
-            with your next steps for{" "}
+            email to <strong>{data.email}</strong>{" "}
+            {isInternship
+              ? "— we'll review your application and reach out to schedule a short interview for "
+              : "with your next steps for "}
             <strong style={{ color: "var(--color-primary)" }}>
               {data.course}
             </strong>
@@ -176,14 +214,14 @@ export default function EnrollPage() {
             </div>
           )}
           <a
-            href="/trainings"
+            href={isInternship ? "/trainings/internships" : "/trainings"}
             style={{
               ...primaryBtn,
               display: "inline-block",
               marginTop: "1.5rem",
             }}
           >
-            Back to Programs
+            {isInternship ? "Back to Internships" : "Back to Programs"}{" "}
           </a>
         </div>
       </main>
@@ -194,10 +232,13 @@ export default function EnrollPage() {
     <main className="section-page" style={pageStyle}>
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 1.5rem" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1 style={h1}>Enroll Now</h1>
+          <h1 style={h1}>
+            {isInternship ? "Apply for Internship" : "Enroll Now"}
+          </h1>
           <p style={muted}>
-            Complete 4 quick steps to secure your seat
-            {data.course ? ` in ${data.course}` : ""}.
+            Complete 4 quick steps to{" "}
+            {isInternship ? "submit your application" : "secure your seat"}
+            {data.course ? ` for ${data.course}` : ""}.
           </p>
         </div>
 
@@ -297,20 +338,35 @@ export default function EnrollPage() {
               {/* Step 1 — course */}
               {step === 1 && (
                 <div style={fieldset}>
-                  <Field label="Select Course" error={errors.course}>
+                  <Field
+                    label={isInternship ? "Select Role" : "Select Course"}
+                    error={errors.course}
+                  >
                     <select
                       className="enroll-select"
                       style={selectStyle}
                       value={data.course}
                       onChange={(e) => set("course", e.target.value)}
                     >
-                      {courses.map((c) => (
+                      {options.map((c) => (
                         <option key={c} value={c}>
                           {c}
                         </option>
                       ))}
                     </select>
                   </Field>
+                    <Field label="Duration (months)">
+                      <select
+                        className="enroll-select"
+                        style={selectStyle}
+                        value={String(data.months)}
+                        onChange={(e) => set("months", Number(e.target.value))}
+                      >
+                        <option value={3}>3 months</option>
+                        <option value={6}>6 months</option>
+                        <option value={12}>12 months</option>
+                      </select>
+                    </Field>
                   <Field label="Preferred Start" error={errors.cohort}>
                     <input
                       style={input}
@@ -319,23 +375,24 @@ export default function EnrollPage() {
                       onChange={(e) => set("cohort", e.target.value)}
                     />
                   </Field>
-                  <Field label="Payment Plan">
-                    <select
-                      className="enroll-select"
-                      style={selectStyle}
-                      value={data.plan}
-                      onChange={(e) => set("plan", e.target.value)}
-                    >
-                      {plans.map((p) => (
-                        <option key={p} value={p} style={optionStyle}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                  {!isInternship && (
+                    <Field label="Payment Plan">
+                      <select
+                        className="enroll-select"
+                        style={selectStyle}
+                        value={data.plan}
+                        onChange={(e) => set("plan", e.target.value)}
+                      >
+                        {plans.map((p) => (
+                          <option key={p} value={p} style={optionStyle}>
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
                 </div>
               )}
-
               {/* Step 2 — goals */}
               {step === 2 && (
                 <div style={fieldset}>
@@ -353,6 +410,19 @@ export default function EnrollPage() {
                       ))}
                     </select>
                   </Field>
+                  {isInternship && (
+                    <Field
+                      label="Portfolio / GitHub / CV Link"
+                      error={errors.portfolio}
+                    >
+                      <input
+                        style={input}
+                        value={data.portfolio}
+                        onChange={(e) => set("portfolio", e.target.value)}
+                        placeholder="https://github.com/yourname"
+                      />
+                    </Field>
+                  )}
                   <Field
                     label="What do you want to achieve?"
                     error={errors.goals}
@@ -382,17 +452,23 @@ export default function EnrollPage() {
                     Review your details
                   </h3>
                   {[
+                    ["Type", isInternship ? "Internship" : "Training"],
                     ["Name", data.fullName],
                     ["Email", data.email],
                     ["Phone", data.phone],
                     ["Country", data.country],
-                    ["Course", data.course],
-                    ["Category", data.category],
-                    ["Price", data.price],
+                    [isInternship ? "Role" : "Course", data.course],
+                    ...(isInternship
+                      ? [["Portfolio", data.portfolio], ["Duration", `${data.months} months`]]
+                      : [
+                          ["Category", data.category],
+                          ["Price", data.price],
+                          ["Payment Plan", data.plan],
+                          ["Duration", `${data.months} months`],
+                        ]),
                     ["Preferred Start", data.cohort],
-                    ["Payment Plan", data.plan],
                     ["Level", data.level],
-                    ["Goals", data.goals],
+                    [isInternship ? "Motivation" : "Goals", data.goals],
                   ].map(([k, v]) => (
                     <div
                       key={k}
@@ -516,7 +592,9 @@ export default function EnrollPage() {
                   >
                     {status === "submitting"
                       ? "Submitting..."
-                      : "Confirm Enrollment"}
+                      : isInternship
+                        ? "Submit Application"
+                        : "Confirm Enrollment"}
                   </button>
                 )}
               </div>
@@ -535,7 +613,7 @@ export default function EnrollPage() {
                 marginBottom: "0.75rem",
               }}
             >
-              Selected Program
+              {isInternship ? "Selected Role" : "Selected Program"}{" "}
             </p>
             <h2
               style={{
@@ -553,8 +631,13 @@ export default function EnrollPage() {
               {data.category && (
                 <SummaryRow label="Category" value={data.category} />
               )}
-              {data.price && <SummaryRow label="Price" value={data.price} />}
-              <SummaryRow label="Payment" value={data.plan} />
+              {!isInternship && data.price && (
+                <SummaryRow label="Price" value={data.price} />
+              )}
+              {!isInternship && (
+                <SummaryRow label="Payment" value={data.plan} />
+              )}
+              {data.months && <SummaryRow label="Duration" value={`${data.months} months`} />}
               <SummaryRow label="Level" value={data.level} />
             </div>
             <p

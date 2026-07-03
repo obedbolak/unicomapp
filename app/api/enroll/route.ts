@@ -11,6 +11,7 @@ function validate(body: Partial<EnrollmentPayload>) {
     "country",
     "course",
     "cohort",
+    "months",
     "level",
     "goals",
     "plan",

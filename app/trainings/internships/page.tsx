@@ -80,7 +80,11 @@ const internships = [
     paid: true,
   },
 ];
-
+function applyHref(role?: { title: string }) {
+  const params = new URLSearchParams({ type: "internship" });
+  if (role) params.set("course", role.title);
+  return `/trainings/enroll?${params.toString()}`;
+}
 const perks = [
   {
     icon: "🚀",
@@ -226,7 +230,7 @@ export default function InternshipsPage() {
               View Open Roles
             </a>
             <a
-              href="/trainings/enroll"
+              href={applyHref()}
               style={{
                 ...ghostBtn,
                 display: "inline-block",
@@ -341,7 +345,7 @@ export default function InternshipsPage() {
                 <span style={tag}>👥 {role.slots}</span>
               </div>
               <a
-                href="/training/enroll"
+                href={applyHref(role)}
                 style={{
                   ...primaryBtn,
                   display: "flex",
@@ -511,7 +515,7 @@ export default function InternshipsPage() {
             Apply today, slots are limited and fill up fast each cohort.
           </p>
           <a
-            href="/training/enroll"
+            href={applyHref()}
             style={{
               display: "inline-block",
               padding: "0.9rem 2rem",

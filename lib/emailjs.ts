@@ -14,6 +14,7 @@ export type EnrollmentPayload = {
   course: string;
   category?: string;
   price?: string;
+  months?: number;
   cohort: string;
   level: string;
   goals: string;
@@ -34,6 +35,7 @@ function buildTable(data: EnrollmentPayload) {
   const rows = [
     ["Course", data.course],
     ...(data.category ? [["Category", data.category]] : []),
+    ...(data.months ? [["Duration", `${data.months} months`]] : []),
     ...(data.price ? [["Price", data.price]] : []),
     ["Preferred Start", data.cohort],
     ["Payment Plan", data.plan],
@@ -46,7 +48,7 @@ function buildTable(data: EnrollmentPayload) {
       ([k, v]) =>
         `<tr>
           <td style="padding:6px 0;color:#999;">${k}</td>
-          <td style="padding:6px 0;text-align:right;font-weight:600;">${escape(v)}</td>
+          <td style="padding:6px 0;text-align:right;font-weight:600;">${escape(String(v))}</td>
         </tr>`,
     )
     .join("");
