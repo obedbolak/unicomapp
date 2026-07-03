@@ -291,7 +291,16 @@ export default function TrainingSection() {
         paddingTop: "calc(var(--header-height-mobile) + 2rem)",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem", display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "0 1.5rem",
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
         <a
           href="/trainings/internships"
           style={{
@@ -562,9 +571,10 @@ export default function TrainingSection() {
                   fontFamily: "var(--font-display)",
                   fontSize: "0.8125rem",
                   fontWeight: 800,
-                  color: hovered === i || p.featured
-                    ? "var(--color-primary)"
-                    : "var(--color-text)",
+                  color:
+                    hovered === i || p.featured
+                      ? "var(--color-primary)"
+                      : "var(--color-text)",
                   whiteSpace: "nowrap",
                 }}
               >
