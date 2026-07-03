@@ -291,6 +291,20 @@ export default function TrainingSection() {
         paddingTop: "calc(var(--header-height-mobile) + 2rem)",
       }}
     >
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem", display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <a
+          href="/trainings/internships"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            color: "var(--color-primary)",
+            textDecoration: "none",
+          }}
+        >
+          See Internships →
+        </a>
+      </div>
       {/* ── Live banner ── */}
       <div
         style={{
