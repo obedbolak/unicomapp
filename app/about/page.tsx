@@ -62,11 +62,6 @@ const teamMembers = [
   },
 
   {
-    name: "Ngwang Barbara",
-    role: "Creative Director",
-    image: "/team/nguan.png",
-  },
-  {
     name: "Rosine Mbashi",
     role: "Marketing & Business Strategist",
     image: "/team/rosin.png",
@@ -76,11 +71,7 @@ const teamMembers = [
     role: "Frontend & UI Specialist",
     image: "/team/lili.png",
   },
-  {
-    name: "Longe Antia",
-    role: "Marketing Director",
-    image: "/team/along.png",
-  },
+
   {
     name: "Obed Bolak",
     role: "CEO & FULL-STACK DEVELOPER",
