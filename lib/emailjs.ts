@@ -33,7 +33,7 @@ function escape(s: string) {
   );
 }
 
-function buildTable(data: EnrollmentPayload, includePaymentNote = true) {
+function buildTable(data: EnrollmentPayload) {
   const rows = [
     ["Course", data.course],
     ...(data.category ? [["Category", data.category]] : []),
@@ -42,9 +42,6 @@ function buildTable(data: EnrollmentPayload, includePaymentNote = true) {
       ? [["Registration Fees", data.registrationFee]]
       : []),
     ...(data.price ? [["Course Price", data.price]] : []),
-    ...(includePaymentNote && data.paymentNote
-      ? [["Payment", data.paymentNote]]
-      : []),
     ["Preferred Start", data.cohort],
     ["Payment Plan", data.plan],
     ["Level", data.level],
@@ -126,8 +123,7 @@ async function send(toEmail: string, subject: string, messageHtml: string) {
 }
 
 export async function sendEnrollmentEmails(data: EnrollmentPayload) {
-  const studentTable = buildTable(data, true);
-  const adminTable = buildTable(data, false);
+  const table = buildTable(data);
   const firstName = escape(data.fullName.split(" ")[0]);
 
   const paymentNotice = data.paymentNote
@@ -138,7 +134,7 @@ export async function sendEnrollmentEmails(data: EnrollmentPayload) {
     "Enrollment Confirmed 🎉",
     `<p>Hi ${firstName},</p>
      <p>You're officially enrolled in <strong>${escape(data.course)}</strong>! Here's your summary:</p>
-     ${studentTable}
+     ${table}
      ${paymentNotice}
      <p>Our team will reach out shortly with your next steps and cohort details.</p>`,
     data.email,
@@ -147,7 +143,7 @@ export async function sendEnrollmentEmails(data: EnrollmentPayload) {
   const adminHtml = layout(
     "New Enrollment Received",
     `<p>New enrollment from <strong>${escape(data.fullName)}</strong> (${escape(data.email)}):</p>
-     ${adminTable}`,
+     ${table}`,
     ADMIN_EMAIL ?? "",
   );
 
