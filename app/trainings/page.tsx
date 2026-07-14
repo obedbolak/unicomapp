@@ -168,7 +168,7 @@ const programs = [
 // ── Quick crash courses (short, high-volume, easy-buy) ──
 const crashCourses = [
   {
-    title: "Graphics Design Crash Course",
+    title: "Graphics Design (Crash Course)",
     subtitle: "Photoshop · Illustrator · Canva",
     description:
       "Design logos, flyers, social posts, and brand kits in weeks. Perfect for freelancers and side hustles.",
@@ -182,7 +182,7 @@ const crashCourses = [
     badgeText: "#ec4899",
   },
   {
-    title: "Microsoft Excel Crash Course",
+    title: "Microsoft Excel (Crash Course)",
     subtitle: "Formulas · Pivot Tables · Dashboards",
     description:
       "Go from beginner to spreadsheet pro. Master formulas, charts, pivot tables, and automation that employers love.",
@@ -196,7 +196,7 @@ const crashCourses = [
     badgeText: "#22c55e",
   },
   {
-    title: "Microsoft Office Crash Course",
+    title: "Microsoft Office (Crash Course)",
     subtitle: "Word · Excel · PowerPoint · Outlook",
     description:
       "Become office-ready fast. Master the everyday tools every workplace expects you to know inside out.",
