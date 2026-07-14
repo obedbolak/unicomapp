@@ -254,10 +254,25 @@ export default function EnrollPage() {
     return Object.keys(e).length === 0;
   };
 
-  const next = () => {
-    if (validateStep()) setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const scrollToFormTop = () => {
+    const formContainer = document.getElementById("enroll-form-container");
+    if (formContainer) {
+      formContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
-  const back = () => setStep((s) => Math.max(s - 1, 0));
+
+  const next = () => {
+    if (validateStep()) {
+      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+      scrollToFormTop();
+    }
+  };
+  const back = () => {
+    setStep((s) => Math.max(s - 1, 0));
+    scrollToFormTop();
+  };
 
   const submit = async () => {
     if (!validateStep()) return;
@@ -337,7 +352,10 @@ export default function EnrollPage() {
 
   return (
     <main className="section-page" style={pageStyle}>
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 1.5rem" }}>
+      <div
+        id="enroll-form-container"
+        style={{ maxWidth: 980, margin: "0 auto", padding: "0 1.5rem" }}
+      >
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <h1 style={h1}>
             {isInternship ? "Apply for Internship" : "Enroll Now"}
