@@ -14,6 +14,8 @@ export type EnrollmentPayload = {
   course: string;
   category?: string;
   price?: string;
+  registrationFee?: string;
+  paymentNote?: string;
   months?: number;
   cohort: string;
   level: string;
@@ -31,12 +33,18 @@ function escape(s: string) {
   );
 }
 
-function buildTable(data: EnrollmentPayload) {
+function buildTable(data: EnrollmentPayload, includePaymentNote = true) {
   const rows = [
     ["Course", data.course],
     ...(data.category ? [["Category", data.category]] : []),
     ...(data.months ? [["Duration", `${data.months} months`]] : []),
-    ...(data.price ? [["Price", data.price]] : []),
+    ...(data.registrationFee
+      ? [["Registration Fees", data.registrationFee]]
+      : []),
+    ...(data.price ? [["Course Price", data.price]] : []),
+    ...(includePaymentNote && data.paymentNote
+      ? [["Payment", data.paymentNote]]
+      : []),
     ["Preferred Start", data.cohort],
     ["Payment Plan", data.plan],
     ["Level", data.level],
@@ -118,14 +126,20 @@ async function send(toEmail: string, subject: string, messageHtml: string) {
 }
 
 export async function sendEnrollmentEmails(data: EnrollmentPayload) {
-  const table = buildTable(data);
+  const studentTable = buildTable(data, true);
+  const adminTable = buildTable(data, false);
   const firstName = escape(data.fullName.split(" ")[0]);
+
+  const paymentNotice = data.paymentNote
+    ? `<p><strong>Payment:</strong> ${escape(data.paymentNote)}</p>`
+    : "";
 
   const studentHtml = layout(
     "Enrollment Confirmed 🎉",
     `<p>Hi ${firstName},</p>
      <p>You're officially enrolled in <strong>${escape(data.course)}</strong>! Here's your summary:</p>
-     ${table}
+     ${studentTable}
+     ${paymentNotice}
      <p>Our team will reach out shortly with your next steps and cohort details.</p>`,
     data.email,
   );
@@ -133,7 +147,7 @@ export async function sendEnrollmentEmails(data: EnrollmentPayload) {
   const adminHtml = layout(
     "New Enrollment Received",
     `<p>New enrollment from <strong>${escape(data.fullName)}</strong> (${escape(data.email)}):</p>
-     ${table}`,
+     ${adminTable}`,
     ADMIN_EMAIL ?? "",
   );
 

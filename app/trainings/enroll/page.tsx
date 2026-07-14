@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const PHONE_RE = /^\+(?:[1-9]\d{1,3})[\d\s.-]{6,14}$/;
+
 const courses = [
   "Frontend Development",
   "Backend Development",
@@ -32,12 +34,14 @@ type FormData = {
   course: string;
   category: string;
   price: string;
+  registrationFee: string;
   months: number;
   cohort: string;
   level: string;
   goals: string;
   portfolio: string; // ← NEW (CV / GitHub / portfolio link)
   plan: string;
+  paymentNote: string;
   agree: boolean;
 };
 
@@ -64,11 +68,33 @@ const countryOptions = [
   { name: "United Arab Emirates", dialCode: "+971" },
 ];
 
-const crashCoursePrices: Record<string, string> = {
-  "Graphics Design (Crash Course)": "From 25,000 FCFA",
-  "Microsoft Excel (Crash Course)": "From 25,000 FCFA",
-  "Microsoft Office (Crash Course)": "From 25,000 FCFA",
+const crashCoursePaymentDetails: Record<
+  string,
+  { price: string; registrationFee: string; paymentNote?: string }
+> = {
+  "Graphics Design (Crash Course)": {
+    price: "From 25,000 FCFA",
+    registrationFee: "5,000 FCFA",
+    paymentNote:
+      "Send registration Fees to\nMOMO: 681529488\nName: Obed Bolak fuchu\n• Send Confirmation via WhatsApp",
+  },
+  "Microsoft Excel (Crash Course)": {
+    price: "From 25,000 FCFA",
+    registrationFee: "5,000 FCFA",
+    paymentNote:
+      "Send registration Fees to\nMOMO: 681529488\nName: Obed Bolak fuchu\n• Send Confirmation via WhatsApp",
+  },
+  "Microsoft Office (Crash Course)": {
+    price: "From 25,000 FCFA",
+    registrationFee: "5,000 FCFA",
+    paymentNote:
+      "Send registration Fees to\nMOMO: 681529488\nName: Obed Bolak fuchu\n• Send Confirmation via WhatsApp",
+  },
 };
+
+function getCrashCoursePaymentDetails(course: string) {
+  return crashCoursePaymentDetails[course] ?? null;
+}
 
 const STEPS = ["Your Details", "Choose Course", "Goals", "Review"];
 
@@ -82,11 +108,13 @@ const initialData: FormData = {
   portfolio: "", // default empty
   category: "",
   price: "",
+  registrationFee: "",
   months: 3,
   cohort: "",
   level: levels[0],
   goals: "",
   plan: plans[0],
+  paymentNote: "",
   agree: false,
 };
 
@@ -160,10 +188,28 @@ export default function EnrollPage() {
       const price = `${months} month${months > 1 ? "s" : ""} @ ${per}k/month — ${total}k`;
       if (price !== data.price) set("price", price);
     } else {
-      const mappedPrice = crashCoursePrices[selectedCourse];
-      if (mappedPrice) {
-        if (mappedPrice !== data.price) set("price", mappedPrice);
+      const paymentDetails = getCrashCoursePaymentDetails(selectedCourse);
+      if (paymentDetails) {
+        if (
+          paymentDetails.price !== data.price ||
+          paymentDetails.registrationFee !== data.registrationFee
+        ) {
+          setData((current) => ({
+            ...current,
+            price: paymentDetails.price,
+            registrationFee: paymentDetails.registrationFee,
+            paymentNote: paymentDetails.paymentNote ?? "",
+          }));
+        }
         return;
+      }
+
+      // Non-crash courses: set registration fee to 10,000 frs
+      if (data.registrationFee !== "10,000 frs") {
+        setData((current) => ({
+          ...current,
+          registrationFee: "10,000 frs",
+        }));
       }
 
       const params = new URLSearchParams(window.location.search);
@@ -189,6 +235,8 @@ export default function EnrollPage() {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
         e.email = "Enter a valid email.";
       if (!data.phone.trim()) e.phone = "Phone number is required.";
+      else if (!PHONE_RE.test(data.phone.trim()))
+        e.phone = "Enter a valid phone number like +237 6xx xxx xxx.";
       if (!data.country.trim()) e.country = "Country is required.";
     }
     if (step === 1) {
@@ -416,6 +464,8 @@ export default function EnrollPage() {
                       value={data.phone}
                       onChange={(e) => set("phone", e.target.value)}
                       placeholder="+237 6x xxx xxxx"
+                      inputMode="tel"
+                      autoComplete="tel"
                     />
                   </Field>
                 </div>
@@ -551,7 +601,8 @@ export default function EnrollPage() {
                         ]
                       : [
                           ["Category", data.category],
-                          ["Price", data.price],
+                          ["Registration Fees", data.registrationFee],
+                          ["Course Price", data.price],
                           ["Payment Plan", data.plan],
                           ["Duration", `${data.months} months`],
                         ]),
@@ -645,48 +696,6 @@ export default function EnrollPage() {
                   )}
                 </div>
               )}
-
-              {/* Nav */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  marginTop: "1.75rem",
-                }}
-              >
-                <button
-                  onClick={back}
-                  disabled={step === 0 || status === "submitting"}
-                  style={{
-                    ...ghostBtn,
-                    opacity: step === 0 ? 0.4 : 1,
-                    cursor: step === 0 ? "not-allowed" : "pointer",
-                  }}
-                >
-                  ← Back
-                </button>
-                {step < STEPS.length - 1 ? (
-                  <button onClick={next} style={primaryBtn}>
-                    Continue →
-                  </button>
-                ) : (
-                  <button
-                    onClick={submit}
-                    disabled={status === "submitting"}
-                    style={{
-                      ...primaryBtn,
-                      opacity: status === "submitting" ? 0.7 : 1,
-                    }}
-                  >
-                    {status === "submitting"
-                      ? "Submitting..."
-                      : isInternship
-                        ? "Submit Application"
-                        : "Confirm Enrollment"}
-                  </button>
-                )}
-              </div>
             </div>
           </div>
 
@@ -720,12 +729,19 @@ export default function EnrollPage() {
               {data.category && (
                 <SummaryRow label="Category" value={data.category} />
               )}
+              {!isInternship && data.registrationFee && (
+                <SummaryRow
+                  label="Registration Fees"
+                  value={data.registrationFee}
+                />
+              )}
               {!isInternship && data.price && (
-                <SummaryRow label="Price" value={data.price} />
+                <SummaryRow
+                  label="Course Price"
+                  value={`${data.price}${data.price.includes("FCFA") || data.price.includes("frs") ? "" : " FCFA"}`}
+                />
               )}
-              {!isInternship && (
-                <SummaryRow label="Payment" value={data.plan} />
-              )}
+              {!isInternship && <SummaryRow label="Plan" value={data.plan} />}
               {data.months && (
                 <SummaryRow label="Duration" value={`${data.months} months`} />
               )}
@@ -742,8 +758,65 @@ export default function EnrollPage() {
             >
               After you confirm, your enrollment request is submitted
               automatically for this course.
+              {!isInternship && data.paymentNote && (
+                <>
+                  <br />
+                  <br />
+                  <strong
+                    style={{
+                      color: "var(--color-primary)",
+                      whiteSpace: "pre-line",
+                      display: "block",
+                    }}
+                  >
+                    {data.paymentNote}
+                  </strong>
+                </>
+              )}
             </p>
           </aside>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "1rem",
+            marginTop: "1.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            onClick={back}
+            disabled={step === 0 || status === "submitting"}
+            style={{
+              ...ghostBtn,
+              opacity: step === 0 ? 0.4 : 1,
+              cursor: step === 0 ? "not-allowed" : "pointer",
+            }}
+          >
+            ← Back
+          </button>
+          {step < STEPS.length - 1 ? (
+            <button onClick={next} style={primaryBtn}>
+              Continue →
+            </button>
+          ) : (
+            <button
+              onClick={submit}
+              disabled={status === "submitting"}
+              style={{
+                ...primaryBtn,
+                opacity: status === "submitting" ? 0.7 : 1,
+              }}
+            >
+              {status === "submitting"
+                ? "Submitting..."
+                : isInternship
+                  ? "Submit Application"
+                  : "Confirm Enrollment"}
+            </button>
+          )}
         </div>
       </div>
     </main>
@@ -777,6 +850,8 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
           fontWeight: 800,
           color: "var(--color-text)",
           textAlign: "right",
+          whiteSpace: "pre-line",
+          wordBreak: "break-word",
         }}
       >
         {value}

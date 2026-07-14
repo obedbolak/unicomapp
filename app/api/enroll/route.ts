@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sendEnrollmentEmails, type EnrollmentPayload } from "@/lib/emailjs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+(?:[1-9]\d{1,3})[\d\s.-]{6,14}$/;
 
 function validate(body: Partial<EnrollmentPayload>) {
   const required: (keyof EnrollmentPayload)[] = [
@@ -20,6 +21,8 @@ function validate(body: Partial<EnrollmentPayload>) {
     if (!body[key] || !String(body[key]).trim()) return `Missing field: ${key}`;
   }
   if (!EMAIL_RE.test(String(body.email))) return "Invalid email address.";
+  if (!PHONE_RE.test(String(body.phone).trim()))
+    return "Invalid phone number. Use an international format like +237 6xx xxx xxx.";
   return null;
 }
 
