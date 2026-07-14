@@ -75,8 +75,8 @@ const STEPS = ["Your Details", "Choose Course", "Goals", "Review"];
 const initialData: FormData = {
   fullName: "",
   email: "",
-  phone: "",
-  country: "",
+  phone: "+237",
+  country: "Cameroon",
   course: courses[0],
   type: "training", // default to training
   portfolio: "", // default empty
@@ -376,19 +376,39 @@ export default function EnrollPage() {
                     />
                   </Field>
                   <Field label="Country" error={errors.country}>
-                    <select
-                      className="enroll-select"
-                      style={selectStyle}
-                      value={data.country}
-                      onChange={(e) => handleCountryChange(e.target.value)}
-                    >
-                      <option value="">Select your country</option>
-                      {countryOptions.map((country) => (
-                        <option key={country.name} value={country.name}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div style={{ position: "relative" }}>
+                      <select
+                        className="enroll-select"
+                        style={{
+                          ...selectStyle,
+                          appearance: "none",
+                          paddingRight: "2.8rem",
+                        }}
+                        value={data.country}
+                        onChange={(e) => handleCountryChange(e.target.value)}
+                      >
+                        <option value="">Select your country</option>
+                        {countryOptions.map((country) => (
+                          <option key={country.name} value={country.name}>
+                            {country.name}
+                          </option>
+                        ))}
+                      </select>
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          position: "absolute",
+                          right: "0.95rem",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none",
+                          color: "var(--color-text-muted)",
+                          fontSize: "0.95rem",
+                        }}
+                      >
+                        ▾
+                      </span>
+                    </div>
                   </Field>
                   <Field label="Phone" error={errors.phone}>
                     <input
