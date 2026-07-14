@@ -263,6 +263,21 @@ function enrollHref({
 
 export default function TrainingSection() {
   const [hovered, setHovered] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPrograms = programs.filter((program) =>
+    [program.title, program.subtitle, program.description, program.category]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchQuery.trim().toLowerCase()),
+  );
+
+  const filteredCrashCourses = crashCourses.filter((course) =>
+    [course.title, course.subtitle, course.description, course.category]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchQuery.trim().toLowerCase()),
+  );
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -297,10 +312,31 @@ export default function TrainingSection() {
           margin: "0 auto",
           padding: "0 1.5rem",
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "1rem",
           marginBottom: "1rem",
+          flexWrap: "wrap",
         }}
       >
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by course name or skill"
+            style={{
+              width: "100%",
+              padding: "0.95rem 1rem",
+              borderRadius: "999px",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              color: "var(--color-text)",
+              fontSize: "0.95rem",
+              outline: "none",
+            }}
+          />
+        </div>
         <a
           href="/trainings/internships"
           style={{
@@ -309,6 +345,7 @@ export default function TrainingSection() {
             fontWeight: 700,
             color: "var(--color-primary)",
             textDecoration: "none",
+            whiteSpace: "nowrap",
           }}
         >
           See Internships →
@@ -353,7 +390,7 @@ export default function TrainingSection() {
         className="masonry"
         style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}
       >
-        {programs.map((p, i) => (
+        {filteredPrograms.map((p, i) => (
           <div
             key={p.title}
             className="train-card"
@@ -661,7 +698,7 @@ export default function TrainingSection() {
             gap: "1.25rem",
           }}
         >
-          {crashCourses.map((c) => (
+          {filteredCrashCourses.map((c) => (
             <div
               key={c.title}
               style={{

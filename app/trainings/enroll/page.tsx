@@ -49,6 +49,27 @@ const levels = [
 ];
 const plans = ["Pay in Full", "Monthly Installments"];
 
+const countryOptions = [
+  { name: "Cameroon", dialCode: "+237" },
+  { name: "Nigeria", dialCode: "+234" },
+  { name: "Ghana", dialCode: "+233" },
+  { name: "Kenya", dialCode: "+254" },
+  { name: "South Africa", dialCode: "+27" },
+  { name: "United States", dialCode: "+1" },
+  { name: "United Kingdom", dialCode: "+44" },
+  { name: "France", dialCode: "+33" },
+  { name: "Canada", dialCode: "+1" },
+  { name: "Germany", dialCode: "+49" },
+  { name: "India", dialCode: "+91" },
+  { name: "United Arab Emirates", dialCode: "+971" },
+];
+
+const crashCoursePrices: Record<string, string> = {
+  "Graphics Design (Crash Course)": "From 25,000 FCFA",
+  "Microsoft Excel (Crash Course)": "From 25,000 FCFA",
+  "Microsoft Office (Crash Course)": "From 25,000 FCFA",
+};
+
 const STEPS = ["Your Details", "Choose Course", "Goals", "Review"];
 
 const initialData: FormData = {
@@ -104,9 +125,34 @@ export default function EnrollPage() {
     setErrors((e) => ({ ...e, [key]: "" }));
   };
 
-  // compute price when type or months changes
+  const handleCountryChange = (countryName: string) => {
+    const selectedCountry = countryOptions.find((c) => c.name === countryName);
+    const dialCode = selectedCountry?.dialCode ?? "";
+
+    set("country", countryName);
+
+    if (!dialCode) return;
+
+    setData((d) => {
+      const currentPhone = d.phone.trim();
+      if (!currentPhone) {
+        return { ...d, phone: dialCode };
+      }
+      if (currentPhone.startsWith(dialCode)) {
+        return d;
+      }
+      if (currentPhone.startsWith("+")) {
+        return { ...d, phone: dialCode };
+      }
+      return { ...d, phone: `${dialCode} ${currentPhone}` };
+    });
+  };
+
+  // compute price when course, type, or months changes
   useEffect(() => {
     const months = Number(data.months || 0) || 0;
+    const selectedCourse = data.course?.trim() ?? "";
+
     if (data.type === "internship") {
       // internships: 15k per month
       const per = 15;
@@ -114,6 +160,19 @@ export default function EnrollPage() {
       const price = `${months} month${months > 1 ? "s" : ""} @ ${per}k/month — ${total}k`;
       if (price !== data.price) set("price", price);
     } else {
+      const mappedPrice = crashCoursePrices[selectedCourse];
+      if (mappedPrice) {
+        if (mappedPrice !== data.price) set("price", mappedPrice);
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const queryPrice = params.get("price")?.trim() ?? "";
+      if (queryPrice) {
+        if (queryPrice !== data.price) set("price", queryPrice);
+        return;
+      }
+
       // trainings: fixed tiers
       const map: Record<number, string> = { 3: "75k", 6: "150k", 12: "220k" };
       const tier = map[months] || "Custom";
@@ -121,7 +180,7 @@ export default function EnrollPage() {
       if (price !== data.price) set("price", price);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.months, data.type]);
+  }, [data.months, data.type, data.course]);
 
   const validateStep = () => {
     const e: Record<string, string> = {};
@@ -316,20 +375,27 @@ export default function EnrollPage() {
                       placeholder="jane@example.com"
                     />
                   </Field>
+                  <Field label="Country" error={errors.country}>
+                    <select
+                      className="enroll-select"
+                      style={selectStyle}
+                      value={data.country}
+                      onChange={(e) => handleCountryChange(e.target.value)}
+                    >
+                      <option value="">Select your country</option>
+                      {countryOptions.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
                   <Field label="Phone" error={errors.phone}>
                     <input
                       style={input}
                       value={data.phone}
                       onChange={(e) => set("phone", e.target.value)}
                       placeholder="+237 6x xxx xxxx"
-                    />
-                  </Field>
-                  <Field label="Country" error={errors.country}>
-                    <input
-                      style={input}
-                      value={data.country}
-                      onChange={(e) => set("country", e.target.value)}
-                      placeholder="e.g. Cameroon"
                     />
                   </Field>
                 </div>
