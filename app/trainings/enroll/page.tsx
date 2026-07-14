@@ -421,18 +421,18 @@ export default function EnrollPage() {
                       ))}
                     </select>
                   </Field>
-                    <Field label="Duration (months)">
-                      <select
-                        className="enroll-select"
-                        style={selectStyle}
-                        value={String(data.months)}
-                        onChange={(e) => set("months", Number(e.target.value))}
-                      >
-                        <option value={3}>3 months</option>
-                        <option value={6}>6 months</option>
-                        <option value={12}>12 months</option>
-                      </select>
-                    </Field>
+                  <Field label="Duration (months)">
+                    <select
+                      className="enroll-select"
+                      style={selectStyle}
+                      value={String(data.months)}
+                      onChange={(e) => set("months", Number(e.target.value))}
+                    >
+                      <option value={3}>3 months</option>
+                      <option value={6}>6 months</option>
+                      <option value={12}>12 months</option>
+                    </select>
+                  </Field>
                   <Field label="Preferred Start" error={errors.cohort}>
                     <input
                       style={input}
@@ -525,7 +525,10 @@ export default function EnrollPage() {
                     ["Country", data.country],
                     [isInternship ? "Role" : "Course", data.course],
                     ...(isInternship
-                      ? [["Portfolio", data.portfolio], ["Duration", `${data.months} months`]]
+                      ? [
+                          ["Portfolio", data.portfolio],
+                          ["Duration", `${data.months} months`],
+                        ]
                       : [
                           ["Category", data.category],
                           ["Price", data.price],
@@ -703,7 +706,9 @@ export default function EnrollPage() {
               {!isInternship && (
                 <SummaryRow label="Payment" value={data.plan} />
               )}
-              {data.months && <SummaryRow label="Duration" value={`${data.months} months`} />}
+              {data.months && (
+                <SummaryRow label="Duration" value={`${data.months} months`} />
+              )}
               <SummaryRow label="Level" value={data.level} />
             </div>
             <p
