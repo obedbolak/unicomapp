@@ -1,5 +1,10 @@
 import { findCertificate, formatDate } from "@/lib/certificates";
+import type { Certificate } from "@/lib/certificates";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+
+// Always hit the database — a certificate can be revoked at any time.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -19,7 +24,11 @@ export default async function VerifyResultPage({
   params: Promise<{ certNo: string }>;
 }) {
   const { certNo } = await params;
-  const cert = findCertificate(decodeURIComponent(certNo));
+  const h = await headers();
+  const cert = await findCertificate(decodeURIComponent(certNo), {
+    ip: h.get("x-forwarded-for"),
+    userAgent: h.get("user-agent"),
+  });
 
   return (
     <main
@@ -58,11 +67,7 @@ export default async function VerifyResultPage({
   );
 }
 
-function ValidCard({
-  cert,
-}: {
-  cert: NonNullable<ReturnType<typeof findCertificate>>;
-}) {
+function ValidCard({ cert }: { cert: Certificate }) {
   return (
     <div style={cardStyle}>
       <StatusBadge label="✓ Valid Certificate" color="#22c55e" />
