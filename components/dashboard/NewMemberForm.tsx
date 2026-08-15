@@ -101,6 +101,14 @@ export default function NewMemberForm() {
             <em>Full access to /admin, not just their own work.</em>
           </span>
         </label>
+
+        <label className="dash-check" style={{ marginTop: 0 }}>
+          <input type="checkbox" name="isPartner" />
+          <span>
+            <strong>Partner</strong>
+            <em>Holds equity. Shows the shares panel in their wallet.</em>
+          </span>
+        </label>
       </div>
 
       {password && (

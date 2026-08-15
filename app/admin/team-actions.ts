@@ -43,6 +43,7 @@ export async function createTeamMember(formData: FormData) {
     : null;
 
   const role: UserRole[] = makeAdmin ? ["ADMIN", "STAFF"] : ["STAFF"];
+  if (formData.get("isPartner") === "on") role.push("PARTNER");
 
   const user = await prisma.user.create({
     data: {
@@ -87,9 +88,21 @@ export async function setUserRole(formData: FormData) {
     }
   }
 
+  // PARTNER is orthogonal to the access level, so preserve it here rather than
+  // silently stripping someone's equity status when their access changes.
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { role: true },
+  });
+  const keepPartner = target?.role.includes("PARTNER") ? ["PARTNER" as const] : [];
+
   await prisma.user.update({
     where: { id },
-    data: { role: makeAdmin ? ["ADMIN", "STAFF"] : ["STAFF"] },
+    data: {
+      role: makeAdmin
+        ? ["ADMIN", "STAFF", ...keepPartner]
+        : ["STAFF", ...keepPartner],
+    },
   });
 
   await logActivity(admin.id, "user.role_changed", "User", id, {
@@ -142,6 +155,40 @@ export async function toggleUserActive(formData: FormData) {
   );
 
   revalidatePath("/admin/team");
+}
+
+/** Toggles equity status. Grants no extra access on its own. */
+export async function togglePartner(formData: FormData) {
+  const admin = await requireAdmin();
+  if (!admin) throw new Error("Not authorized");
+
+  const id = String(formData.get("id"));
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { role: true },
+  });
+  if (!target) throw new Error("No such user");
+
+  const isPartner = target.role.includes("PARTNER");
+
+  // Removing partner status leaves their grant history intact — the ledger is
+  // a record of what happened, not a reflection of current status.
+  const role = isPartner
+    ? target.role.filter((r) => r !== "PARTNER")
+    : [...target.role, "PARTNER" as const];
+
+  await prisma.user.update({ where: { id }, data: { role } });
+
+  await logActivity(
+    admin.id,
+    isPartner ? "user.partner_removed" : "user.partner_added",
+    "User",
+    id,
+  );
+
+  revalidatePath("/admin/team");
+  revalidatePath("/admin/wallet");
+  revalidatePath("/dashboard/wallet");
 }
 
 export async function resetUserPassword(formData: FormData) {

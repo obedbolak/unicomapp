@@ -150,6 +150,41 @@ export default async function SettingsPage() {
             keep the number they were issued with.
           </p>
 
+          <div className="dash-rule" style={{ margin: "1rem 0" }} />
+
+          <div className="dash-formgrid">
+            <label>
+              <span className="dash-field-label">Authorized shares</span>
+              <input
+                name="authorizedShares"
+                type="number"
+                min={0}
+                defaultValue={settings.authorizedShares}
+                className="dash-input"
+              />
+            </label>
+
+            <label>
+              <span className="dash-field-label">
+                Company valuation ({settings.currency})
+              </span>
+              <input
+                name="companyValuation"
+                type="number"
+                min={0}
+                defaultValue={settings.companyValuation}
+                className="dash-input"
+              />
+            </label>
+          </div>
+
+          <p className="dash-hint">
+            Authorized shares caps how many can be allocated on the Wallet page.
+            Valuation turns a shareholding into a figure in{" "}
+            {settings.currency} — leave it at 0 and partners see shares and
+            percentage only.
+          </p>
+
           <div className="dash-actions">
             <button type="submit" className="dash-btn dash-btn--primary">
               Save organization settings

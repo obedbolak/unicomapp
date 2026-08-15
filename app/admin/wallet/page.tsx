@@ -25,8 +25,12 @@ export default async function AdminWalletPage() {
   const staff = await prisma.user.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true, image: true },
+    select: { id: true, name: true, email: true, image: true, role: true },
   });
+
+  // Only partners can be allocated shares — equity status is set on the Team
+  // page, so the two cannot drift apart.
+  const partners = staff.filter((s) => s.role.includes("PARTNER"));
 
   // One wallet per person. Fine at team scale; if this ever grows past a few
   // dozen people, replace with a single grouped aggregate.
@@ -183,7 +187,7 @@ export default async function AdminWalletPage() {
           flush
         >
           <Table
-            headers={["Shareholder", "Shares", "Ownership", ""]}
+            headers={["Shareholder", "Shares", "Ownership", "Worth", ""]}
             empty="No shares issued yet. Allocate some below."
           >
             {capTable.rows.map((r) => (
@@ -196,6 +200,9 @@ export default async function AdminWalletPage() {
                   {r.shares.toLocaleString("en-US")}
                 </td>
                 <td className="dash-nowrap">{r.pctOfIssued.toFixed(2)}%</td>
+                <td className="dash-nowrap dash-td-muted">
+                  {capTable.valuation > 0 ? money(r.value) : "—"}
+                </td>
                 <td style={{ width: "35%", minWidth: 120 }}>
                   <div className="dash-track">
                     <div
@@ -215,7 +222,7 @@ export default async function AdminWalletPage() {
                   <span className="dash-field-label">Team member</span>
                   <select name="userId" required className="dash-select">
                     <option value="">Select…</option>
-                    {staff.map((s) => (
+                    {partners.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name ?? s.email}
                       </option>
@@ -252,9 +259,21 @@ export default async function AdminWalletPage() {
             </form>
 
             <p className="dash-hint">
-              A negative number records a buyback. Allocations are a ledger, not
-              an edit — every change keeps its history. Raise the authorized
-              ceiling in Settings → <code>authorizedShares</code>.
+              {partners.length === 0 ? (
+                <strong style={{ color: "#fbbf24" }}>
+                  Nobody is marked as a partner yet. Use “Make partner” on the
+                  Team page first — only partners can hold equity.
+                </strong>
+              ) : (
+                <>
+                  A negative number records a buyback. Allocations are a ledger,
+                  not an edit — every change keeps its history.
+                </>
+              )}{" "}
+              Ceiling and valuation live in Settings →{" "}
+              <code>authorizedShares</code>, <code>companyValuation</code>.
+              {capTable.valuation === 0 &&
+                " Set a valuation to show stakes in FCFA."}
             </p>
           </div>
         </Card>

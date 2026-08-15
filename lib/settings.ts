@@ -25,6 +25,12 @@ export const SETTING_DEFAULTS = {
    * is here so the cap table can show how much is still unallocated.
    */
   authorizedShares: "1000",
+  /**
+   * What the company is currently valued at, in the currency above. Used to
+   * express a shareholding in money: value = ownership%  ×  valuation.
+   * Leave at 0 and the wallet shows shares and percentage only.
+   */
+  companyValuation: "0",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

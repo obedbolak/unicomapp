@@ -10,6 +10,10 @@ export type Holding = {
   shares: number;
   /** Of shares actually issued, not of the authorized pool. */
   pctOfIssued: number;
+  /** Worth in currency, from Settings → companyValuation. 0 when unset. */
+  value: number;
+  /** Dividends actually received to date — real money, unlike `value`. */
+  dividendsReceived: number;
 };
 
 /** Total shares issued across everyone. The denominator for ownership. */
@@ -19,18 +23,28 @@ export async function getIssuedTotal(): Promise<number> {
 }
 
 export async function getHolding(userId: string): Promise<Holding> {
-  const [agg, issued] = await Promise.all([
+  const [agg, issued, valuationRaw, dividends] = await Promise.all([
     prisma.shareGrant.aggregate({
       where: { userId },
       _sum: { shares: true },
     }),
     getIssuedTotal(),
+    getSetting("companyValuation"),
+    prisma.earning.aggregate({
+      where: { userId, source: "BONUS", status: "CREDITED" },
+      _sum: { amount: true },
+    }),
   ]);
 
   const shares = agg._sum.shares ?? 0;
+  const pctOfIssued = issued > 0 ? (shares / issued) * 100 : 0;
+  const valuation = Number(valuationRaw) || 0;
+
   return {
     shares,
-    pctOfIssued: issued > 0 ? (shares / issued) * 100 : 0,
+    pctOfIssued,
+    value: Math.round((valuation * pctOfIssued) / 100),
+    dividendsReceived: Number(dividends._sum.amount ?? 0),
   };
 }
 
@@ -41,6 +55,7 @@ export type CapTableRow = {
   image: string | null;
   shares: number;
   pctOfIssued: number;
+  value: number;
 };
 
 export type CapTable = {
@@ -49,32 +64,37 @@ export type CapTable = {
   /** Ceiling from Settings, so you can see how much is still unallocated. */
   authorized: number;
   unallocated: number;
+  valuation: number;
 };
 
 export async function getCapTable(): Promise<CapTable> {
-  const [grouped, users, authorizedRaw] = await Promise.all([
+  const [grouped, users, authorizedRaw, valuationRaw] = await Promise.all([
     prisma.shareGrant.groupBy({ by: ["userId"], _sum: { shares: true } }),
     prisma.user.findMany({
       select: { id: true, name: true, email: true, image: true },
     }),
     getSetting("authorizedShares"),
+    getSetting("companyValuation"),
   ]);
 
   const byUser = new Map(users.map((u) => [u.id, u]));
   const issued = grouped.reduce((sum, g) => sum + (g._sum.shares ?? 0), 0);
   const authorized = Number(authorizedRaw) || 0;
+  const valuation = Number(valuationRaw) || 0;
 
   const rows: CapTableRow[] = grouped
     .map((g) => {
       const u = byUser.get(g.userId);
       const shares = g._sum.shares ?? 0;
+      const pctOfIssued = issued > 0 ? (shares / issued) * 100 : 0;
       return {
         userId: g.userId,
         name: u?.name ?? u?.email ?? "Unknown",
         email: u?.email ?? "",
         image: u?.image ?? null,
         shares,
-        pctOfIssued: issued > 0 ? (shares / issued) * 100 : 0,
+        pctOfIssued,
+        value: Math.round((valuation * pctOfIssued) / 100),
       };
     })
     // Zero-holding rows are people whose grants netted out — not shareholders.
@@ -86,6 +106,7 @@ export async function getCapTable(): Promise<CapTable> {
     issued,
     authorized,
     unallocated: Math.max(0, authorized - issued),
+    valuation,
   };
 }
 

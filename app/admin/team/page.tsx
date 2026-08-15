@@ -4,6 +4,7 @@ import {
   deleteTeamMember,
   resetUserPassword,
   setUserRole,
+  togglePartner,
   toggleUserActive,
 } from "../team-actions";
 import { Badge, Card, PageHeader, Table } from "@/components/dashboard/ui";
@@ -203,6 +204,18 @@ export default async function TeamPage() {
                       </form>
 
                       <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.5rem" }}>
+                        {/* Equity status. Orthogonal to access level — being a
+                            partner unlocks the shares panel in their wallet
+                            and nothing else. */}
+                        <form action={togglePartner}>
+                          <input type="hidden" name="id" value={u.id} />
+                          <button type="submit" className="dash-btn">
+                            {u.role.includes("PARTNER")
+                              ? "Remove partner"
+                              : "Make partner"}
+                          </button>
+                        </form>
+
                         <form action={toggleUserActive}>
                           <input type="hidden" name="id" value={u.id} />
                           <button
