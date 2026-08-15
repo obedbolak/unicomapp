@@ -47,6 +47,63 @@ export async function getWallet(userId: string): Promise<Wallet> {
   };
 }
 
+export type UpcomingShare = {
+  projectId: string;
+  title: string;
+  status: string;
+  sharePct: number;
+  amount: number;
+  currency: string;
+  dueDate: Date | null;
+};
+
+/**
+ * Shares on projects the person is assigned to that have not been delivered
+ * yet - money in the pipeline, not money owed.
+ *
+ * Deliberately excluded from the wallet balance: nothing here is earned, and a
+ * cancelled project earns nothing at all. It exists so someone can see what
+ * they are working toward.
+ */
+export async function getUpcoming(userId: string): Promise<UpcomingShare[]> {
+  const assignments = await prisma.projectAssignment.findMany({
+    where: {
+      userId,
+      sharePct: { not: null },
+      project: { status: { notIn: ["DELIVERED", "CANCELLED"] } },
+    },
+    select: {
+      sharePct: true,
+      project: {
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          budget: true,
+          currency: true,
+          dueDate: true,
+        },
+      },
+    },
+  });
+
+  return assignments
+    .filter((a) => a.project.budget && Number(a.project.budget) > 0)
+    .map((a) => {
+      const pct = Number(a.sharePct);
+      return {
+        projectId: a.project.id,
+        title: a.project.title,
+        status: a.project.status,
+        sharePct: pct,
+        amount: Math.round((Number(a.project.budget) * pct) / 100),
+        currency: a.project.currency,
+        dueDate: a.project.dueDate,
+      };
+    })
+    .sort((a, b) => b.amount - a.amount);
+}
+
 /**
  * Credits every assignee's revenue share for a delivered project.
  *
