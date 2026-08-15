@@ -208,6 +208,9 @@ const BADGE_COLORS: Record<string, string> = {
   // roles
   ADMIN: "#ff8c00",
   STAFF: "#3b82f6",
+  // Violet, deliberately unlike ADMIN's orange — equity is not access, and the
+  // two should never be mistaken for each other at a glance.
+  PARTNER: "#a855f7",
   INACTIVE: "#f87171",
 };
 

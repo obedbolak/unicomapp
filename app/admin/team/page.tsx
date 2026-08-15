@@ -146,6 +146,25 @@ export default async function TeamPage() {
                       Set
                     </button>
                   </form>
+
+                  {/* Equity status sits below the access control rather than
+                      inside it — they are separate things. */}
+                  <div style={{ marginTop: "0.4rem" }}>
+                    {u.role.includes("PARTNER") ? (
+                      <Badge value="PARTNER" />
+                    ) : (
+                      <span
+                        className="dash-badge"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid var(--dash-card-border)",
+                          color: "var(--dash-ink-dim)",
+                        }}
+                      >
+                        NO EQUITY
+                      </span>
+                    )}
+                  </div>
                 </td>
 
                 <td className="dash-td-muted">
