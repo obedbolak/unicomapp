@@ -21,8 +21,6 @@ export async function updateProfile(formData: FormData) {
   const name = str("name", 120);
   if (!name) throw new Error("Name is required");
 
-  const image = str("image", 500) || null;
-
   // Job title is an organisational fact, not a personal preference. The input
   // is disabled for staff, but a disabled input is a UI convention, not a
   // permission — so the value is simply ignored unless the caller is an admin.
@@ -36,7 +34,9 @@ export async function updateProfile(formData: FormData) {
       ...(title !== undefined ? { title } : {}),
       phone: str("phone", 40) || null,
       bio: str("bio", 1000) || null,
-      image,
+      // image is deliberately absent — the avatar saves itself the moment it
+      // is uploaded (see updateAvatar), so this form must not touch it. If it
+      // did, saving the form without an image field would blank the photo.
     },
   });
 
@@ -45,6 +45,44 @@ export async function updateProfile(formData: FormData) {
   // "layout" scope, not the default "page" — the avatar lives in the Shell,
   // which is rendered by the layout. Revalidating only the page would leave
   // the topbar showing the previous photo.
+  revalidatePath("/admin", "layout");
+  revalidatePath("/dashboard", "layout");
+}
+
+/**
+ * Saves a new avatar on its own, the instant the upload finishes.
+ *
+ * Called directly from the client rather than through a form, so tapping the
+ * picture is the whole interaction — there is no "now press Save" step to
+ * forget.
+ */
+export async function updateAvatar(url: string) {
+  const user = await requireUser();
+  if (!user) throw new Error("Not authorized");
+
+  const clean = url.trim().slice(0, 500);
+  if (!clean.startsWith("http")) throw new Error("Invalid image URL");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { image: clean },
+  });
+
+  await logActivity(user.id, "user.avatar_updated", "User", user.id);
+
+  revalidatePath("/admin", "layout");
+  revalidatePath("/dashboard", "layout");
+}
+
+export async function removeAvatar() {
+  const user = await requireUser();
+  if (!user) throw new Error("Not authorized");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { image: null },
+  });
+
   revalidatePath("/admin", "layout");
   revalidatePath("/dashboard", "layout");
 }

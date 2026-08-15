@@ -247,6 +247,89 @@ textarea.dash-input {
   color: var(--color-primary);
 }
 
+/* ── Avatar picker ──────────────────────────────────────────────────────
+   The picture is the button. Overlay sits at low opacity until hover or
+   upload, the way a messaging app does it.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.avatar-picker {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--dash-card-border);
+  background: linear-gradient(160deg, #123 0%, #061029 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.avatar-picker:hover:not(:disabled),
+.avatar-picker:focus-visible {
+  border-color: rgba(255, 140, 0, 0.55);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55);
+  outline: none;
+}
+
+.avatar-picker:disabled {
+  cursor: progress;
+}
+
+.avatar-picker-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-picker-initials {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--dash-ink-dim);
+  letter-spacing: 0.02em;
+}
+
+.avatar-picker-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Always visible while uploading, and when there is no photo to look at. */
+.avatar-picker:hover .avatar-picker-overlay,
+.avatar-picker:focus-visible .avatar-picker-overlay,
+.avatar-picker:disabled .avatar-picker-overlay {
+  opacity: 1;
+}
+
+.avatar-picker-pct {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: none) {
+  /* No hover on touch — keep the camera hint permanently visible. */
+  .avatar-picker-overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.28);
+  }
+}
+
 /* ── Topbar user chip ─────────────────────────────────────────────────── */
 
 .dash-userchip {

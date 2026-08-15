@@ -114,7 +114,6 @@ export default async function ProfilePanels({
                 />
               </label>
 
-              <AvatarField defaultValue={user.image} />
             </div>
 
             <label style={{ display: "block", marginTop: "0.85rem" }}>
