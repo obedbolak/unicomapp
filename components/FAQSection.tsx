@@ -69,12 +69,10 @@ function FAQItem({
         delay: index * 0.07,
         ease: [0.22, 1, 0.36, 1],
       }}
+      className={`floating-card floating-card--tight${open ? " floating-card--featured" : ""}`}
       style={{
         borderRadius: "0.875rem",
-        border: `1px solid ${open ? "rgba(255,140,0,0.25)" : "var(--color-border)"}`,
-        background: open ? "rgba(255,140,0,0.03)" : "var(--color-surface)",
         overflow: "hidden",
-        transition: "border-color 0.25s, background 0.25s",
       }}
     >
       {/* Question row */}

@@ -4,148 +4,227 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import "./dashboard.css";
+// Imported after dashboard.css on purpose — it thins the dashboard's opaque
+// background layers so the 3D scene reads through the cards.
+import "@/app/dash-glass.css";
+import {
+  IconAward,
+  IconBell,
+  IconBriefcase,
+  IconClose,
+  IconGrid,
+  IconLogout,
+  IconMenu,
+  IconMail,
+  IconPulse,
+  IconReceipt,
+  IconSearch,
+  IconSettings,
+  IconShield,
+  IconSpark,
+  IconTeam,
+  IconUser,
+  IconUsers,
+  IconWallet,
+} from "./icons";
 
-export type NavItem = { href: string; label: string };
+const ICONS = {
+  grid: IconGrid,
+  users: IconUsers,
+  wallet: IconWallet,
+  award: IconAward,
+  briefcase: IconBriefcase,
+  team: IconTeam,
+  spark: IconSpark,
+  mail: IconMail,
+  receipt: IconReceipt,
+  pulse: IconPulse,
+  shield: IconShield,
+  settings: IconSettings,
+  user: IconUser,
+} as const;
+
+export type IconKey = keyof typeof ICONS;
+
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: IconKey;
+  /** Renders a small uppercase heading above this item. */
+  section?: string;
+};
+
+/** "Obed Bolak" → "OB". Falls back to the first character for one-word names. */
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export default function Shell({
   nav,
   userName,
   userTitle,
+  userImage,
+  profileHref = "/admin/profile",
+  title,
   children,
 }: {
   nav: NavItem[];
   userName: string;
   userTitle?: string | null;
+  userImage?: string | null;
+  /** Where the avatar links to. */
+  profileHref?: string;
+  title?: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const font = "var(--font-display)";
+  const [open, setOpen] = useState(false);
+
+  const current =
+    nav.find((n) => n.href === pathname) ??
+    nav
+      .filter((n) => pathname.startsWith(n.href + "/"))
+      .sort((a, b) => b.href.length - a.href.length)[0];
+
+  const pageTitle = title ?? current?.label ?? "Dashboard";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "var(--color-bg, #0a0a0a)",
-        paddingTop: "calc(var(--header-height-mobile) + 1rem)",
-        paddingBottom: "4rem",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "0 1.25rem",
-        }}
-      >
-        {/* Top bar */}
+    <div className="dash" data-open={open}>
+      {open && (
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "1rem",
-            flexWrap: "wrap",
-            paddingBottom: "1rem",
-            marginBottom: "1.25rem",
-            borderBottom: "1px solid var(--color-border)",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: font,
-                fontSize: "0.9375rem",
-                fontWeight: 800,
-                color: "var(--color-text)",
-              }}
-            >
-              {userName}
-            </div>
-            {userTitle && (
-              <div
-                style={{
-                  fontFamily: font,
-                  fontSize: "0.75rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                {userTitle}
-              </div>
-            )}
-          </div>
+          className="dash-scrim"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <Link
-              href="/"
-              style={{
-                fontFamily: font,
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted)",
-                textDecoration: "none",
-                padding: "0.45rem 0.8rem",
-              }}
-            >
-              View site
-            </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              style={{
-                fontFamily: font,
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                background: "transparent",
-                border: "1px solid var(--color-border)",
-                borderRadius: "0.6rem",
-                padding: "0.45rem 0.9rem",
-                cursor: "pointer",
-              }}
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
+      <aside className="dash-sidebar">
+        <Link href="/" className="dash-brand">
+          <span className="dash-brand-mark">
+            <IconSpark size={17} style={{ color: "#100a02" }} />
+          </span>
+          <span className="dash-brand-text">
+            Unicom
+            <br />
+            Team
+          </span>
+        </Link>
 
-        {/* Nav */}
-        <nav
-          style={{
-            display: "flex",
-            gap: "0.35rem",
-            flexWrap: "wrap",
-            marginBottom: "2rem",
-          }}
-        >
+        <div className="dash-rule" />
+
+        <nav className="dash-nav">
           {nav.map((item) => {
+            const Icon = ICONS[item.icon];
             const active =
-              pathname === item.href ||
-              (item.href !== "/admin" &&
-                item.href !== "/dashboard" &&
-                pathname.startsWith(item.href));
+              item.href === pathname || pathname.startsWith(item.href + "/");
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  fontFamily: font,
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  padding: "0.5rem 0.9rem",
-                  borderRadius: "0.6rem",
-                  color: active ? "#000" : "var(--color-text-muted)",
-                  background: active ? "var(--color-primary)" : "transparent",
-                  border: `1px solid ${
-                    active ? "var(--color-primary)" : "var(--color-border)"
-                  }`,
-                }}
-              >
-                {item.label}
-              </Link>
+              <div key={item.href}>
+                {item.section && (
+                  <div className="dash-navlabel">{item.section}</div>
+                )}
+                <Link
+                  href={item.href}
+                  className="dash-navitem"
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="dash-navicon">
+                    <Icon size={16} />
+                  </span>
+                  {item.label}
+                </Link>
+              </div>
             );
           })}
         </nav>
+
+        <div className="dash-help">
+          <span className="dash-brand-mark" aria-hidden="true">
+            <IconSpark size={16} style={{ color: "#100a02" }} />
+          </span>
+          <p className="dash-help-title">Need a hand?</p>
+          <p className="dash-help-text">
+            Setup steps, schema notes and next steps live in the project README.
+          </p>
+          <Link href="/" className="dash-help-btn">
+            View site
+          </Link>
+        </div>
+      </aside>
+
+      <div className="dash-main">
+        <header className="dash-topbar">
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <button
+              className="dash-iconbtn dash-burger"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Close menu" : "Open menu"}
+            >
+              {open ? <IconClose size={17} /> : <IconMenu size={17} />}
+            </button>
+            <div>
+              <p className="dash-crumb">
+                Pages / <strong>{pageTitle}</strong>
+              </p>
+              <h1 className="dash-pagetitle">{pageTitle}</h1>
+            </div>
+          </div>
+
+          <div className="dash-topbar-actions">
+            <label className="dash-search">
+              <IconSearch size={14} />
+              <input placeholder="Type here..." aria-label="Search" />
+            </label>
+
+            <Link
+              href={profileHref}
+              className="dash-userchip"
+              title="View your profile"
+            >
+              <span className="dash-userchip-text">
+                <span className="dash-userchip-name">{userName}</span>
+                {userTitle && (
+                  <span className="dash-userchip-title">{userTitle}</span>
+                )}
+              </span>
+
+              {userImage ? (
+                // eslint-disable-next-line @next/next/no-img-element -- avatars
+                // are arbitrary user-supplied URLs; next/image would need every
+                // host allow-listed in next.config.ts.
+                <img
+                  src={userImage}
+                  alt=""
+                  className="dash-avatar"
+                  width={36}
+                  height={36}
+                />
+              ) : (
+                <span className="dash-avatar dash-avatar--initials">
+                  {initials(userName)}
+                </span>
+              )}
+            </Link>
+
+            <button className="dash-iconbtn" aria-label="Notifications">
+              <IconBell size={16} />
+            </button>
+            <button
+              className="dash-iconbtn"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <IconLogout size={16} />
+            </button>
+          </div>
+        </header>
 
         {children}
       </div>

@@ -30,6 +30,14 @@ model User {
   active     Boolean     @default(true)
   joinedAt   DateTime    @default(now())
 
+  // "Sign out everywhere": any JWT issued before this instant is rejected in
+  // the jwt callback. Lets us revoke sessions without leaving the JWT strategy.
+  sessionsValidFrom DateTime?
+
+  // Notification preferences (Account tab of /admin/settings)
+  notifyOnLead     Boolean @default(true)
+  notifyOnPayment  Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -724,4 +732,18 @@ model ActivityLog {
   @@index([entity, entityId])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// ─── ORG SETTINGS ────────────────────────────────────────────────────────────
+// Single-row-per-key store. Values that used to be hardcoded in the source
+// (the MoMo number on /admin/payments, reference prefixes) live here so they
+// can be changed without a deploy. Read through lib/settings.ts, which applies
+// defaults for any key that has never been written.
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }

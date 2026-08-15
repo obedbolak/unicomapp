@@ -1,0 +1,300 @@
+/* app/dash-glass.css
+   Overrides for components/dashboard/dashboard.css — must be imported AFTER it.
+
+   The dashboard was built to paint its own opaque background (`.dash` had a
+   solid #030711, and `.dash::before` bottomed out in an opaque linear-gradient).
+   With the 3D scene now running on every route, both of those layers have to
+   become translucent or there is nothing to see through the cards.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dash {
+  /* Sheer enough to read the scene through, dark enough for white text */
+  --dash-card: linear-gradient(
+    127deg,
+    rgba(13, 27, 46, 0.38) 20%,
+    rgba(5, 10, 23, 0.46) 100%
+  );
+  background: transparent;
+}
+
+/* Keep the blue/orange ambient wash, lose the opaque base underneath it */
+.dash::before {
+  background:
+    radial-gradient(
+      900px 620px at 78% -8%,
+      rgba(0, 102, 255, 0.22) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      760px 520px at 4% 4%,
+      rgba(255, 140, 0, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 700px at 50% 108%,
+      rgba(0, 31, 84, 0.4) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(6, 16, 41, 0.55) 0%,
+      rgba(3, 7, 17, 0.45) 55%,
+      rgba(1, 4, 12, 0.6) 100%
+    );
+}
+
+/* The grid overlay reads as noise on top of the starfield */
+.dash::after {
+  opacity: 0.16;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────
+   Heavier blur than the marketing site: dashboard cards carry dense text and
+   numbers over a moving starfield, and blur is what keeps that legible.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dash-card {
+  backdrop-filter: blur(26px) saturate(135%);
+  -webkit-backdrop-filter: blur(26px) saturate(135%);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.28),
+    0 20px 44px -14px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.07) inset;
+}
+
+/* Sidebar stays denser — it is fixed, always on screen, and full of nav text */
+.dash-sidebar {
+  background: linear-gradient(
+    160deg,
+    rgba(9, 19, 38, 0.72) 0%,
+    rgba(3, 8, 20, 0.78) 100%
+  );
+}
+
+/* Tables sit on the card glass, so their hover needs to stay subtle */
+.dash-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+/* Dropdown popups are OS-rendered — they must stay opaque */
+.dash-select option {
+  background: #0b1426;
+}
+
+/* ── Stat tiles drift ─────────────────────────────────────────────────────
+   Only the KPI row floats. Forms and tables stay anchored — bobbing inputs
+   are miserable to click and bobbing numbers are hard to read.
+   `floatDrift` is defined in app/floating.css.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dash-kpis > .dash-card {
+  animation: floatDrift 8s ease-in-out infinite;
+  will-change: translate;
+}
+
+.dash-kpis > .dash-card:nth-child(3n + 1) {
+  animation-duration: 8s;
+  animation-delay: -0.6s;
+}
+.dash-kpis > .dash-card:nth-child(3n + 2) {
+  animation-duration: 9.5s;
+  animation-delay: -2.8s;
+}
+.dash-kpis > .dash-card:nth-child(3n + 3) {
+  animation-duration: 7.2s;
+  animation-delay: -4.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-kpis > .dash-card {
+    animation: none !important;
+  }
+}
+
+/* ── Form & detail helpers (profile / settings / invoices) ──────────────── */
+
+.dash-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.dash-hint {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--dash-ink-dim);
+  margin: 0.85rem 0 0;
+}
+
+.dash-hint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--dash-ink-muted);
+}
+
+.dash-deflist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.dash-deflist dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dash-ink-dim);
+  margin-bottom: 0.2rem;
+}
+
+.dash-deflist dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--dash-ink);
+  word-break: break-word;
+}
+
+.dash-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--dash-card-border);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+
+.dash-check + .dash-check {
+  margin-top: 0.6rem;
+}
+
+.dash-check input {
+  margin-top: 0.15rem;
+  accent-color: var(--color-primary);
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.dash-check strong {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.dash-check em {
+  display: block;
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--dash-ink-muted);
+  margin-top: 0.15rem;
+}
+
+textarea.dash-input {
+  font-family: inherit;
+  padding: 0.6rem 0.7rem;
+}
+
+/* Filter chip row above tables */
+.dash-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+/* Inline form inside a table cell */
+.dash-inline-form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dash-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+}
+
+/* ── Topbar user chip ─────────────────────────────────────────────────── */
+
+.dash-userchip {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--dash-ink);
+  border: 1px solid transparent;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+
+.dash-userchip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--dash-card-border);
+}
+
+.dash-userchip-text {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.dash-userchip-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dash-userchip-title {
+  font-size: 0.6875rem;
+  color: var(--dash-ink-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.dash-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex: none;
+  object-fit: cover;
+  /* The CEO avatar is a transparent PNG — without a fill it shows the
+     starfield straight through the head. */
+  background: linear-gradient(160deg, #123 0%, #061029 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.dash-avatar--initials {
+  display: grid;
+  place-items: center;
+  background: var(--gradient-primary);
+  color: #100a02;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.35);
+}
+
+@media (max-width: 640px) {
+  .dash-userchip-text {
+    display: none;
+  }
+  .dash-userchip {
+    padding: 0.25rem;
+  }
+}

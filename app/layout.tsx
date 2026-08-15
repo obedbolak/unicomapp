@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import "./floating.css";
 import ClientLayout from "./ClientLayout";
 import Header from "@/components/header";
 import ChatBot from "@/components/ChatBot";
 import Footer from "@/components/Footer";
+import SiteChrome from "@/components/SiteChrome";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -111,12 +113,18 @@ export default function RootLayout({
         />
       </head>
       <body className={dmSans.className}>
-        <Header />
+        {/* SiteChrome hides the marketing shell on /admin, /dashboard and
+            /login, which render their own full-screen sidebar layout. */}
+        <SiteChrome>
+          <Header />
+        </SiteChrome>
         <div className="app-wrapper">
           <ClientLayout>{children}</ClientLayout>
         </div>
-        <Footer />
-        <ChatBot />
+        <SiteChrome>
+          <Footer />
+          <ChatBot />
+        </SiteChrome>
       </body>
     </html>
   );

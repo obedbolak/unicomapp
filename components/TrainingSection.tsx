@@ -90,10 +90,9 @@ function PlanCard({ plan, index, isInView }: { plan: typeof plans[0]; index: num
       initial={{ opacity: 0, y: 28 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
       transition={{ delay: index * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`floating-card${plan.featured ? " floating-card--featured" : ""}`}
       style={{
         borderRadius: "1.25rem",
-        border: plan.featured ? "1px solid rgba(255,140,0,0.4)" : "1px solid var(--color-border)",
-        background: plan.featured ? "rgba(255,140,0,0.05)" : "var(--color-surface)",
         overflow: "hidden",
         position: "relative",
       }}

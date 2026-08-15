@@ -28,6 +28,9 @@ export default function ClientLayout({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // The scene now runs on every route, dashboards included — see
+  // app/dash-glass.css, which thins out the dashboard's own background layers
+  // so it can actually be seen through them.
   return (
     <>
       {/* 3D background — only after mount, wrapped so crashes can't

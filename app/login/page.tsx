@@ -3,6 +3,9 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import "@/components/dashboard/dashboard.css";
+import "@/app/dash-glass.css";
+import { IconSpark } from "@/components/dashboard/icons";
 
 function LoginForm() {
   const router = useRouter();
@@ -35,105 +38,94 @@ function LoginForm() {
     router.refresh();
   }
 
-  const font = "var(--font-display)";
-
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem 1.25rem",
-      }}
+    <div
+      className="dash"
+      style={{ display: "grid", placeItems: "center", padding: "2rem 1.25rem" }}
     >
       <form
         onSubmit={handleSubmit}
+        className="dash-card"
         style={{
           width: "100%",
           maxWidth: 400,
-          borderRadius: "1.25rem",
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
           padding: "2rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1rem",
+          gap: "0.9rem",
         }}
       >
-        <div style={{ marginBottom: "0.5rem" }}>
+        <div style={{ marginBottom: "0.4rem" }}>
+          <span className="dash-brand-mark" aria-hidden="true">
+            <IconSpark size={17} style={{ color: "#100a02" }} />
+          </span>
           <h1
             style={{
-              fontFamily: font,
-              fontSize: "1.5rem",
+              fontSize: "1.4rem",
               fontWeight: 900,
-              color: "var(--color-text)",
-              margin: 0,
+              margin: "0.9rem 0 0.25rem",
+              letterSpacing: "-0.02em",
             }}
           >
             UnicomTeam
           </h1>
           <p
             style={{
-              fontFamily: font,
-              fontSize: "0.875rem",
-              color: "var(--color-text-muted)",
-              margin: "0.35rem 0 0",
+              fontSize: "0.8125rem",
+              color: "var(--dash-ink-muted)",
+              margin: 0,
             }}
           >
             Sign in to your team dashboard.
           </p>
         </div>
 
-        <label style={labelStyle}>Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          style={inputStyle}
-        />
+        <label>
+          <span className="dash-field-label">Email</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+            className="dash-input"
+            style={{ padding: "0.7rem 0.9rem", fontSize: "0.8125rem" }}
+          />
+        </label>
 
-        <label style={labelStyle}>Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-          style={inputStyle}
-        />
+        <label>
+          <span className="dash-field-label">Password</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+            className="dash-input"
+            style={{ padding: "0.7rem 0.9rem", fontSize: "0.8125rem" }}
+          />
+        </label>
 
         {error && (
-          <span
-            style={{ fontFamily: font, fontSize: "0.75rem", color: "#ef4444" }}
-          >
-            {error}
-          </span>
+          <span style={{ fontSize: "0.75rem", color: "#f87171" }}>{error}</span>
         )}
 
         <button
           type="submit"
           disabled={loading}
+          className="dash-btn dash-btn--primary"
           style={{
-            marginTop: "0.5rem",
-            padding: "0.8rem 1.5rem",
-            borderRadius: "0.75rem",
-            background: "var(--color-primary)",
-            border: "1px solid var(--color-primary)",
-            color: "#000",
-            fontFamily: font,
-            fontSize: "0.875rem",
-            fontWeight: 700,
-            cursor: loading ? "not-allowed" : "pointer",
+            marginTop: "0.4rem",
+            padding: "0.8rem",
+            fontSize: "0.8125rem",
             opacity: loading ? 0.6 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
           {loading ? "Signing in…" : "Sign in →"}
         </button>
       </form>
-    </main>
+    </div>
   );
 }
 
@@ -144,22 +136,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  fontFamily: "var(--font-display)",
-  fontSize: "0.8125rem",
-  fontWeight: 600,
-  color: "var(--color-text)",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.7rem 0.9rem",
-  borderRadius: "0.65rem",
-  border: "1px solid var(--color-border)",
-  background: "rgba(255,255,255,0.04)",
-  color: "var(--color-text)",
-  fontFamily: "var(--font-display)",
-  fontSize: "0.875rem",
-  outline: "none",
-};

@@ -1,0 +1,162 @@
+/* ── FLOATING GLASS CARDS ──────────────────────────────────────────────────
+   Lets the 3D scene mounted in ClientLayout read *through* the cards, so they
+   sit in front of it instead of on top of it.
+
+   Note: the drift animates the `translate` property, NOT `transform`. Framer
+   Motion writes an inline `transform` on these same elements for its entrance
+   animation — `translate` is a separate CSS property, so the two compose
+   instead of fighting each other.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@keyframes floatDrift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+
+.floating-card {
+  /* Glass: dark enough to keep text legible, sheer enough to see the scene */
+  background: rgba(13, 27, 46, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+  /* Layered shadow is what actually reads as "floating":
+     tight contact shadow + wide ambient drop + inner top highlight. */
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    0 18px 40px -12px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+
+  animation: floatDrift 7s ease-in-out infinite;
+  will-change: translate;
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+/* Stagger so a row breathes instead of pulsing in lockstep */
+.floating-card:nth-child(3n + 1) {
+  animation-duration: 7s;
+  animation-delay: -0.4s;
+}
+.floating-card:nth-child(3n + 2) {
+  animation-duration: 8.5s;
+  animation-delay: -2.1s;
+}
+.floating-card:nth-child(3n + 3) {
+  animation-duration: 6.2s;
+  animation-delay: -3.6s;
+}
+
+/* Lift on hover — shadow only, so it can't collide with the drift */
+.floating-card:hover {
+  border-color: rgba(255, 140, 0, 0.28) !important;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 32px 64px -16px rgba(0, 0, 0, 0.65),
+    0 0 40px -8px rgba(255, 140, 0, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+/* Featured variant keeps its orange cast */
+.floating-card--featured {
+  background: rgba(40, 22, 4, 0.45) !important;
+  border-color: rgba(255, 140, 0, 0.35) !important;
+}
+
+/* Accordion rows are small — a shorter throw reads better than a big drift */
+.floating-card--tight {
+  animation-name: floatDriftTight;
+}
+
+@keyframes floatDriftTight {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+/* The carousel scrolls horizontally; a vertical drift there fights the scroll,
+   so those cards get the glass and the depth but stay put. */
+.floating-card--static {
+  animation: none;
+}
+
+/* ── HERO IMAGE CARDS ──────────────────────────────────────────────────────
+   The photos are opaque, so glass does nothing for them. What sells "floating
+   in space" here is depth: a wide ambient shadow, a rim highlight, and two
+   different drift speeds so they read as sitting at different distances.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.hero-image-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 28px 60px -16px rgba(0, 0, 0, 0.7),
+    0 0 60px -20px rgba(51, 133, 255, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  animation: floatDrift 9s ease-in-out infinite;
+  will-change: translate;
+  transition: box-shadow 0.4s ease;
+}
+
+.hero-image-card.second {
+  animation-duration: 11s;
+  animation-delay: -3.2s;
+}
+
+.hero-image-card:hover {
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.45),
+    0 40px 80px -20px rgba(0, 0, 0, 0.75),
+    0 0 80px -20px rgba(255, 140, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.14) inset;
+}
+
+/* ── HERO TEXT SCRIM ───────────────────────────────────────────────────────
+   The 3D shapes drift straight through the headline. Rather than banish them
+   to the edges (they'd fall off-screen on narrow viewports), we sink a soft
+   radial pool of the background colour behind the text only. Shapes stay
+   visible around and behind it; the type stays readable.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.hero-content {
+  position: relative;
+}
+
+.hero-content::before {
+  content: "";
+  position: absolute;
+  inset: -12% -18% -12% -20%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 38% 45%,
+    rgba(0, 8, 20, 0.92) 0%,
+    rgba(0, 8, 20, 0.75) 38%,
+    rgba(0, 8, 20, 0.35) 62%,
+    transparent 80%
+  );
+}
+
+.hero-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-card,
+  .floating-card--tight,
+  .hero-image-card {
+    animation: none !important;
+  }
+}

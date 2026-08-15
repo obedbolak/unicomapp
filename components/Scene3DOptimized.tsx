@@ -35,7 +35,7 @@ function FloatingShapesOptimized() {
             color="#FF8C00"
             wireframe
             transparent
-            opacity={0.25}
+            opacity={0.4}
           />
         </mesh>
       </Float>
@@ -47,7 +47,7 @@ function FloatingShapesOptimized() {
             color="#3385ff"
             wireframe
             transparent
-            opacity={0.2}
+            opacity={0.35}
           />
         </mesh>
       </Float>

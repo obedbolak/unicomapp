@@ -23,10 +23,13 @@ export async function nextEnrollmentReference(date = new Date()) {
   return nextSequence(prefix, count);
 }
 
-/** UCT-INV-2026-0001 */
-export async function nextInvoiceNumber(date = new Date()) {
+/** UCT-INV-2026-0001 — base prefix comes from Settings → invoicePrefix. */
+export async function nextInvoiceNumber(
+  basePrefix = "UCT-INV",
+  date = new Date(),
+) {
   const year = date.getFullYear();
-  const prefix = `UCT-INV-${year}`;
+  const prefix = `${basePrefix}-${year}`;
   const count = await prisma.invoice.count({
     where: { number: { startsWith: prefix } },
   });

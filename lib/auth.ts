@@ -101,6 +101,27 @@ export const authOptions: NextAuthOptions = {
         token.department = (user as any).department ?? null;
       }
 
+      // "Sign out everywhere": reject any token issued before the user's
+      // sessionsValidFrom stamp. Costs one indexed lookup per session check,
+      // which is the price of revocable sessions without switching the
+      // strategy from jwt to database.
+      if (token.id && typeof token.iat === "number") {
+        const row = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { sessionsValidFrom: true, active: true },
+        });
+        // next-auth v4 types jwt() as returning JWT, but returning a nullish
+        // value is how you invalidate — hence the cast.
+        const revoked = null as unknown as typeof token;
+        if (!row || !row.active) return revoked;
+        if (
+          row.sessionsValidFrom &&
+          token.iat * 1000 < row.sessionsValidFrom.getTime()
+        ) {
+          return revoked;
+        }
+      }
+
       // Refresh role from the DB when the client calls update()
       if (trigger === "update" && token.id) {
         const fresh = await prisma.user.findUnique({
@@ -129,6 +150,17 @@ export const authOptions: NextAuthOptions = {
   },
 
   secret: process.env.NEXTAUTH_SECRET,
+
+  debug: !isProduction,
+
+  logger: {
+    error(code, metadata) {
+      console.error("[NEXTAUTH][ERROR]", code, metadata);
+    },
+    warn(code) {
+      console.warn("[NEXTAUTH][WARN]", code);
+    },
+  },
 };
 
 /* ── Server-side helpers ──────────────────────────────────────────────────── */

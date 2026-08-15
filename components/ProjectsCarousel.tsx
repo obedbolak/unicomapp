@@ -213,13 +213,11 @@ export default function ProjectsCarousel() {
         {loopedProjects.map((project, i) => (
           <div
             key={i}
-            className="proj-card-inner"
+            className="proj-card-inner floating-card floating-card--static"
             style={{
               flexShrink: 0,
               width: "clamp(280px, 75vw, 680px)",
               borderRadius: "1rem",
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface)",
               overflow: "hidden",
             }}
           >
