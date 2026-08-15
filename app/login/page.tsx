@@ -1,11 +1,13 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "@/components/dashboard/dashboard.css";
 import "@/app/dash-glass.css";
-import { IconSpark } from "@/components/dashboard/icons";
+
 
 function LoginForm() {
   const router = useRouter();
@@ -56,18 +58,34 @@ function LoginForm() {
         }}
       >
         <div style={{ marginBottom: "0.4rem" }}>
-          <span className="dash-brand-mark" aria-hidden="true">
-            <IconSpark size={17} style={{ color: "#100a02" }} />
-          </span>
+          {/* Same mark as the site header and the dashboard sidebar. */}
+          <Link
+            href="/"
+            className="dash-brand"
+            style={{ padding: 0, marginBottom: "0.9rem" }}
+            title="Back to the website"
+          >
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={38}
+              height={31}
+              className="dash-brand-logo"
+              priority
+            />
+            <span className="dash-brand-text" style={{ fontSize: "0.9375rem" }}>
+              UNICOM<span className="gradient-text">TEAM</span>
+            </span>
+          </Link>
           <h1
             style={{
               fontSize: "1.4rem",
               fontWeight: 900,
-              margin: "0.9rem 0 0.25rem",
+              margin: "0 0 0.25rem",
               letterSpacing: "-0.02em",
             }}
           >
-            UnicomTeam
+            Sign in
           </h1>
           <p
             style={{

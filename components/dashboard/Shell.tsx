@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState, type ReactNode } from "react";
@@ -104,14 +105,19 @@ export default function Shell({
       )}
 
       <aside className="dash-sidebar">
-        <Link href="/" className="dash-brand">
-          <span className="dash-brand-mark">
-            <IconSpark size={17} style={{ color: "#100a02" }} />
-          </span>
+        {/* Same mark as the public site header, so the dashboard doesn't feel
+            like a different product. */}
+        <Link href="/" className="dash-brand" title="Back to the website">
+          <Image
+            src="/images/logo.png"
+            alt=""
+            width={32}
+            height={26}
+            className="dash-brand-logo"
+            priority
+          />
           <span className="dash-brand-text">
-            Unicom
-            <br />
-            Team
+            UNICOM<span className="gradient-text">TEAM</span>
           </span>
         </Link>
 

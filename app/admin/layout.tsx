@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import Shell, { type NavItem } from "@/components/dashboard/Shell";
 
@@ -16,6 +17,7 @@ const nav: NavItem[] = [
   { href: "/admin/certificates", label: "Certificates", icon: "award" },
   { href: "/admin/projects", label: "Projects", icon: "briefcase" },
   { href: "/admin/team", label: "Team", icon: "team" },
+  { href: "/admin/wallet", label: "Wallet", icon: "wallet" },
 
   {
     href: "/admin/activity",
@@ -43,12 +45,22 @@ export default async function AdminLayout({
   const admin = await requireAdmin();
   if (!admin) redirect("/login?callbackUrl=/admin");
 
+  // Read the display fields from the database rather than the session. The
+  // session carries a snapshot taken when the JWT was issued, so editing your
+  // profile would leave the topbar showing the old name and photo until the
+  // token happened to be re-issued. This layout is already dynamic (it reads
+  // cookies), so the query costs one indexed lookup per navigation.
+  const me = await prisma.user.findUnique({
+    where: { id: admin.id },
+    select: { name: true, email: true, title: true, image: true },
+  });
+
   return (
     <Shell
       nav={nav}
-      userName={admin.name ?? admin.email ?? "Admin"}
-      userTitle={admin.title}
-      userImage={admin.image}
+      userName={me?.name ?? me?.email ?? "Admin"}
+      userTitle={me?.title}
+      userImage={me?.image}
       profileHref="/admin/profile"
     >
       {children}

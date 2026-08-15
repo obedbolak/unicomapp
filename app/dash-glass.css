@@ -221,6 +221,32 @@ textarea.dash-input {
   font-size: 0.75rem;
 }
 
+/* ── Brand mark ──────────────────────────────────────────────────────────
+   Matches the public site header: logo image + UNICOM/TEAM wordmark, rather
+   than the old gradient square with a spark glyph.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dash-brand-logo {
+  width: 32px;
+  height: auto;
+  flex: none;
+  object-fit: contain;
+}
+
+.dash-brand-text {
+  /* One line now, so the old two-line spacing no longer applies. */
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  text-transform: none;
+  transition: color 0.2s ease;
+}
+
+.dash-brand:hover .dash-brand-text {
+  color: var(--color-primary);
+}
+
 /* ── Topbar user chip ─────────────────────────────────────────────────── */
 
 .dash-userchip {

@@ -21,21 +21,32 @@ export async function updateProfile(formData: FormData) {
   const name = str("name", 120);
   if (!name) throw new Error("Name is required");
 
+  const image = str("image", 500) || null;
+
+  // Job title is an organisational fact, not a personal preference. The input
+  // is disabled for staff, but a disabled input is a UI convention, not a
+  // permission — so the value is simply ignored unless the caller is an admin.
+  const isAdmin = user.role?.includes("ADMIN") ?? false;
+  const title = isAdmin ? str("title", 120) || null : undefined;
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
       name,
-      title: str("title", 120) || null,
+      ...(title !== undefined ? { title } : {}),
       phone: str("phone", 40) || null,
       bio: str("bio", 1000) || null,
-      image: str("image", 500) || null,
+      image,
     },
   });
 
   await logActivity(user.id, "user.profile_updated", "User", user.id);
 
-  revalidatePath("/admin/profile");
-  revalidatePath("/admin");
+  // "layout" scope, not the default "page" — the avatar lives in the Shell,
+  // which is rendered by the layout. Revalidating only the page would leave
+  // the topbar showing the previous photo.
+  revalidatePath("/admin", "layout");
+  revalidatePath("/dashboard", "layout");
 }
 
 export async function changePassword(formData: FormData) {

@@ -5,9 +5,11 @@ import ProfilePanels from "@/components/dashboard/ProfilePanels";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminProfilePage() {
-  const session = await requireUser();
-  if (!session) redirect("/login?callbackUrl=/admin/profile");
+export default async function StaffProfilePage() {
+  const user = await requireUser();
+  if (!user) redirect("/login?callbackUrl=/dashboard/profile");
+
+  const isAdmin = user.role?.includes("ADMIN") ?? false;
 
   return (
     <>
@@ -15,8 +17,7 @@ export default async function AdminProfilePage() {
         title="Profile"
         subtitle="Your details, password and active sessions."
       />
-      {/* Admins may edit their own job title; staff may not. */}
-      <ProfilePanels userId={session.id} canEditTitle />
+      <ProfilePanels userId={user.id} canEditTitle={isAdmin} />
     </>
   );
 }

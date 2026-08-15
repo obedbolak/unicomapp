@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { nextCertificateNumber } from "@/lib/reference";
+import { creditProjectShares } from "@/lib/wallet";
 import type {
   CertificateType,
   EnrollmentStatus,
@@ -200,8 +201,23 @@ export async function updateProjectStatus(formData: FormData) {
   });
   await log(admin.id, "project.status_changed", "Project", id, { status });
 
+  // Delivery is the moment revenue shares are earned. creditProjectShares is
+  // idempotent, so toggling a project in and out of DELIVERED cannot pay
+  // anyone twice.
+  if (status === "DELIVERED") {
+    const { created, skipped } = await creditProjectShares(id, admin.id);
+    if (created > 0) {
+      console.log(`[wallet] credited ${created} share(s) for project ${id}`);
+    }
+    if (skipped.length > 0) {
+      console.log(`[wallet] project ${id}: ${skipped.join("; ")}`);
+    }
+  }
+
   revalidatePath("/admin/projects");
   revalidatePath("/admin");
+  revalidatePath("/admin/wallet");
+  revalidatePath("/dashboard");
 }
 
 export async function toggleProjectPublished(formData: FormData) {

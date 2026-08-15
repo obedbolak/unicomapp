@@ -108,7 +108,18 @@ export const authOptions: NextAuthOptions = {
       if (token.id && typeof token.iat === "number") {
         const row = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { sessionsValidFrom: true, active: true },
+          select: {
+            sessionsValidFrom: true,
+            active: true,
+            // Read on every check so profile edits show up everywhere without
+            // signing out. This lookup already had to happen for the session
+            // revocation check, so the extra columns are free.
+            name: true,
+            image: true,
+            title: true,
+            department: true,
+            role: true,
+          },
         });
         // next-auth v4 types jwt() as returning JWT, but returning a nullish
         // value is how you invalidate — hence the cast.
@@ -120,6 +131,13 @@ export const authOptions: NextAuthOptions = {
         ) {
           return revoked;
         }
+
+        // next-auth maps token.picture onto session.user.image.
+        token.name = row.name;
+        token.picture = row.image;
+        token.title = row.title;
+        token.department = row.department;
+        token.role = row.role;
       }
 
       // Refresh role from the DB when the client calls update()

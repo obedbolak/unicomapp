@@ -16,6 +16,7 @@ import {
   IconExternal,
   IconTeam,
 } from "@/components/dashboard/icons";
+import ProjectTeam from "@/components/dashboard/ProjectTeam";
 import type { ProjectStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -155,6 +156,31 @@ export default async function ProjectsPage() {
                 <div style={{ marginTop: "0.4rem" }}>
                   <Badge value={p.status} />
                 </div>
+              </td>
+            </tr>
+          ))}
+          {/* Team + revenue shares, one collapsible row per project. Kept in a
+              <details> so the table stays scannable until you need to edit. */}
+          {projects.map((p) => (
+            <tr key={`${p.id}-team`}>
+              <td colSpan={7} style={{ paddingTop: 0 }}>
+                <details>
+                  <summary
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "0.75rem",
+                      color: "var(--dash-ink-muted)",
+                      padding: "0.25rem 0",
+                    }}
+                  >
+                    Team &amp; shares — {p.title}
+                  </summary>
+                  <ProjectTeam
+                    projectId={p.id}
+                    budget={p.budget ? p.budget.toString() : null}
+                    currency={p.currency}
+                  />
+                </details>
               </td>
             </tr>
           ))}

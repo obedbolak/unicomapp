@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   const { category, filename, contentType, size } = body;
 
   if (!category || !isCategory(category)) {
+    console.warn(`[uploads] unknown category: ${category}`);
     return NextResponse.json(
       {
         error: `Unknown category. Expected one of: ${Object.keys(CATEGORIES).join(", ")}`,
@@ -43,8 +44,17 @@ export async function POST(req: Request) {
     );
   }
   if (!filename || !contentType || typeof size !== "number") {
+    // An empty contentType usually means the OS could not identify the file —
+    // common with HEIC on older browsers and with extensionless files.
+    console.warn(
+      `[uploads] incomplete request: filename=${filename} contentType=${contentType} size=${size}`,
+    );
     return NextResponse.json(
-      { error: "filename, contentType and size are required" },
+      {
+        error: !contentType
+          ? "Your browser could not identify this file's type. Try a JPG or PNG."
+          : "filename, contentType and size are required",
+      },
       { status: 400 },
     );
   }
@@ -61,6 +71,11 @@ export async function POST(req: Request) {
 
   const invalid = validateUpload(category, contentType, size);
   if (invalid) {
+    // Logged as well as returned — a bare "400" in the terminal says nothing
+    // about which rule tripped.
+    console.warn(
+      `[uploads] rejected ${filename} (${contentType}, ${size} bytes): ${invalid.error}`,
+    );
     return NextResponse.json(invalid, { status: 400 });
   }
 

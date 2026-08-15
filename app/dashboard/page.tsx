@@ -6,11 +6,13 @@ import { updateTaskStatus } from "../admin/actions";
 import {
   Badge,
   Card,
+  PageHeader,
   StatGrid,
   StatTile,
   Table,
   shortDate,
 } from "@/components/dashboard/ui";
+import WalletCard from "@/components/dashboard/WalletCard";
 import {
   IconBriefcase,
   IconCheck,
@@ -188,6 +190,15 @@ export default async function StaffDashboard() {
           ))}
         </Table>
       </Card>
+
+      {/* ── Wallet ── */}
+      <div style={{ marginTop: "2.25rem" }}>
+        <PageHeader
+          title="Wallet"
+          subtitle="Your share of delivered projects, and payouts."
+        />
+        <WalletCard userId={user.id} />
+      </div>
     </>
   );
 }

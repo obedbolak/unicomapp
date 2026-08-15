@@ -31,16 +31,36 @@ export const r2 = new S3Client({
    are enforced server-side and can't be edited away in devtools.
    ────────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Image types accepted for avatars and project covers.
+ *
+ * heic/heif are included because iPhones shoot in HEIC by default — leaving
+ * them out means every iPhone user hits a rejection with no idea why. Safari
+ * renders them natively; other browsers will not, so a follow-up conversion
+ * step is worth adding if that becomes common.
+ */
+const IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+] as const;
+
 export const CATEGORIES = {
   avatars: {
     visibility: "public",
-    maxBytes: 2 * 1024 * 1024, // 2 MB
-    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
+    // Phone photos are routinely 3-5 MB straight off the camera roll, and an
+    // 8 MB avatar is better than a rejected upload.
+    maxBytes: 8 * 1024 * 1024,
+    mimeTypes: IMAGE_TYPES,
   },
   projects: {
     visibility: "public",
-    maxBytes: 5 * 1024 * 1024, // 5 MB
-    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
+    maxBytes: 10 * 1024 * 1024,
+    mimeTypes: IMAGE_TYPES,
   },
   certificates: {
     visibility: "private",

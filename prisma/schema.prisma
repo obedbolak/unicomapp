@@ -56,6 +56,11 @@ model User {
   activityLogs           ActivityLog[]
   uploads                Upload[]            @relation("UploadedBy")
 
+  // Wallet
+  earnings        Earning[]       @relation("UserEarnings")
+  payoutRequests  PayoutRequest[] @relation("UserPayouts")
+  decidedPayouts  PayoutRequest[] @relation("PayoutDecidedBy")
+
   @@map("users")
 }
 
@@ -182,6 +187,7 @@ model Project {
   tasks       Task[]
   timeEntries TimeEntry[]
   invoices    Invoice[]
+  earnings    Earning[]
 
   @@index([clientId])
   @@index([status])
@@ -227,6 +233,12 @@ model ProjectAssignment {
   userId        String
   role          String? // "Frontend", "Design lead", …
   allocationPct Int? // rough % of their time
+
+  /// Revenue share of the project budget, as a percentage. Distinct from
+  /// allocationPct: one is how much of their time this takes, the other is
+  /// how much of the money is theirs. Credited when the project is delivered.
+  sharePct Decimal? @db.Decimal(5, 2)
+
   assignedAt    DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -786,6 +798,88 @@ model Upload {
   @@index([category, createdAt])
   @@index([confirmed])
   @@map("uploads")
+}
+
+// ─── STAFF WALLET ──────────────────────────────────────────────────────────
+// A ledger, not a balance column. Balances are derived by summing rows, so
+// there is no single number that can silently drift out of step with the
+// history behind it.
+//
+//   available = credited earnings − (paid payouts + payouts in flight)
+
+model Earning {
+  id     String @id @default(cuid())
+  userId String
+
+  projectId String?
+  source    EarningSource @default(PROJECT_SHARE)
+  status    EarningStatus @default(CREDITED)
+
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @default("XAF")
+
+  /// The percentage this was calculated from, snapshotted at credit time.
+  /// Kept so changing an assignment later never rewrites past earnings.
+  sharePct Decimal? @db.Decimal(5, 2)
+
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User     @relation("UserEarnings", fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  /// One project share per person per project — makes crediting on delivery
+  /// idempotent, so re-saving a delivered project cannot pay someone twice.
+  @@unique([projectId, userId, source])
+  @@index([userId, status])
+  @@map("earnings")
+}
+
+enum EarningSource {
+  PROJECT_SHARE
+  BONUS
+  ADJUSTMENT
+}
+
+enum EarningStatus {
+  CREDITED
+  CANCELLED
+}
+
+model PayoutRequest {
+  id     String @id @default(cuid())
+  userId String
+
+  amount   Decimal      @db.Decimal(12, 2)
+  currency String       @default("XAF")
+  status   PayoutStatus @default(REQUESTED)
+
+  method      PaymentMethod @default(MOMO)
+  destination String? // MoMo number to send to
+  note        String?
+  reference   String? // transaction reference once sent
+
+  requestedAt DateTime  @default(now())
+  decidedAt   DateTime?
+  paidAt      DateTime?
+
+  decidedById String?
+
+  user      User  @relation("UserPayouts", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy User? @relation("PayoutDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([status, requestedAt])
+  @@map("payout_requests")
+}
+
+enum PayoutStatus {
+  REQUESTED
+  APPROVED
+  PAID
+  REJECTED
 }
 
 // A file attached to a training programme — slides, exercises, recordings.
