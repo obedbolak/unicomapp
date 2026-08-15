@@ -71,6 +71,12 @@ export default async function ProfilePanels({
           title="Your details"
           subtitle="Shown on the team page and in the topbar."
         >
+          {/* Outside the form on purpose — the avatar saves itself the moment
+              it uploads, so it is not part of what "Save changes" submits. */}
+          <div style={{ marginBottom: "1.35rem" }}>
+            <AvatarField defaultValue={user.image} name={user.name} />
+          </div>
+
           <form action={updateProfile}>
             <div className="dash-formgrid">
               <label>

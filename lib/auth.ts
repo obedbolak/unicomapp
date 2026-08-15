@@ -105,39 +105,56 @@ export const authOptions: NextAuthOptions = {
       // sessionsValidFrom stamp. Costs one indexed lookup per session check,
       // which is the price of revocable sessions without switching the
       // strategy from jwt to database.
+      //
+      // FAILS OPEN. Any error here — a dropped connection, a stale Prisma
+      // client, a Neon cold start — must not sign anyone out. A session is
+      // only revoked when the database positively says so; if we cannot ask,
+      // the existing token stands. Failing closed meant one blip logged
+      // everybody out on refresh.
       if (token.id && typeof token.iat === "number") {
-        const row = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: {
-            sessionsValidFrom: true,
-            active: true,
-            // Read on every check so profile edits show up everywhere without
-            // signing out. This lookup already had to happen for the session
-            // revocation check, so the extra columns are free.
-            name: true,
-            image: true,
-            title: true,
-            department: true,
-            role: true,
-          },
-        });
-        // next-auth v4 types jwt() as returning JWT, but returning a nullish
-        // value is how you invalidate — hence the cast.
-        const revoked = null as unknown as typeof token;
-        if (!row || !row.active) return revoked;
-        if (
-          row.sessionsValidFrom &&
-          token.iat * 1000 < row.sessionsValidFrom.getTime()
-        ) {
-          return revoked;
-        }
+        try {
+          const row = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              sessionsValidFrom: true,
+              active: true,
+              name: true,
+              image: true,
+              title: true,
+              department: true,
+              role: true,
+            },
+          });
 
-        // next-auth maps token.picture onto session.user.image.
-        token.name = row.name;
-        token.picture = row.image;
-        token.title = row.title;
-        token.department = row.department;
-        token.role = row.role;
+          // next-auth v4 types jwt() as returning JWT, but a nullish return is
+          // how you invalidate — hence the cast.
+          const revoked = null as unknown as typeof token;
+
+          // Row missing entirely means the account was deleted.
+          if (row === null) return revoked;
+
+          if (!row.active) return revoked;
+
+          if (
+            row.sessionsValidFrom &&
+            token.iat * 1000 < row.sessionsValidFrom.getTime()
+          ) {
+            return revoked;
+          }
+
+          // Keep the token in step with the database so role changes take
+          // effect without signing out. next-auth maps picture -> image.
+          token.name = row.name;
+          token.picture = row.image;
+          token.title = row.title;
+          token.department = row.department;
+          token.role = row.role;
+        } catch (err) {
+          console.warn(
+            "[auth] session check failed, keeping the existing token:",
+            err instanceof Error ? err.message : err,
+          );
+        }
       }
 
       // Refresh role from the DB when the client calls update()
