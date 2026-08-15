@@ -86,6 +86,10 @@ function BackToTop() {
 
 export default function Page() {
   useEffect(() => {
+    // Smooth scrolling is motion the user did not ask for. Honour the OS
+    // setting rather than forcing it on everyone.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     document.documentElement.style.scrollBehavior = "smooth";
     return () => {
       document.documentElement.style.scrollBehavior = "auto";

@@ -179,7 +179,8 @@ function providerChain(): Provider[] {
 }
 
 export type ChatResult = {
-  reply: string;
+  /** null when every configured provider failed. */
+  reply: string | null;
   /** Which provider actually answered — handy for debugging quota problems. */
   provider: ProviderName | null;
 };
@@ -191,7 +192,7 @@ export type ChatResult = {
 export async function chatComplete(
   messages: ChatMessage[],
   maxTokens = 500,
-): Promise<ChatResult & { reply: string | null }> {
+): Promise<ChatResult> {
   const chain = providerChain();
 
   if (chain.length === 0) {

@@ -150,6 +150,8 @@ export default function ProjectsCarousel() {
           ).map(({ dir, Icon }) => (
             <button
               key={dir}
+              aria-label={`Scroll projects ${dir}`}
+              title={`Scroll ${dir}`}
               onClick={() => {
                 isPaused.current = true;
                 scroll(dir);
@@ -213,6 +215,10 @@ export default function ProjectsCarousel() {
         {loopedProjects.map((project, i) => (
           <div
             key={i}
+            /* The list is duplicated to fake an infinite loop, so the second
+               copy is hidden from screen readers — otherwise they announce
+               ten projects when there are five. */
+            aria-hidden={i >= projects.length}
             className="proj-card-inner floating-card floating-card--static"
             style={{
               flexShrink: 0,
@@ -228,7 +234,11 @@ export default function ProjectsCarousel() {
             >
               <img
                 src={project.image}
-                alt={project.title}
+                alt={`${project.title} — ${project.category}`}
+                width={440}
+                height={400}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: "100%",
                   height: "100%",

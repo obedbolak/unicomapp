@@ -113,7 +113,14 @@ export default function HeroSection() {
 
               <div className="hero-images-mobile">
                 <div className="hero-image-card second">
-                  <img src="/team/ceo.png" alt="Modern workspace" />
+                  <img
+                    src="/team/ceo.png"
+                    alt="Obed Bolak, CEO and Full-Stack Developer at UnicomTeam"
+                    width={420}
+                    height={310}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               </div>
             </div>
@@ -154,13 +161,27 @@ export default function HeroSection() {
             className="hero-images"
           >
             <div className="hero-image-card">
+              {/* TODO: replace with a photo of the actual UnicomTeam team —
+                  this is Unsplash stock presented as "us" on a company site. */}
               <img
                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80"
-                alt="Team collaborating"
+                alt="A software team collaborating around laptops"
+                width={600}
+                height={400}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
             <div className="hero-image-card second">
-              <img src="/team/ceo.png" alt="Modern workspace" />
+              <img
+                src="/team/ceo.png"
+                alt="Obed Bolak, CEO and Full-Stack Developer at UnicomTeam"
+                width={420}
+                height={310}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           </motion.div>
         </div>
