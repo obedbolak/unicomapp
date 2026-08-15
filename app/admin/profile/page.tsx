@@ -13,6 +13,7 @@ import {
   Table,
   shortDate,
 } from "@/components/dashboard/ui";
+import AvatarField from "@/components/dashboard/AvatarField";
 
 export const dynamic = "force-dynamic";
 
@@ -97,16 +98,7 @@ export default async function ProfilePage() {
                 />
               </label>
 
-              <label>
-                <span className="dash-field-label">Avatar URL</span>
-                <input
-                  name="image"
-                  defaultValue={user.image ?? ""}
-                  maxLength={500}
-                  placeholder="/team/ceo.png"
-                  className="dash-input"
-                />
-              </label>
+              <AvatarField defaultValue={user.image} />
             </div>
 
             <label style={{ display: "block", marginTop: "0.85rem" }}>

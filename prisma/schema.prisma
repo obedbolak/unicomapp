@@ -54,6 +54,7 @@ model User {
   handledMessages        ContactMessage[]    @relation("MessageHandler")
   confirmedPayments      Payment[]           @relation("PaymentConfirmedBy")
   activityLogs           ActivityLog[]
+  uploads                Upload[]            @relation("UploadedBy")
 
   @@map("users")
 }
@@ -359,6 +360,7 @@ model Program {
 
   cohorts     Cohort[]
   enrollments Enrollment[]
+  materials   ProgramMaterial[]
 
   @@index([kind, published])
   @@map("programs")
@@ -535,6 +537,11 @@ model Certificate {
 
   enrollmentId String?     @unique
   enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+
+  // Signed PDF of the certificate, in the private bucket. Read through
+  // /api/uploads/download — never a permanent public URL.
+  fileId String?
+  file   Upload? @relation("CertificateFile", fields: [fileId], references: [id], onDelete: SetNull)
 
   revokedAt     DateTime?
   revokedReason String?
@@ -746,4 +753,58 @@ model Setting {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+// ─── FILE UPLOADS (Cloudflare R2) ──────────────────────────────────────────
+// One row per object in R2. Without this there is no way to list what exists,
+// find orphans after a record is deleted, or read a private file — private
+// objects are fetched by key, and a bare URL column cannot hold one.
+//
+// `confirmed` is false between issuing a presigned URL and the browser
+// reporting success, so abandoned uploads are identifiable and sweepable.
+
+model Upload {
+  id          String  @id @default(cuid())
+  key         String  @unique // object key within the bucket
+  bucket      String
+  category    String // avatars | projects | certificates | materials
+  visibility  String // public | private
+  filename    String // original name, for display
+  contentType String
+  size        Int // bytes
+  url         String? // permanent CDN URL; null for private objects
+  confirmed   Boolean @default(false)
+
+  uploadedById String?
+  uploadedBy   User?   @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  materials    ProgramMaterial[]
+  certificates Certificate[]     @relation("CertificateFile")
+
+  @@index([category, createdAt])
+  @@index([confirmed])
+  @@map("uploads")
+}
+
+// A file attached to a training programme — slides, exercises, recordings.
+model ProgramMaterial {
+  id          String  @id @default(cuid())
+  programId   String
+  uploadId    String
+  title       String
+  description String?
+  sortOrder   Int     @default(0)
+
+  /// When true, only enrolled students may request a download link.
+  studentsOnly Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  upload  Upload  @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([programId, sortOrder])
+  @@map("program_materials")
 }
