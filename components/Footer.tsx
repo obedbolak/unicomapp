@@ -405,7 +405,14 @@ export default function Footer() {
         >
           © {new Date().getFullYear()} UnicomTeam. All rights reserved.
         </p>
-        <div style={{ display: "flex", gap: "1.25rem" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1.25rem",
+            flexWrap: "wrap",
+          }}
+        >
           {legalLinks.map((link) => (
             <Link
               key={link.href}
@@ -429,6 +436,56 @@ export default function Footer() {
               {link.label}
             </Link>
           ))}
+
+          {/* Staff entrance. Deliberately quiet — it's an internal door on a
+              marketing page, so it gets a chip rather than a CTA. */}
+          <Link
+            href="/login"
+            rel="nofollow"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              fontFamily: "var(--font-display)",
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              color: "var(--color-text-muted)",
+              textDecoration: "none",
+              padding: "0.35rem 0.75rem",
+              borderRadius: "999px",
+              border: "1px solid var(--color-border)",
+              background: "rgba(255,255,255,0.03)",
+              transition: "color 0.2s, border-color 0.2s, background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.color = "var(--color-primary)";
+              el.style.borderColor = "rgba(255,140,0,0.35)";
+              el.style.background = "rgba(255,140,0,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.color = "var(--color-text-muted)";
+              el.style.borderColor = "var(--color-border)";
+              el.style.background = "rgba(255,255,255,0.03)";
+            }}
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="10.5" width="16" height="10" rx="2.5" />
+              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+            </svg>
+            Staff login
+          </Link>
         </div>
       </div>
     </footer>

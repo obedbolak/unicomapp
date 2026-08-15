@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Bot, Loader2 } from "lucide-react";
+import { X, Send, Bot } from "lucide-react";
+
+/** Milliseconds between revealed word chunks when the bot "types". */
+const TYPE_INTERVAL_MS = 24;
 
 interface Message {
   id: number;
@@ -90,8 +93,11 @@ export default function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  /** True while a reply is being revealed word by word. */
+  const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Build Anthropic-format history from messages (excluding the welcome message)
   const buildHistory = (msgs: Message[]): ConversationTurn[] =>
@@ -110,9 +116,67 @@ export default function ChatBot() {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
 
+  // Never leave a timer running after the widget unmounts.
+  useEffect(() => {
+    return () => {
+      if (typeTimer.current) clearTimeout(typeTimer.current);
+    };
+  }, []);
+
+  const stopTyping = () => {
+    if (typeTimer.current) clearTimeout(typeTimer.current);
+    typeTimer.current = null;
+    setTyping(false);
+  };
+
+  /**
+   * Reveals `full` into the message with `id`, a word at a time.
+   *
+   * Word chunks rather than characters: partial URLs would otherwise flicker
+   * through renderMessageText as half-formed links, and per-character updates
+   * re-render the list far more often for no visible gain.
+   */
+  const typeOut = (id: number, full: string) =>
+    new Promise<void>((resolve) => {
+      const reducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (reducedMotion) {
+        setMessages((m) =>
+          m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)),
+        );
+        resolve();
+        return;
+      }
+
+      // Keep the separators so whitespace is preserved exactly.
+      const chunks = full.split(/(\s+)/);
+      let i = 0;
+
+      const step = () => {
+        i += 1;
+        const shown = chunks.slice(0, i).join("");
+        setMessages((m) =>
+          m.map((msg) => (msg.id === id ? { ...msg, text: shown } : msg)),
+        );
+
+        if (i >= chunks.length) {
+          typeTimer.current = null;
+          setTyping(false);
+          resolve();
+          return;
+        }
+        typeTimer.current = setTimeout(step, TYPE_INTERVAL_MS);
+      };
+
+      setTyping(true);
+      step();
+    });
+
   const send = async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || typing) return;
 
     setInput("");
 
@@ -124,11 +188,11 @@ export default function ChatBot() {
     const history = buildHistory(messages);
     const reply = await sendMessage(text, history);
 
-    setMessages((m) => [
-      ...m,
-      { id: Date.now() + 1, role: "bot", text: reply },
-    ]);
+    // Drop the dots, then type the answer into an initially empty bubble.
+    const replyId = Date.now() + 1;
     setLoading(false);
+    setMessages((m) => [...m, { id: replyId, role: "bot", text: "" }]);
+    await typeOut(replyId, reply);
   };
 
   return (
@@ -272,7 +336,10 @@ export default function ChatBot() {
 
               {/* Clear chat button */}
               <button
-                onClick={() => setMessages([WELCOME])}
+                onClick={() => {
+                  stopTyping();
+                  setMessages([WELCOME]);
+                }}
                 title="Clear chat"
                 style={{
                   marginLeft: "auto",
@@ -304,7 +371,7 @@ export default function ChatBot() {
                 scrollbarWidth: "none",
               }}
             >
-              {messages.map((msg) => (
+              {messages.map((msg, i) => (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 6 }}
@@ -317,6 +384,13 @@ export default function ChatBot() {
                   }}
                 >
                   <div
+                    className={
+                      typing &&
+                      msg.role === "bot" &&
+                      i === messages.length - 1
+                        ? "chat-caret"
+                        : undefined
+                    }
                     style={{
                       maxWidth: "80%",
                       padding: "0.6rem 0.875rem",
@@ -341,32 +415,22 @@ export default function ChatBot() {
               ))}
 
               {loading && (
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18 }}
+                  style={{ display: "flex", justifyContent: "flex-start" }}
+                >
                   <div
-                    style={{
-                      padding: "0.6rem 0.875rem",
-                      borderRadius: "1rem 1rem 1rem 0.25rem",
-                      background: "rgba(255,255,255,0.06)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      color: "var(--color-text-muted)",
-                    }}
+                    className="chat-typing"
+                    aria-label="Assistant is typing"
+                    role="status"
                   >
-                    <Loader2
-                      size={13}
-                      style={{ animation: "spin 1s linear infinite" }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "0.8125rem",
-                      }}
-                    >
-                      Typing…
-                    </span>
+                    <span className="chat-dot" />
+                    <span className="chat-dot" />
+                    <span className="chat-dot" />
                   </div>
-                </div>
+                </motion.div>
               )}
               <div ref={bottomRef} />
             </div>
@@ -387,6 +451,7 @@ export default function ChatBot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
+                disabled={typing}
                 placeholder="Type a message…"
                 style={{
                   flex: 1,
@@ -404,23 +469,26 @@ export default function ChatBot() {
               />
               <button
                 onClick={send}
-                disabled={!input.trim() || loading}
+                disabled={!input.trim() || loading || typing}
                 style={{
                   width: "42px",
                   height: "42px",
                   borderRadius: "0.625rem",
                   flexShrink: 0,
                   background:
-                    input.trim() && !loading
+                    input.trim() && !loading && !typing
                       ? "var(--color-primary)"
                       : "rgba(255,255,255,0.06)",
                   border: "none",
-                  cursor: input.trim() && !loading ? "pointer" : "default",
+                  cursor:
+                    input.trim() && !loading && !typing ? "pointer" : "default",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color:
-                    input.trim() && !loading ? "#000" : "var(--color-text-dim)",
+                    input.trim() && !loading && !typing
+                      ? "#000"
+                      : "var(--color-text-dim)",
                   transition: "background 0.2s",
                 }}
               >
@@ -428,7 +496,66 @@ export default function ChatBot() {
               </button>
             </div>
 
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <style>{`
+              @keyframes spin { to { transform: rotate(360deg); } }
+
+              /* Three dots easing up and back down, staggered by 160ms — the
+                 same cadence as a messaging app's "is typing" bubble. */
+              .chat-typing {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                padding: 0.75rem 0.9rem;
+                border-radius: 1rem 1rem 1rem 0.25rem;
+                background: rgba(255, 255, 255, 0.06);
+              }
+
+              .chat-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--color-text-muted);
+                animation: chatDot 1.2s ease-in-out infinite;
+              }
+
+              .chat-dot:nth-child(2) { animation-delay: 0.16s; }
+              .chat-dot:nth-child(3) { animation-delay: 0.32s; }
+
+              @keyframes chatDot {
+                0%, 60%, 100% {
+                  transform: translateY(0);
+                  opacity: 0.35;
+                }
+                30% {
+                  transform: translateY(-4px);
+                  opacity: 1;
+                }
+              }
+
+              /* Blinking caret on the bubble currently being typed into. */
+              .chat-caret::after {
+                content: "";
+                display: inline-block;
+                width: 2px;
+                height: 0.85em;
+                margin-left: 2px;
+                vertical-align: text-bottom;
+                background: var(--color-primary);
+                animation: chatCaret 0.9s steps(1) infinite;
+              }
+
+              @keyframes chatCaret {
+                0%, 50% { opacity: 1; }
+                50.01%, 100% { opacity: 0; }
+              }
+
+              @media (prefers-reduced-motion: reduce) {
+                .chat-dot,
+                .chat-caret::after {
+                  animation: none;
+                }
+              }
+            `}</style>
           </motion.div>
         )}
       </AnimatePresence>

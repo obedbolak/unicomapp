@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import { chatComplete, type ChatMessage } from "@/lib/ai";
 
 // ── Scraper ────────────────────────────────────────────────────────────────────
 
@@ -190,39 +191,26 @@ ${siteContent}
 `.trim();
 
   // Build messages: include last 10 turns of history for context
-  const messages = [
+  const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt },
     ...history.slice(-10),
     { role: "user", content: message },
   ];
 
-  const response = await fetch(
-    `${process.env.AZURE_OPENAI_ENDPOINT}/openai/v1/responses`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.AZURE_OPENAI_KEY!,
-      },
-      body: JSON.stringify({
-        input: messages,
-        model: process.env.AZURE_OPENAI_DEPLOYMENT,
-        max_output_tokens: 500,
-      }),
-    },
-  );
+  // Walks the configured provider chain (see lib/ai.ts) and falls through on
+  // rate limits, so hitting one free tier's daily cap doesn't kill the bot.
+  const { reply, provider } = await chatComplete(messages, 500);
 
-  if (!response.ok) {
+  if (!reply) {
     return NextResponse.json({
       reply:
         "I could not reach the assistant service right now. You can still contact UnicomTeam at contact@unicomteam.com, +237 681 529 488, or https://unicomteam.com/contact",
     });
   }
 
-  const data = await response.json();
-  const reply =
-    data.output?.[0]?.content?.[0]?.text ??
-    "I couldn't generate a response. Please try again.";
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[chat] answered by ${provider}`);
+  }
 
   return NextResponse.json({ reply: normalizeReply(reply) });
 }
