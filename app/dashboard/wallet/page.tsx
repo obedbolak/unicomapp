@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getUpcoming } from "@/lib/wallet";
 import WalletCard from "@/components/dashboard/WalletCard";
+import SharesCard from "@/components/dashboard/SharesCard";
 import {
   Badge,
   Card,
@@ -28,6 +29,11 @@ export default async function StaffWalletPage() {
       />
 
       <WalletCard userId={user.id} />
+
+      {/* Renders nothing for people who hold no shares. */}
+      <div style={{ marginTop: "1.5rem" }}>
+        <SharesCard userId={user.id} />
+      </div>
 
       {/* ── Pipeline ──
           Kept visually separate from the balance tiles above. None of this is

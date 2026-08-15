@@ -60,6 +60,8 @@ model User {
   earnings        Earning[]       @relation("UserEarnings")
   payoutRequests  PayoutRequest[] @relation("UserPayouts")
   decidedPayouts  PayoutRequest[] @relation("PayoutDecidedBy")
+  shareGrants     ShareGrant[]    @relation("UserShares")
+  issuedGrants    ShareGrant[]    @relation("GrantedBy")
 
   @@map("users")
 }
@@ -880,6 +882,35 @@ enum PayoutStatus {
   APPROVED
   PAID
   REJECTED
+}
+
+// ─── EQUITY ──────────────────────────────────────────────────────────────
+// Company shares, distinct from ProjectAssignment.sharePct: equity is a
+// standing stake in the business, a project share is payment for one job.
+// Someone can hold both, or either, or neither.
+//
+// A ledger of grants rather than a shares-held column — same reasoning as the
+// wallet. Someone's holding is the sum of their grants, so every change to a
+// cap table leaves a trace of who did it and why. Negative grants record a
+// buyback or forfeit.
+
+model ShareGrant {
+  id     String @id @default(cuid())
+  userId String
+
+  /// Negative for a buyback or forfeit.
+  shares Int
+  note   String?
+
+  grantedById String?
+  createdAt   DateTime @default(now())
+
+  user      User  @relation("UserShares", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User? @relation("GrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("share_grants")
 }
 
 // A file attached to a training programme — slides, exercises, recordings.

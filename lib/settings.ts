@@ -19,6 +19,12 @@ export const SETTING_DEFAULTS = {
   certificatePrefix: "UCT",
   /** Registration fee quoted to new enrollments, in the currency above. */
   registrationFee: "5000",
+  /**
+   * Authorized share capital — the ceiling on how many company shares exist.
+   * Ownership percentages are calculated against shares actually issued; this
+   * is here so the cap table can show how much is still unallocated.
+   */
+  authorizedShares: "1000",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

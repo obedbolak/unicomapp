@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { getWallet } from "@/lib/wallet";
-import { addEarning, decidePayout } from "../wallet-actions";
+import { getCapTable } from "@/lib/shares";
+import {
+  addEarning,
+  decidePayout,
+  grantShares,
+  payDividend,
+} from "../wallet-actions";
 import {
   Badge,
   Card,
@@ -27,6 +33,8 @@ export default async function AdminWalletPage() {
   const wallets = await Promise.all(
     staff.map(async (s) => ({ ...s, wallet: await getWallet(s.id) })),
   );
+
+  const capTable = await getCapTable();
 
   const requests = await prisma.payoutRequest.findMany({
     orderBy: [{ status: "asc" }, { requestedAt: "desc" }],
@@ -150,6 +158,153 @@ export default async function AdminWalletPage() {
           </Table>
         </Card>
       </div>
+
+      {/* ── Equity ── */}
+      <div style={{ marginTop: "1.5rem" }}>
+        <Card
+          title="Cap table"
+          subtitle="Company shares. Separate from project revenue shares — not everyone holds equity."
+          action={
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: 800 }}>
+                {capTable.issued.toLocaleString("en-US")}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.6875rem",
+                  color: "var(--dash-ink-dim)",
+                }}
+              >
+                issued of {capTable.authorized.toLocaleString("en-US")} ·{" "}
+                {capTable.unallocated.toLocaleString("en-US")} left
+              </div>
+            </div>
+          }
+          flush
+        >
+          <Table
+            headers={["Shareholder", "Shares", "Ownership", ""]}
+            empty="No shares issued yet. Allocate some below."
+          >
+            {capTable.rows.map((r) => (
+              <tr key={r.userId}>
+                <td style={{ fontWeight: 600 }}>{r.name}</td>
+                <td
+                  className="dash-nowrap"
+                  style={{ fontVariantNumeric: "tabular-nums" }}
+                >
+                  {r.shares.toLocaleString("en-US")}
+                </td>
+                <td className="dash-nowrap">{r.pctOfIssued.toFixed(2)}%</td>
+                <td style={{ width: "35%", minWidth: 120 }}>
+                  <div className="dash-track">
+                    <div
+                      className="dash-fill"
+                      style={{ width: `${r.pctOfIssued}%` }}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </Table>
+
+          <div style={{ padding: "1.35rem" }}>
+            <form action={grantShares}>
+              <div className="dash-formgrid">
+                <label>
+                  <span className="dash-field-label">Team member</span>
+                  <select name="userId" required className="dash-select">
+                    <option value="">Select…</option>
+                    {staff.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name ?? s.email}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span className="dash-field-label">Shares</span>
+                  <input
+                    type="number"
+                    name="shares"
+                    step={1}
+                    required
+                    placeholder="100 or -50"
+                    className="dash-input"
+                  />
+                </label>
+
+                <label>
+                  <span className="dash-field-label">Note</span>
+                  <input
+                    name="note"
+                    maxLength={200}
+                    placeholder="Founding allocation"
+                    className="dash-input"
+                  />
+                </label>
+
+                <button type="submit" className="dash-btn dash-btn--primary">
+                  Allocate
+                </button>
+              </div>
+            </form>
+
+            <p className="dash-hint">
+              A negative number records a buyback. Allocations are a ledger, not
+              an edit — every change keeps its history. Raise the authorized
+              ceiling in Settings → <code>authorizedShares</code>.
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      {capTable.issued > 0 && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <Card
+            title="Pay a dividend"
+            subtitle="Splits an amount across shareholders by holding and credits it to their wallets."
+          >
+            <form action={payDividend}>
+              <div className="dash-formgrid">
+                <label>
+                  <span className="dash-field-label">Total amount (FCFA)</span>
+                  <input
+                    type="number"
+                    name="amount"
+                    min={1}
+                    step={1}
+                    required
+                    className="dash-input"
+                  />
+                </label>
+
+                <label>
+                  <span className="dash-field-label">Note</span>
+                  <input
+                    name="note"
+                    maxLength={200}
+                    placeholder="Q3 dividend"
+                    className="dash-input"
+                  />
+                </label>
+
+                <button type="submit" className="dash-btn dash-btn--primary">
+                  Distribute
+                </button>
+              </div>
+            </form>
+
+            <p className="dash-hint">
+              Split across {capTable.rows.length} shareholder
+              {capTable.rows.length === 1 ? "" : "s"} in proportion to their
+              holdings. Rounding is handled so the parts add up to exactly the
+              amount entered.
+            </p>
+          </Card>
+        </div>
+      )}
 
       <div style={{ marginTop: "1.5rem" }}>
         <Card

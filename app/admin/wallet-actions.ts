@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { getWallet } from "@/lib/wallet";
+import { distributeDividend, getCapTable } from "@/lib/shares";
 
 /* ── Assignments (admin) ─────────────────────────────────────────────────── */
 
@@ -166,6 +167,70 @@ export async function decidePayout(formData: FormData) {
 
   revalidatePath("/admin/wallet");
   revalidatePath("/dashboard");
+}
+
+/* ── Equity (admin) ────────────────────────────────────────────────────── */
+
+export async function grantShares(formData: FormData) {
+  const admin = await requireAdmin();
+  if (!admin) throw new Error("Not authorized");
+
+  const userId = String(formData.get("userId"));
+  const shares = Number(formData.get("shares"));
+  const note = String(formData.get("note") ?? "").trim();
+
+  if (!userId) throw new Error("Choose a team member");
+  if (!shares || Number.isNaN(shares) || !Number.isInteger(shares)) {
+    throw new Error("Enter a whole number of shares");
+  }
+
+  const table = await getCapTable();
+
+  // Issuing past the authorized ceiling should be a deliberate decision made
+  // in Settings, not something that happens by accident here.
+  if (shares > 0 && table.authorized > 0) {
+    if (table.issued + shares > table.authorized) {
+      throw new Error(
+        `Only ${table.unallocated} of ${table.authorized} authorized shares are unallocated. Raise the ceiling in Settings first.`,
+      );
+    }
+  }
+
+  // A buyback cannot take more than the person actually holds.
+  if (shares < 0) {
+    const held = table.rows.find((r) => r.userId === userId)?.shares ?? 0;
+    if (held + shares < 0) {
+      throw new Error(`They only hold ${held} share(s).`);
+    }
+  }
+
+  await prisma.shareGrant.create({
+    data: {
+      userId,
+      shares,
+      note: note || (shares > 0 ? "Allocation" : "Buyback"),
+      grantedById: admin.id,
+    },
+  });
+
+  await logActivity(admin.id, "shares.granted", "User", userId, { shares });
+
+  revalidatePath("/admin/wallet");
+  revalidatePath("/dashboard/wallet");
+}
+
+export async function payDividend(formData: FormData) {
+  const admin = await requireAdmin();
+  if (!admin) throw new Error("Not authorized");
+
+  const amount = Number(formData.get("amount"));
+  const note = String(formData.get("note") ?? "").trim() || "Dividend";
+
+  const { recipients } = await distributeDividend(amount, note, admin.id);
+  console.log(`[shares] dividend split across ${recipients} shareholder(s)`);
+
+  revalidatePath("/admin/wallet");
+  revalidatePath("/dashboard/wallet");
 }
 
 /** Manual credit — bonuses, corrections, anything outside a project share. */
