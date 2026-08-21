@@ -138,7 +138,13 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("Enrollment save error:", err);
-    // Fall through: we still try to email so the lead isn't lost entirely.
+    return NextResponse.json(
+      {
+        error:
+          "We could not save your application. Please try again in a moment.",
+      },
+      { status: 503 },
+    );
   }
 
   /* ── 2. Then send the confirmation emails ─────────────────────────────── */

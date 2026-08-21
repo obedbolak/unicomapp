@@ -75,6 +75,10 @@ export default async function ProjectManage({
     },
   });
 
+  if (!project) {
+    return <p className="dash-hint">This project no longer exists.</p>;
+  }
+
   const projectMembers = [
     ...(project.lead
       ? [
@@ -96,10 +100,6 @@ export default async function ProjectManage({
     (member, index, members) =>
       members.findIndex((item) => item.id === member.id) === index,
   );
-
-  if (!project) {
-    return <p className="dash-hint">This project no longer exists.</p>;
-  }
 
   const [doneTasks, credited] = await Promise.all([
     prisma.task.count({ where: { projectId, status: "DONE" } }),
