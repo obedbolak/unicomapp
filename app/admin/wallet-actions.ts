@@ -468,11 +468,6 @@ export async function setHolding(formData: FormData) {
           select: { name: true },
         });
   if (!holder) throw new Error("No such shareholder");
-  if (holderType === "USER" && !holder.role.includes("PARTNER")) {
-    throw new Error(
-      `${holder.name ?? holder.email} is not a partner. Use “Make partner” on the Team page first.`,
-    );
-  }
 
   const table = await getCapTable();
   const held = table.rows.find((r) => r.holderId === holderId)?.shares ?? 0;
