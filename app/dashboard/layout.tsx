@@ -18,6 +18,7 @@ export default async function DashboardLayout({
 
   const nav: NavItem[] = [
     { href: "/dashboard", label: "My work", icon: "grid" },
+    { href: "/dashboard/projects", label: "Projects", icon: "briefcase" },
     { href: "/dashboard/wallet", label: "Wallet", icon: "wallet" },
 
     {

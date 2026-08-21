@@ -6,6 +6,7 @@ import { requireAdmin, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { getWallet } from "@/lib/wallet";
 import { distributeDividend, getCapTable } from "@/lib/shares";
+import { createNotification } from "@/lib/notifications";
 
 /* ── Assignments (admin) ─────────────────────────────────────────────────── */
 
@@ -26,10 +27,24 @@ export async function assignToProject(formData: FormData) {
 
   if (!projectId || !userId) throw new Error("Project and person are required");
 
-  await prisma.projectAssignment.upsert({
-    where: { projectId_userId: { projectId, userId } },
-    create: { projectId, userId, role, sharePct: null },
-    update: { role, sharePct: null },
+  const [project, assignment] = await Promise.all([
+    prisma.project.findUnique({
+      where: { id: projectId },
+      select: { title: true },
+    }),
+    prisma.projectAssignment.upsert({
+      where: { projectId_userId: { projectId, userId } },
+      create: { projectId, userId, role, sharePct: null },
+      update: { role, sharePct: null },
+    }),
+  ]);
+  if (!project || !assignment) throw new Error("Project or person not found");
+
+  await createNotification({
+    userId,
+    title: "Added to a project",
+    message: `You are now part of ${project.title}${role ? ` as ${role}` : ""}.`,
+    link: "/dashboard/projects",
   });
 
   await logActivity(admin.id, "project.assigned", "Project", projectId, {
@@ -46,7 +61,18 @@ export async function removeAssignment(formData: FormData) {
   if (!admin) throw new Error("Not authorized");
 
   const id = String(formData.get("assignmentId"));
-  const assignment = await prisma.projectAssignment.delete({ where: { id } });
+  const assignment = await prisma.projectAssignment.delete({
+    where: { id },
+    include: { project: { select: { title: true } } },
+  });
+
+  await createNotification({
+    userId: assignment.userId,
+    title: "Removed from a project",
+    message: `You are no longer assigned to ${assignment.project.title}.`,
+    type: "warning",
+    link: "/dashboard/projects",
+  });
 
   await logActivity(
     admin.id,
@@ -232,7 +258,13 @@ export async function decideClaim(formData: FormData) {
 
   const claim = await prisma.earning.findUnique({
     where: { id },
-    select: { status: true, userId: true, amount: true },
+    select: {
+      status: true,
+      userId: true,
+      amount: true,
+      project: { select: { title: true } },
+      periodMonth: true,
+    },
   });
   if (!claim) throw new Error("No such claim");
   if (claim.status !== "PENDING") {
@@ -258,6 +290,18 @@ export async function decideClaim(formData: FormData) {
     claim.userId,
     { amount: Number(claim.amount) },
   );
+
+  const claimLabel = claim.project?.title ?? claim.periodMonth ?? "your claim";
+  await createNotification({
+    userId: claim.userId,
+    title: decision === "APPROVE" ? "Claim approved" : "Claim rejected",
+    message:
+      decision === "APPROVE"
+        ? `${claimLabel} was approved and credited to your wallet.`
+        : `${claimLabel} was rejected. You can review and resubmit it.`,
+    type: decision === "APPROVE" ? "success" : "error",
+    link: "/dashboard/wallet",
+  });
 
   revalidatePath("/admin/wallet");
   revalidatePath("/dashboard/wallet");
@@ -319,7 +363,11 @@ export async function cancelPayoutRequest(formData: FormData) {
 
   await prisma.payoutRequest.update({
     where: { id },
-    data: { status: "REJECTED", decidedAt: new Date(), note: "Cancelled by requester" },
+    data: {
+      status: "REJECTED",
+      decidedAt: new Date(),
+      note: "Cancelled by requester",
+    },
   });
 
   revalidatePath("/dashboard");

@@ -30,6 +30,7 @@ import {
   IconUsers,
   IconWallet,
 } from "./icons";
+import NotificationBell from "./NotificationBell";
 
 const ICONS = {
   grid: IconGrid,
@@ -218,9 +219,7 @@ export default function Shell({
               )}
             </Link>
 
-            <button className="dash-iconbtn" aria-label="Notifications">
-              <IconBell size={16} />
-            </button>
+            <NotificationBell />
             <button
               className="dash-iconbtn"
               onClick={() => signOut({ callbackUrl: "/login" })}

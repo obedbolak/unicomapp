@@ -108,7 +108,25 @@ export default async function StaffDashboard() {
           </Link>
         </section>
 
-        <Card title="My projects" subtitle="Everything you're assigned to">
+        <Card
+          title="My projects"
+          subtitle="Everything you're assigned to"
+          action={
+            projects.length > 0 ? (
+              <Link
+                href="/dashboard/projects"
+                style={{
+                  fontSize: "0.78rem",
+                  color: "var(--color-primary)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                }}
+              >
+                View all →
+              </Link>
+            ) : undefined
+          }
+        >
           {projects.length === 0 ? (
             <div className="dash-empty">
               You&apos;re not assigned to any project yet.

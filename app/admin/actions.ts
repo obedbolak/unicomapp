@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { nextCertificateNumber } from "@/lib/reference";
 import { creditProjectShares } from "@/lib/wallet";
+import { createNotification } from "@/lib/notifications";
 import type {
   CertificateType,
   EnrollmentStatus,
@@ -35,7 +36,9 @@ export async function updateEnrollmentStatus(formData: FormData) {
   const status = String(formData.get("status")) as EnrollmentStatus;
 
   await prisma.enrollment.update({ where: { id }, data: { status } });
-  await log(admin.id, "enrollment.status_changed", "Enrollment", id, { status });
+  await log(admin.id, "enrollment.status_changed", "Enrollment", id, {
+    status,
+  });
 
   revalidatePath("/admin/enrollments");
   revalidatePath("/admin");
@@ -318,6 +321,15 @@ export async function createProject(formData: FormData) {
     title: project.title,
   });
 
+  if (fields.leadId) {
+    await createNotification({
+      userId: fields.leadId,
+      title: "Project lead assignment",
+      message: `You are leading ${project.title}.`,
+      link: "/dashboard/projects",
+    });
+  }
+
   revalidatePath("/admin/projects");
   revalidatePath("/admin");
   revalidatePath("/projects");
@@ -343,7 +355,7 @@ export async function updateProject(formData: FormData) {
 
   const current = await prisma.project.findUnique({
     where: { id },
-    select: { status: true, title: true, deliveredAt: true },
+    select: { status: true, title: true, deliveredAt: true, leadId: true },
   });
   if (!current) throw new Error("No such project");
 
@@ -369,6 +381,15 @@ export async function updateProject(formData: FormData) {
     title: fields.title,
     status: fields.status,
   });
+
+  if (fields.leadId && fields.leadId !== current.leadId) {
+    await createNotification({
+      userId: fields.leadId,
+      title: "Project lead assignment",
+      message: `You are now leading ${fields.title}.`,
+      link: "/dashboard/projects",
+    });
+  }
 
   if (nowDelivered) {
     const { created, skipped } = await creditProjectShares(id, admin.id);
@@ -453,6 +474,68 @@ export async function updateProjectStatus(formData: FormData) {
   revalidatePath("/admin/projects");
   revalidatePath("/admin");
   revalidatePath("/admin/wallet");
+  revalidatePath("/dashboard");
+}
+
+export async function createTask(formData: FormData) {
+  const admin = await requireAdmin();
+  if (!admin) throw new Error("Not authorized");
+
+  const projectId = String(formData.get("projectId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const assigneeId = String(formData.get("assigneeId") ?? "");
+  const priority = String(formData.get("priority") ?? "MEDIUM") as
+    | "LOW"
+    | "MEDIUM"
+    | "HIGH"
+    | "URGENT";
+  const dueDateRaw = String(formData.get("dueDate") ?? "").trim();
+
+  if (!projectId || !title || !assigneeId) {
+    throw new Error("Project, task title, and assignee are required");
+  }
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: {
+      title: true,
+      leadId: true,
+      assignments: { select: { userId: true } },
+    },
+  });
+  if (!project) throw new Error("No such project");
+
+  const isProjectMember =
+    project.leadId === assigneeId ||
+    project.assignments.some((assignment) => assignment.userId === assigneeId);
+  if (!isProjectMember) throw new Error("Assignee is not on this project");
+
+  const task = await prisma.task.create({
+    data: {
+      projectId,
+      title,
+      assigneeId,
+      priority: ["LOW", "MEDIUM", "HIGH", "URGENT"].includes(priority)
+        ? priority
+        : "MEDIUM",
+      dueDate: dueDateRaw ? new Date(`${dueDateRaw}T00:00:00`) : null,
+    },
+    select: { id: true },
+  });
+
+  await createNotification({
+    userId: assigneeId,
+    title: "New task assigned",
+    message: `You have a new task in ${project.title}: ${title}`,
+    link: "/dashboard",
+  });
+  await log(admin.id, "task.assigned", "Task", task.id, {
+    projectId,
+    assigneeId,
+    title,
+  });
+
+  revalidatePath("/admin/projects");
   revalidatePath("/dashboard");
 }
 
