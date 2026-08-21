@@ -12,7 +12,11 @@ import {
   moneyCompact,
   shortDate,
 } from "@/components/dashboard/ui";
-import { IconWallet, IconTrend, IconBriefcase } from "@/components/dashboard/icons";
+import {
+  IconWallet,
+  IconTrend,
+  IconBriefcase,
+} from "@/components/dashboard/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -29,37 +33,37 @@ export default async function PaymentsPage() {
     openEnrollments,
     settings,
   ] = await Promise.all([
-      prisma.payment.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 200,
-        include: {
-          enrollment: {
-            select: { reference: true, fullName: true, courseName: true },
-          },
-          invoice: { select: { number: true } },
-          confirmedBy: { select: { name: true } },
+    prisma.payment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      include: {
+        enrollment: {
+          select: { reference: true, fullName: true, courseName: true },
         },
-      }),
-      prisma.payment.aggregate({
-        where: { status: "PENDING" },
-        _sum: { amount: true },
-        _count: true,
-      }),
-      prisma.payment.aggregate({
-        where: { status: "CONFIRMED", confirmedAt: { gte: startOfMonth } },
-        _sum: { amount: true },
-      }),
-      prisma.payment.aggregate({
-        where: { status: "CONFIRMED" },
-        _sum: { amount: true },
-      }),
-      prisma.enrollment.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 100,
-        select: { id: true, reference: true, fullName: true, courseName: true },
-      }),
-      getSettings(),
-    ]);
+        invoice: { select: { number: true } },
+        confirmedBy: { select: { name: true } },
+      },
+    }),
+    prisma.payment.aggregate({
+      where: { status: "PENDING" },
+      _sum: { amount: true },
+      _count: true,
+    }),
+    prisma.payment.aggregate({
+      where: { status: "CONFIRMED", confirmedAt: { gte: startOfMonth } },
+      _sum: { amount: true },
+    }),
+    prisma.payment.aggregate({
+      where: { status: "CONFIRMED" },
+      _sum: { amount: true },
+    }),
+    prisma.enrollment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: { id: true, reference: true, fullName: true, courseName: true },
+    }),
+    getSettings(),
+  ]);
 
   return (
     <>
