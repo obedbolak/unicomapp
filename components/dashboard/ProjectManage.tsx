@@ -68,21 +68,34 @@ export default async function ProjectManage({
       },
       tasks: {
         orderBy: { createdAt: "desc" },
-        include: { assignee: { select: { id: true, name: true, email: true } } },
+        include: {
+          assignee: { select: { id: true, name: true, email: true } },
+        },
       },
     },
   });
 
   const projectMembers = [
     ...(project.lead
-      ? [{ id: project.leadId!, name: project.lead.name, email: project.lead.email }]
+      ? [
+          {
+            id: project.leadId!,
+            name: project.lead.name,
+            email: project.lead.email,
+          },
+        ]
       : []),
-    ...(await prisma.projectAssignment.findMany({
-      where: { projectId },
-      select: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { assignedAt: "asc" },
-    })).map((assignment) => assignment.user),
-  ].filter((member, index, members) => members.findIndex((item) => item.id === member.id) === index);
+    ...(
+      await prisma.projectAssignment.findMany({
+        where: { projectId },
+        select: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { assignedAt: "asc" },
+      })
+    ).map((assignment) => assignment.user),
+  ].filter(
+    (member, index, members) =>
+      members.findIndex((item) => item.id === member.id) === index,
+  );
 
   if (!project) {
     return <p className="dash-hint">This project no longer exists.</p>;
@@ -98,7 +111,8 @@ export default async function ProjectManage({
 
   const now = new Date();
   const paidOut = Number(credited._sum.amount ?? 0);
-  const settled = project.status === "DELIVERED" || project.status === "CANCELLED";
+  const settled =
+    project.status === "DELIVERED" || project.status === "CANCELLED";
   const daysLeft = project.dueDate ? daysBetween(now, project.dueDate) : null;
   const overdue = daysLeft !== null && daysLeft < 0 && !settled;
 
@@ -204,7 +218,9 @@ export default async function ProjectManage({
         </Detail>
         <Detail label="Started">{shortDate(project.startDate)}</Detail>
         <Detail label="Due">
-          <span style={overdue ? { color: "#f87171", fontWeight: 700 } : undefined}>
+          <span
+            style={overdue ? { color: "#f87171", fontWeight: 700 } : undefined}
+          >
             {shortDate(project.dueDate)}
           </span>
         </Detail>
@@ -357,16 +373,27 @@ export default async function ProjectManage({
 
       <p className="dash-field-label">Tasks — {project.tasks.length}</p>
       {project.tasks.length > 0 && (
-        <div style={{ display: "grid", gap: "0.45rem", marginBottom: "0.8rem" }}>
+        <div
+          style={{ display: "grid", gap: "0.45rem", marginBottom: "0.8rem" }}
+        >
           {project.tasks.map((task) => (
             <div key={task.id} className="dash-row-top">
               <span>
                 <strong>{task.title}</strong>
-                <span className="dash-td-muted" style={{ display: "block", fontSize: "0.72rem" }}>
+                <span
+                  className="dash-td-muted"
+                  style={{ display: "block", fontSize: "0.72rem" }}
+                >
                   {task.assignee?.name ?? task.assignee?.email ?? "Unassigned"}
                 </span>
               </span>
-              <span style={{ display: "flex", gap: "0.35rem", alignItems: "center" }}>
+              <span
+                style={{
+                  display: "flex",
+                  gap: "0.35rem",
+                  alignItems: "center",
+                }}
+              >
                 <Badge value={task.priority} />
                 <Badge value={task.status} />
               </span>
@@ -375,11 +402,21 @@ export default async function ProjectManage({
         </div>
       )}
       {projectMembers.length > 0 ? (
-        <form action={createTask} className="dash-formgrid" style={{ marginTop: "0.7rem" }}>
+        <form
+          action={createTask}
+          className="dash-formgrid"
+          style={{ marginTop: "0.7rem" }}
+        >
           <input type="hidden" name="projectId" value={project.id} />
           <label>
             <span className="dash-field-label">New task</span>
-            <input name="title" required maxLength={200} className="dash-input" placeholder="Task title" />
+            <input
+              name="title"
+              required
+              maxLength={200}
+              className="dash-input"
+              placeholder="Task title"
+            />
           </label>
           <label>
             <span className="dash-field-label">Assign to</span>
@@ -394,9 +431,15 @@ export default async function ProjectManage({
           </label>
           <label>
             <span className="dash-field-label">Priority</span>
-            <select name="priority" defaultValue="MEDIUM" className="dash-select">
+            <select
+              name="priority"
+              defaultValue="MEDIUM"
+              className="dash-select"
+            >
               {(["LOW", "MEDIUM", "HIGH", "URGENT"] as const).map((value) => (
-                <option key={value} value={value}>{value}</option>
+                <option key={value} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </label>
@@ -404,7 +447,9 @@ export default async function ProjectManage({
             <span className="dash-field-label">Due</span>
             <input name="dueDate" type="date" className="dash-input" />
           </label>
-          <button type="submit" className="dash-btn dash-btn--primary">Add task</button>
+          <button type="submit" className="dash-btn dash-btn--primary">
+            Add task
+          </button>
         </form>
       ) : (
         <p className="dash-hint">Assign a team member before creating tasks.</p>
