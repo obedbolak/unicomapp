@@ -12,7 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "db:clear-shares": "tsx prisma/clear-project-shares.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

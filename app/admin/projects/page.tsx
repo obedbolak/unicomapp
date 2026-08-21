@@ -1,7 +1,11 @@
+import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
-import { toggleProjectPublished, updateProjectStatus } from "../actions";
 import {
-  Badge,
+  createProject,
+  toggleProjectPublished,
+  updateProjectStatus,
+} from "../actions";
+import {
   Card,
   PageHeader,
   StatGrid,
@@ -16,45 +20,73 @@ import {
   IconExternal,
   IconTeam,
 } from "@/components/dashboard/icons";
-import ProjectTeam from "@/components/dashboard/ProjectTeam";
-import type { ProjectStatus } from "@prisma/client";
+import ProjectManage from "@/components/dashboard/ProjectManage";
+import ProjectFields, {
+  PROJECT_STATUSES,
+  humanise,
+} from "@/components/dashboard/ProjectFields";
 
 export const dynamic = "force-dynamic";
 
-const STATUSES: ProjectStatus[] = [
-  "PLANNING",
-  "IN_PROGRESS",
-  "REVIEW",
-  "DELIVERED",
-  "MAINTENANCE",
-  "ON_HOLD",
-  "CANCELLED",
+/**
+ * Section order is the life of a project, not the alphabet: what is being
+ * worked on sits at the top, what is finished or abandoned sinks. Cancelled
+ * last, because it is the one you almost never want to look at.
+ */
+const SECTIONS: {
+  status: (typeof PROJECT_STATUSES)[number];
+  blurb: string;
+}[] = [
+  { status: "IN_PROGRESS", blurb: "Being worked on right now." },
+  { status: "REVIEW", blurb: "Built, waiting on sign-off." },
+  { status: "PLANNING", blurb: "Scoped but not started." },
+  { status: "MAINTENANCE", blurb: "Live, still being looked after." },
+  { status: "ON_HOLD", blurb: "Paused." },
+  { status: "DELIVERED", blurb: "Finished and handed over." },
+  { status: "CANCELLED", blurb: "Abandoned. Nothing will be credited." },
 ];
 
 export default async function ProjectsPage() {
-  const [projects, clients, active, delivered] = await Promise.all([
-    prisma.project.findMany({
-      orderBy: [{ status: "asc" }, { sortOrder: "asc" }],
-      include: {
-        client: { select: { name: true } },
-        lead: { select: { name: true } },
-        _count: { select: { tasks: true, milestones: true } },
-      },
-    }),
-    prisma.client.count(),
-    prisma.project.count({
-      where: { status: { in: ["PLANNING", "IN_PROGRESS", "REVIEW"] } },
-    }),
-    prisma.project.count({ where: { status: "DELIVERED" } }),
-  ]);
+  const [projects, clientRows, leadRows, clients, active, delivered] =
+    await Promise.all([
+      prisma.project.findMany({
+        orderBy: [{ sortOrder: "asc" }, { dueDate: "asc" }, { title: "asc" }],
+        include: {
+          client: { select: { name: true } },
+          lead: { select: { name: true } },
+          _count: { select: { tasks: true, milestones: true } },
+        },
+      }),
+      prisma.client.findMany({
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+      prisma.user.findMany({
+        where: { active: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, email: true },
+      }),
+      prisma.client.count(),
+      prisma.project.count({
+        where: { status: { in: ["PLANNING", "IN_PROGRESS", "REVIEW"] } },
+      }),
+      prisma.project.count({ where: { status: "DELIVERED" } }),
+    ]);
 
   const published = projects.filter((p) => p.published).length;
+
+  // Passed down so the manage panel doesn't re-query these per open row.
+  const clientOptions = clientRows.map((c) => ({ id: c.id, label: c.name }));
+  const leadOptions = leadRows.map((l) => ({
+    id: l.id,
+    label: l.name ?? l.email,
+  }));
 
   return (
     <>
       <PageHeader
         title="Projects & clients"
-        subtitle="Published projects appear on the public /projects page."
+        subtitle="Grouped by where each one stands. Published projects appear on the public /projects page."
       />
 
       <StatGrid>
@@ -77,115 +109,161 @@ export default async function ProjectsPage() {
         />
       </StatGrid>
 
-      <Card flush>
-        <Table
-          headers={[
-            "Project",
-            "Client",
-            "Lead",
-            "Budget",
-            "Due",
-            "Public",
-            "Status",
-          ]}
-          empty="No projects yet — run the seed to import the nine case studies from the site."
-        >
-          {projects.map((p) => (
-            <tr key={p.id}>
-              <td>
-                <div style={{ fontWeight: 700 }}>{p.title}</div>
-                <div
-                  style={{
-                    fontSize: "0.7rem",
-                    color: "var(--dash-ink-muted)",
-                  }}
-                >
-                  {p.category.replace(/_/g, " ").toLowerCase()} ·{" "}
-                  {p._count.tasks} task{p._count.tasks === 1 ? "" : "s"}
-                </div>
-                {p.liveUrl && (
-                  <a
-                    href={p.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: "0.7rem",
-                      color: "var(--color-primary)",
-                    }}
-                  >
-                    {p.liveUrl.replace(/^https?:\/\//, "")}
-                  </a>
-                )}
-              </td>
-              <td className="dash-td-muted">{p.client?.name ?? "—"}</td>
-              <td className="dash-td-muted">{p.lead?.name ?? "—"}</td>
-              <td className="dash-td-muted">
-                {p.budget ? money(p.budget.toString(), p.currency) : "—"}
-              </td>
-              <td className="dash-td-muted">{shortDate(p.dueDate)}</td>
-              <td>
-                <form action={toggleProjectPublished}>
-                  <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" className="dash-btn">
-                    {p.published ? "Published" : "Hidden"}
-                  </button>
-                </form>
-              </td>
-              <td>
-                <form
-                  action={updateProjectStatus}
-                  style={{ display: "flex", gap: "0.35rem" }}
-                >
-                  <input type="hidden" name="id" value={p.id} />
-                  <select
-                    name="status"
-                    defaultValue={p.status}
-                    className="dash-select"
-                    style={{ width: "auto" }}
-                  >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s.replace(/_/g, " ")}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="submit" className="dash-btn">
-                    Save
-                  </button>
-                </form>
-                <div style={{ marginTop: "0.4rem" }}>
-                  <Badge value={p.status} />
-                </div>
-              </td>
-            </tr>
-          ))}
-          {/* Team + revenue shares, one collapsible row per project. Kept in a
-              <details> so the table stays scannable until you need to edit. */}
-          {projects.map((p) => (
-            <tr key={`${p.id}-team`}>
-              <td colSpan={7} style={{ paddingTop: 0 }}>
-                <details>
-                  <summary
-                    style={{
-                      cursor: "pointer",
-                      fontSize: "0.75rem",
-                      color: "var(--dash-ink-muted)",
-                      padding: "0.25rem 0",
-                    }}
-                  >
-                    Team &amp; shares — {p.title}
-                  </summary>
-                  <ProjectTeam
-                    projectId={p.id}
-                    budget={p.budget ? p.budget.toString() : null}
-                    currency={p.currency}
-                  />
-                </details>
-              </td>
-            </tr>
-          ))}
-        </Table>
+      {/* ── New ── */}
+      <Card
+        title="Add a project"
+        subtitle="Only a title and the short blurb are required — everything else can be filled in later from Manage."
+        style={{ marginBottom: "1.5rem" }}
+      >
+        <details>
+          <summary
+            style={{
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              color: "var(--dash-ink-muted)",
+              padding: "0.2rem 0",
+            }}
+          >
+            New project
+          </summary>
+
+          <form action={createProject} style={{ paddingTop: "0.9rem" }}>
+            <ProjectFields
+              idPrefix="new"
+              clients={clientOptions}
+              leads={leadOptions}
+            />
+            <button
+              type="submit"
+              className="dash-btn dash-btn--primary"
+              style={{ marginTop: "1rem" }}
+            >
+              Create project
+            </button>
+          </form>
+        </details>
       </Card>
+
+      {/* ── By state ── */}
+      {SECTIONS.map((section) => {
+        const rows = projects.filter((p) => p.status === section.status);
+        if (rows.length === 0) return null;
+
+        return (
+          <Card
+            key={section.status}
+            title={`${humanise(section.status)} · ${rows.length}`}
+            subtitle={section.blurb}
+            flush
+            style={{ marginBottom: "1.5rem" }}
+          >
+            <Table
+              headers={[
+                "Project",
+                "Client",
+                "Lead",
+                "Budget",
+                "Due",
+                "Public",
+                "Move to",
+              ]}
+              empty="Nothing here."
+            >
+              {rows.map((p) => (
+                <Fragment key={p.id}>
+                  <tr>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{p.title}</div>
+                      <div
+                        style={{
+                          fontSize: "0.7rem",
+                          color: "var(--dash-ink-muted)",
+                        }}
+                      >
+                        {humanise(p.category)} · {p._count.tasks} task
+                        {p._count.tasks === 1 ? "" : "s"} ·{" "}
+                        {p._count.milestones} milestone
+                        {p._count.milestones === 1 ? "" : "s"}
+                      </div>
+                    </td>
+                    <td className="dash-td-muted">{p.client?.name ?? "—"}</td>
+                    <td className="dash-td-muted">{p.lead?.name ?? "—"}</td>
+                    <td className="dash-td-muted">
+                      {p.budget ? money(p.budget.toString(), p.currency) : "—"}
+                    </td>
+                    <td className="dash-td-muted">{shortDate(p.dueDate)}</td>
+                    <td>
+                      <form action={toggleProjectPublished}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <button type="submit" className="dash-btn">
+                          {p.published ? "Published" : "Hidden"}
+                        </button>
+                      </form>
+                    </td>
+                    <td>
+                      <form
+                        action={updateProjectStatus}
+                        className="dash-inline-form"
+                      >
+                        <input type="hidden" name="id" value={p.id} />
+                        <select
+                          name="status"
+                          defaultValue={p.status}
+                          className="dash-select"
+                          style={{ width: "auto" }}
+                        >
+                          {PROJECT_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {humanise(s)}
+                            </option>
+                          ))}
+                        </select>
+                        <button type="submit" className="dash-btn">
+                          Move
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+
+                  {/* Everything about the project, one row down. Collapsed so
+                      the section stays a scannable list until you need it. */}
+                  <tr>
+                    <td colSpan={7} style={{ paddingTop: 0 }}>
+                      <details>
+                        <summary
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
+                            color: "var(--dash-ink-muted)",
+                            padding: "0.25rem 0",
+                          }}
+                        >
+                          Manage — {p.title}
+                        </summary>
+                        <ProjectManage
+                          projectId={p.id}
+                          clients={clientOptions}
+                          leads={leadOptions}
+                        />
+                      </details>
+                    </td>
+                  </tr>
+                </Fragment>
+              ))}
+            </Table>
+          </Card>
+        );
+      })}
+
+      {projects.length === 0 && (
+        <Card>
+          <p className="dash-hint" style={{ marginTop: 0 }}>
+            No projects yet. Add one above, or run the seed to import the nine
+            case studies from the site.
+          </p>
+        </Card>
+      )}
+
     </>
   );
 }

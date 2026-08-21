@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
+import { getCapTable } from "@/lib/shares";
 import {
   deleteTeamMember,
   resetUserPassword,
@@ -7,7 +8,7 @@ import {
   togglePartner,
   toggleUserActive,
 } from "../team-actions";
-import { Badge, Card, PageHeader, Table } from "@/components/dashboard/ui";
+import { Badge, Card, PageHeader, Table, money } from "@/components/dashboard/ui";
 import NewMemberForm from "@/components/dashboard/NewMemberForm";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,13 @@ export default async function TeamPage() {
     (u) => u.active && u.role.includes("ADMIN"),
   ).length;
 
+  // Equity, so a partner's stake is visible next to their name rather than
+  // only on the wallet page. One query for everyone, then a lookup per row.
+  const capTable = await getCapTable();
+  const holdings = new Map(capTable.rows.map((r) => [r.userId, r]));
+
+  const partners = team.filter((u) => u.role.includes("PARTNER")).length;
+
   return (
     <>
       <PageHeader
@@ -49,11 +57,20 @@ export default async function TeamPage() {
         <NewMemberForm />
       </Card>
 
-      <Card flush>
+      <Card
+        flush
+        title="Everyone"
+        subtitle={
+          partners === 0
+            ? "No partners yet. Equity is set with “Make partner”, then allocated on the Wallet page."
+            : `${partners} partner${partners === 1 ? "" : "s"} · ${capTable.issued.toLocaleString("en-US")} share${capTable.issued === 1 ? "" : "s"} issued. Percentages are of issued shares — allocate more on the Wallet page.`
+        }
+      >
         <Table
           headers={[
             "Name",
             "Role",
+            "Equity",
             "Title",
             "Projects",
             "Tasks",
@@ -70,6 +87,8 @@ export default async function TeamPage() {
             // and payouts away, so the option is not offered.
             const hasFinancials =
               u._count.earnings > 0 || u._count.payoutRequests > 0;
+            // Absent when their grants net to zero, or none were ever made.
+            const holding = holdings.get(u.id);
 
             return (
               <tr key={u.id} style={{ opacity: u.active ? 1 : 0.55 }}>
@@ -146,25 +165,85 @@ export default async function TeamPage() {
                       Set
                     </button>
                   </form>
+                </td>
 
-                  {/* Equity status sits below the access control rather than
-                      inside it — they are separate things. */}
-                  <div style={{ marginTop: "0.4rem" }}>
-                    {u.role.includes("PARTNER") ? (
+                {/* Equity gets its own column rather than sitting under the
+                    access control — they are separate things, and a stake is
+                    worth reading at a glance. */}
+                <td style={{ minWidth: 150 }}>
+                  {u.role.includes("PARTNER") ? (
+                    <>
                       <Badge value="PARTNER" />
-                    ) : (
-                      <span
-                        className="dash-badge"
-                        style={{
-                          background: "rgba(255,255,255,0.04)",
-                          border: "1px solid var(--dash-card-border)",
-                          color: "var(--dash-ink-dim)",
-                        }}
-                      >
-                        NO EQUITY
-                      </span>
-                    )}
-                  </div>
+                      {holding ? (
+                        <>
+                          <div
+                            style={{
+                              marginTop: "0.3rem",
+                              fontSize: "0.72rem",
+                              fontVariantNumeric: "tabular-nums",
+                              color: "var(--dash-ink-muted)",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                color: "var(--color-primary)",
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {holding.pctOfIssued.toFixed(2)}%
+                            </strong>{" "}
+                            · {holding.shares.toLocaleString("en-US")} share
+                            {holding.shares === 1 ? "" : "s"}
+                          </div>
+                          <div
+                            className="dash-track"
+                            style={{ height: 5, marginTop: "0.3rem", maxWidth: 130 }}
+                            role="img"
+                            aria-label={`${holding.pctOfIssued.toFixed(2)} percent of issued shares`}
+                          >
+                            <div
+                              className="dash-fill"
+                              style={{
+                                width: `${Math.min(100, holding.pctOfIssued)}%`,
+                              }}
+                            />
+                          </div>
+                          {capTable.valuation > 0 && (
+                            <div
+                              style={{
+                                marginTop: "0.25rem",
+                                fontSize: "0.68rem",
+                                color: "var(--dash-ink-dim)",
+                              }}
+                            >
+                              ≈ {money(holding.value)}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            marginTop: "0.3rem",
+                            fontSize: "0.7rem",
+                            color: "var(--dash-ink-dim)",
+                          }}
+                        >
+                          No shares allocated yet
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span
+                      className="dash-badge"
+                      style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid var(--dash-card-border)",
+                        color: "var(--dash-ink-dim)",
+                      }}
+                    >
+                      NO EQUITY
+                    </span>
+                  )}
                 </td>
 
                 <td className="dash-td-muted">

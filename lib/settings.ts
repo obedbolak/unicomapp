@@ -51,10 +51,24 @@ export async function getSettings(): Promise<Settings> {
   ) as Settings;
 }
 
-/** Reads one setting. Prefer getSettings() when you need more than two. */
+/**
+ * Reads one setting. Prefer getSettings() when you need more than two.
+ *
+ * Falls back to the default on any error rather than throwing. A configuration
+ * value should never be the reason a page fails to render — if the database is
+ * briefly unreachable, a sensible default beats a crash.
+ */
 export async function getSetting(key: SettingKey): Promise<string> {
-  const row = await prisma.setting.findUnique({ where: { key } });
-  return row?.value ?? SETTING_DEFAULTS[key];
+  try {
+    const row = await prisma.setting.findUnique({ where: { key } });
+    return row?.value ?? SETTING_DEFAULTS[key];
+  } catch (err) {
+    console.warn(
+      `[settings] could not read "${key}", using the default:`,
+      err instanceof Error ? err.message : err,
+    );
+    return SETTING_DEFAULTS[key];
+  }
 }
 
 /** Upserts the given keys. Unknown keys are ignored rather than stored. */
@@ -64,13 +78,18 @@ export async function saveSettings(values: Partial<Settings>): Promise<void> {
       SETTING_KEYS.includes(key as SettingKey) && typeof value === "string",
   ) as [SettingKey, string][];
 
-  await prisma.$transaction(
-    entries.map(([key, value]) =>
-      prisma.setting.upsert({
-        where: { key },
-        create: { key, value: value.slice(0, 500) },
-        update: { value: value.slice(0, 500) },
-      }),
-    ),
-  );
+  // Sequential, not a transaction. Each key is independent, so atomicity buys
+  // nothing here — and wrapping a dozen upserts in $transaction needs a
+  // dedicated pooled connection, which times out against Neon's pooler under
+  // any real concurrency ("Unable to start a transaction in the given time").
+  //
+  // Sequential rather than Promise.all for the same reason: a burst of
+  // parallel writes is what saturates the pool in the first place.
+  for (const [key, value] of entries) {
+    await prisma.setting.upsert({
+      where: { key },
+      create: { key, value: value.slice(0, 500) },
+      update: { value: value.slice(0, 500) },
+    });
+  }
 }

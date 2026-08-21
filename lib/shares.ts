@@ -3,7 +3,7 @@
 // shares-held column, for the same reason the wallet has no balance column.
 
 import { prisma } from "@/lib/prisma";
-import { getSetting } from "@/lib/settings";
+import { getSetting, getSettings } from "@/lib/settings";
 import { logActivity } from "@/lib/activity";
 
 export type Holding = {
@@ -14,6 +14,9 @@ export type Holding = {
   value: number;
   /** Dividends actually received to date — real money, unlike `value`. */
   dividendsReceived: number;
+  /** Total issued across everyone — returned so callers need only one call. */
+  issued: number;
+  currency: string;
 };
 
 /** Total shares issued across everyone. The denominator for ownership. */
@@ -23,28 +26,31 @@ export async function getIssuedTotal(): Promise<number> {
 }
 
 export async function getHolding(userId: string): Promise<Holding> {
-  const [agg, issued, valuationRaw, dividends] = await Promise.all([
-    prisma.shareGrant.aggregate({
-      where: { userId },
-      _sum: { shares: true },
-    }),
-    getIssuedTotal(),
-    getSetting("companyValuation"),
-    prisma.earning.aggregate({
-      where: { userId, source: "BONUS", status: "CREDITED" },
-      _sum: { amount: true },
-    }),
-  ]);
+  // Sequential on purpose. Firing five aggregates at once from every card on
+  // the wallet page is what saturates the connection pool; these are fast
+  // indexed reads and the added latency is not perceptible.
+  const agg = await prisma.shareGrant.aggregate({
+    where: { userId },
+    _sum: { shares: true },
+  });
+  const issued = await getIssuedTotal();
+  const settings = await getSettings();
+  const dividends = await prisma.earning.aggregate({
+    where: { userId, source: "BONUS", status: "CREDITED" },
+    _sum: { amount: true },
+  });
 
   const shares = agg._sum.shares ?? 0;
   const pctOfIssued = issued > 0 ? (shares / issued) * 100 : 0;
-  const valuation = Number(valuationRaw) || 0;
+  const valuation = Number(settings.companyValuation) || 0;
 
   return {
     shares,
     pctOfIssued,
     value: Math.round((valuation * pctOfIssued) / 100),
     dividendsReceived: Number(dividends._sum.amount ?? 0),
+    issued,
+    currency: settings.currency,
   };
 }
 

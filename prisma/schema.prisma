@@ -58,6 +58,7 @@ model User {
 
   // Wallet
   earnings        Earning[]       @relation("UserEarnings")
+  decidedEarnings Earning[]       @relation("EarningDecidedBy")
   payoutRequests  PayoutRequest[] @relation("UserPayouts")
   decidedPayouts  PayoutRequest[] @relation("PayoutDecidedBy")
   shareGrants     ShareGrant[]    @relation("UserShares")
@@ -827,28 +828,53 @@ model Earning {
   /// Kept so changing an assignment later never rewrites past earnings.
   sharePct Decimal? @db.Decimal(5, 2)
 
+  /// "YYYY-MM" on a MONTHLY claim, null on everything else. Stored as text
+  /// rather than a date because the month *is* the identity here — there is no
+  /// meaningful day, and a date would invite timezone drift across a boundary.
+  periodMonth String?
+
   note String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User     @relation("UserEarnings", fields: [userId], references: [id], onDelete: Cascade)
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  /// Who approved or rejected it, and when. Null while still PENDING, and on
+  /// anything credited directly without passing through approval.
+  decidedById String?
+  decidedAt   DateTime?
+
+  user      User     @relation("UserEarnings", fields: [userId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  decidedBy User?    @relation("EarningDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
 
   /// One project share per person per project — makes crediting on delivery
   /// idempotent, so re-saving a delivered project cannot pay someone twice.
+  /// It covers PROJECT_FEE too: a person has at most one fee claim per project,
+  /// so resubmitting after a rejection revises that row rather than stacking.
   @@unique([projectId, userId, source])
+  /// The same guarantee for monthly pay: one claim per person per month.
+  /// Rows with a null periodMonth are unaffected — Postgres treats nulls as
+  /// distinct, so bonuses and adjustments are not constrained by this.
+  @@unique([userId, source, periodMonth])
   @@index([userId, status])
+  @@index([status, createdAt])
   @@map("earnings")
 }
 
 enum EarningSource {
+  /// Legacy: a percentage of a project budget, credited on delivery.
   PROJECT_SHARE
+  /// A flat amount claimed for one project, paid once an admin approves.
+  PROJECT_FEE
+  /// A flat amount claimed for one month, paid once an admin approves.
+  MONTHLY
   BONUS
   ADJUSTMENT
 }
 
 enum EarningStatus {
+  /// Claimed but not approved. Counts toward nothing — see getWallet.
+  PENDING
   CREDITED
   CANCELLED
 }

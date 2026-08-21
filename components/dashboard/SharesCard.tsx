@@ -6,8 +6,7 @@
 // still a partner. Non-partners never see this section at all.
 
 import { prisma } from "@/lib/prisma";
-import { getHolding, getIssuedTotal } from "@/lib/shares";
-import { getSetting } from "@/lib/settings";
+import { getHolding } from "@/lib/shares";
 import { Card, Table, money, shortDate } from "./ui";
 
 export default async function SharesCard({ userId }: { userId: string }) {
@@ -18,17 +17,17 @@ export default async function SharesCard({ userId }: { userId: string }) {
 
   if (!user?.role.includes("PARTNER")) return null;
 
-  const [holding, issued, currency, grants] = await Promise.all([
-    getHolding(userId),
-    getIssuedTotal(),
-    getSetting("currency"),
-    prisma.shareGrant.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      include: { grantedBy: { select: { name: true } } },
-    }),
-  ]);
+  // One call, then one query. getHolding already returns the issued total and
+  // the currency, so asking for them separately was three redundant reads.
+  const holding = await getHolding(userId);
+  const grants = await prisma.shareGrant.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    include: { grantedBy: { select: { name: true } } },
+  });
+
+  const { issued, currency } = holding;
 
   return (
     <Card

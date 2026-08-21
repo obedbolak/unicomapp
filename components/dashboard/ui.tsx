@@ -205,6 +205,10 @@ const BADGE_COLORS: Record<string, string> = {
   MEDIUM: "#3b82f6",
   HIGH: "#f59e0b",
   URGENT: "#f87171",
+  // wallet — claims and payouts
+  REQUESTED: "#fbbf24",
+  APPROVED: "#3b82f6",
+  CREDITED: "#22c55e",
   // roles
   ADMIN: "#ff8c00",
   STAFF: "#3b82f6",

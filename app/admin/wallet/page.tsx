@@ -3,9 +3,11 @@ import { getWallet } from "@/lib/wallet";
 import { getCapTable } from "@/lib/shares";
 import {
   addEarning,
+  decideClaim,
   decidePayout,
-  grantShares,
   payDividend,
+  removeShares,
+  setHolding,
 } from "../wallet-actions";
 import {
   Badge,
@@ -17,7 +19,12 @@ import {
   money,
   shortDate,
 } from "@/components/dashboard/ui";
-import { IconWallet, IconTrend, IconTeam } from "@/components/dashboard/icons";
+import {
+  IconWallet,
+  IconTrend,
+  IconTeam,
+  IconCheck,
+} from "@/components/dashboard/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +53,18 @@ export default async function AdminWalletPage() {
     include: { user: { select: { name: true, email: true } } },
   });
 
+  // Fixed-pay claims waiting on a decision. Oldest first — the person who has
+  // been waiting longest should be the one you see at the top.
+  const claims = await prisma.earning.findMany({
+    where: { status: "PENDING", source: { in: ["PROJECT_FEE", "MONTHLY"] } },
+    orderBy: { createdAt: "asc" },
+    include: {
+      user: { select: { name: true, email: true } },
+      project: { select: { title: true } },
+    },
+  });
+  const claimsTotal = claims.reduce((s, c) => s + Number(c.amount), 0);
+
   const owed = wallets.reduce((sum, w) => sum + w.wallet.available, 0);
   const pending = requests.filter((r) => r.status === "REQUESTED");
   const pendingTotal = pending.reduce((s, r) => s + Number(r.amount), 0);
@@ -72,11 +91,74 @@ export default async function AdminWalletPage() {
           icon={<IconTrend size={20} />}
         />
         <StatTile
+          label="Claims to approve"
+          value={money(claimsTotal)}
+          hint={`${claims.length} awaiting approval`}
+          icon={<IconCheck size={20} />}
+          accent={claims.length > 0 ? "var(--color-primary)" : undefined}
+        />
+        <StatTile
           label="Team members"
           value={staff.length}
           icon={<IconTeam size={20} />}
         />
       </StatGrid>
+
+      {/* ── Claims ──
+          Fixed pay somebody has asked for. Nothing here is in anyone's balance
+          until it is approved, so this sits above payouts: approve first, then
+          decide what to send. */}
+      <Card
+        title="Claims awaiting approval"
+        subtitle="Flat amounts claimed for a project or a month. Approving credits the person's wallet."
+        flush
+        style={{ marginBottom: "1.5rem" }}
+      >
+        <Table
+          headers={["Sent", "Who", "For", "Amount", "Note", "Decision"]}
+          empty="Nothing waiting on you."
+        >
+          {claims.map((c) => (
+            <tr key={c.id}>
+              <td className="dash-nowrap dash-td-muted">
+                {shortDate(c.createdAt)}
+              </td>
+              <td style={{ fontWeight: 600 }}>
+                {c.user.name ?? c.user.email}
+              </td>
+              <td>
+                {c.source === "MONTHLY"
+                  ? c.periodMonth
+                  : (c.project?.title ?? "—")}
+                <div className="dash-td-muted" style={{ fontSize: "0.7rem" }}>
+                  {c.source === "MONTHLY" ? "monthly" : "project fee"}
+                </div>
+              </td>
+              <td className="dash-nowrap" style={{ fontWeight: 700 }}>
+                {money(c.amount.toString(), c.currency)}
+              </td>
+              <td className="dash-td-muted">{c.note ?? "—"}</td>
+              <td>
+                <form action={decideClaim} className="dash-inline-form">
+                  <input type="hidden" name="id" value={c.id} />
+                  <select
+                    name="decision"
+                    defaultValue="APPROVE"
+                    className="dash-select"
+                    style={{ width: "auto" }}
+                  >
+                    <option value="APPROVE">Approve</option>
+                    <option value="REJECT">Reject</option>
+                  </select>
+                  <button type="submit" className="dash-btn">
+                    Go
+                  </button>
+                </form>
+              </td>
+            </tr>
+          ))}
+        </Table>
+      </Card>
 
       <Card title="Payout requests" flush>
         <Table
@@ -167,7 +249,7 @@ export default async function AdminWalletPage() {
       <div style={{ marginTop: "1.5rem" }}>
         <Card
           title="Cap table"
-          subtitle="Company shares. Separate from project revenue shares — not everyone holds equity."
+          subtitle="Company equity. Only partners hold shares — set who's a partner on the Team page."
           action={
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: "1.1rem", fontWeight: 800 }}>
@@ -187,23 +269,47 @@ export default async function AdminWalletPage() {
           flush
         >
           <Table
-            headers={["Shareholder", "Shares", "Ownership", "Worth", ""]}
-            empty="No shares issued yet. Allocate some below."
+            headers={[
+              "Shareholder",
+              "Shares",
+              "Ownership",
+              "Worth",
+              "Split",
+              "",
+            ]}
+            empty="No shares issued yet. Set someone's holding below."
           >
             {capTable.rows.map((r) => (
               <tr key={r.userId}>
                 <td style={{ fontWeight: 600 }}>{r.name}</td>
-                <td
-                  className="dash-nowrap"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  {r.shares.toLocaleString("en-US")}
+
+                {/* Type the number they should hold and save. The difference
+                    against what they hold now is what gets written to the
+                    ledger, so the history stays intact. */}
+                <td>
+                  <form action={setHolding} className="dash-inline-form">
+                    <input type="hidden" name="userId" value={r.userId} />
+                    <input
+                      type="number"
+                      name="shares"
+                      min={0}
+                      step={1}
+                      defaultValue={r.shares}
+                      aria-label={`Shares held by ${r.name}`}
+                      className="dash-input"
+                      style={{ width: 96 }}
+                    />
+                    <button type="submit" className="dash-btn">
+                      Save
+                    </button>
+                  </form>
                 </td>
+
                 <td className="dash-nowrap">{r.pctOfIssued.toFixed(2)}%</td>
                 <td className="dash-nowrap dash-td-muted">
                   {capTable.valuation > 0 ? money(r.value) : "—"}
                 </td>
-                <td style={{ width: "35%", minWidth: 120 }}>
+                <td style={{ width: "25%", minWidth: 100 }}>
                   <div className="dash-track">
                     <div
                       className="dash-fill"
@@ -211,15 +317,34 @@ export default async function AdminWalletPage() {
                     />
                   </div>
                 </td>
+                <td>
+                  <form action={removeShares}>
+                    <input type="hidden" name="userId" value={r.userId} />
+                    <button
+                      type="submit"
+                      className="dash-btn"
+                      style={{ color: "#f87171" }}
+                    >
+                      Remove
+                    </button>
+                  </form>
+                </td>
               </tr>
             ))}
           </Table>
 
           <div style={{ padding: "1.35rem" }}>
-            <form action={grantShares}>
+            <p
+              className="dash-field-label"
+              style={{ marginBottom: "0.6rem" }}
+            >
+              Set a partner&rsquo;s shares
+            </p>
+
+            <form action={setHolding}>
               <div className="dash-formgrid">
                 <label>
-                  <span className="dash-field-label">Team member</span>
+                  <span className="dash-field-label">Partner</span>
                   <select name="userId" required className="dash-select">
                     <option value="">Select…</option>
                     {partners.map((s) => (
@@ -231,13 +356,14 @@ export default async function AdminWalletPage() {
                 </label>
 
                 <label>
-                  <span className="dash-field-label">Shares</span>
+                  <span className="dash-field-label">Shares they hold</span>
                   <input
                     type="number"
                     name="shares"
+                    min={0}
                     step={1}
                     required
-                    placeholder="100 or -50"
+                    placeholder="100"
                     className="dash-input"
                   />
                 </label>
@@ -253,7 +379,7 @@ export default async function AdminWalletPage() {
                 </label>
 
                 <button type="submit" className="dash-btn dash-btn--primary">
-                  Allocate
+                  Save
                 </button>
               </div>
             </form>
@@ -266,8 +392,10 @@ export default async function AdminWalletPage() {
                 </strong>
               ) : (
                 <>
-                  A negative number records a buyback. Allocations are a ledger,
-                  not an edit — every change keeps its history.
+                  Enter the total they should hold, not the change. Someone on
+                  100 set to 150 is recorded as +50; set to 80 it&rsquo;s a
+                  buyback of 20. Zero, or the Remove button above, clears them
+                  out. Every change keeps its history.
                 </>
               )}{" "}
               Ceiling and valuation live in Settings →{" "}

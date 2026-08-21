@@ -5,7 +5,15 @@ import pg from "pg";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({
+  connectionString,
+  // Neon's pooled endpoint fronts Postgres with PgBouncer, so a large local
+  // pool buys nothing and just queues. Keep it modest and fail fast rather
+  // than hanging a request for the default 0 (wait forever).
+  max: 10,
+  connectionTimeoutMillis: 10_000,
+  idleTimeoutMillis: 30_000,
+});
 const adapter = new PrismaPg(pool as any);
 
 const prismaClientSingleton = () => {

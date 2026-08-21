@@ -60,12 +60,12 @@ export default async function WalletCard({ userId }: { userId: string }) {
         {/* ── Earnings ledger ── */}
         <Card
           title="Earnings"
-          subtitle="Your share of delivered projects, plus any bonuses."
+          subtitle="Everything credited to your wallet — bonuses, dividends and adjustments."
           flush
         >
           <Table
             headers={["Date", "Source", "Share", "Amount"]}
-            empty="Nothing yet. Shares are credited when a project you're assigned to is marked delivered."
+            empty="Nothing credited to you yet."
           >
             {earnings.map((e) => (
               <tr key={e.id}>
