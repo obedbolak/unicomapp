@@ -22,17 +22,7 @@ export async function assignToProject(formData: FormData) {
   if (!admin) throw new Error("Not authorized");
 
   const projectId = String(formData.get("projectId"));
-  const holderValue = String(formData.get("holder") ?? "");
-  const holderType = holderValue
-    ? holderValue.split(":", 1)[0]
-    : String(formData.get("holderType") ?? "USER");
-  const holderId = holderValue
-    ? holderValue.slice(holderType.length + 1)
-    : String(
-        formData.get(
-          holderType === "ORGANIZATION" ? "organizationId" : "userId",
-        ) ?? "",
-      );
+  const userId = String(formData.get("userId"));
   const role = String(formData.get("role") ?? "").trim() || null;
 
   if (!projectId || !userId) throw new Error("Project and person are required");
