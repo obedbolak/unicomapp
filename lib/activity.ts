@@ -14,6 +14,7 @@ export type ActivityEntity =
   | "Certificate"
   | "Project"
   | "User"
+  | "Organization"
   | "Invoice"
   | "ContactMessage"
   | "Setting"
