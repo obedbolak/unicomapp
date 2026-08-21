@@ -29,11 +29,14 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminWalletPage() {
-  const staff = await prisma.user.findMany({
-    where: { active: true },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true, image: true, role: true },
-  });
+  const [staff, organizations] = await Promise.all([
+    prisma.user.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, email: true, image: true, role: true },
+    }),
+    prisma.organization.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   // Only partners can be allocated shares — equity status is set on the Team
   // page, so the two cannot drift apart.
@@ -123,9 +126,7 @@ export default async function AdminWalletPage() {
               <td className="dash-nowrap dash-td-muted">
                 {shortDate(c.createdAt)}
               </td>
-              <td style={{ fontWeight: 600 }}>
-                {c.user.name ?? c.user.email}
-              </td>
+              <td style={{ fontWeight: 600 }}>{c.user.name ?? c.user.email}</td>
               <td>
                 {c.source === "MONTHLY"
                   ? c.periodMonth
@@ -162,7 +163,14 @@ export default async function AdminWalletPage() {
 
       <Card title="Payout requests" flush>
         <Table
-          headers={["Requested", "Who", "Amount", "Send to", "Status", "Action"]}
+          headers={[
+            "Requested",
+            "Who",
+            "Amount",
+            "Send to",
+            "Status",
+            "Action",
+          ]}
           empty="No payout requests."
         >
           {requests.map((r) => (
@@ -174,7 +182,9 @@ export default async function AdminWalletPage() {
               <td className="dash-nowrap" style={{ fontWeight: 700 }}>
                 {money(r.amount.toString(), r.currency)}
               </td>
-              <td className="dash-mono dash-td-muted">{r.destination ?? "—"}</td>
+              <td className="dash-mono dash-td-muted">
+                {r.destination ?? "—"}
+              </td>
               <td>
                 <Badge value={r.status} />
               </td>
@@ -212,7 +222,13 @@ export default async function AdminWalletPage() {
       <div style={{ marginTop: "1.5rem" }}>
         <Card title="Balances" flush>
           <Table
-            headers={["Team member", "Earned", "Paid out", "In flight", "Available"]}
+            headers={[
+              "Team member",
+              "Earned",
+              "Paid out",
+              "In flight",
+              "Available",
+            ]}
             empty="No active team members."
           >
             {wallets.map((w) => (
@@ -280,7 +296,7 @@ export default async function AdminWalletPage() {
             empty="No shares issued yet. Set someone's holding below."
           >
             {capTable.rows.map((r) => (
-              <tr key={r.userId}>
+              <tr key={r.holderId}>
                 <td style={{ fontWeight: 600 }}>{r.name}</td>
 
                 {/* Type the number they should hold and save. The difference
@@ -288,7 +304,20 @@ export default async function AdminWalletPage() {
                     ledger, so the history stays intact. */}
                 <td>
                   <form action={setHolding} className="dash-inline-form">
-                    <input type="hidden" name="userId" value={r.userId} />
+                    <input
+                      type="hidden"
+                      name="holderType"
+                      value={r.holderType}
+                    />
+                    <input
+                      type="hidden"
+                      name={
+                        r.holderType === "ORGANIZATION"
+                          ? "organizationId"
+                          : "userId"
+                      }
+                      value={r.holderId}
+                    />
                     <input
                       type="number"
                       name="shares"
@@ -319,7 +348,20 @@ export default async function AdminWalletPage() {
                 </td>
                 <td>
                   <form action={removeShares}>
-                    <input type="hidden" name="userId" value={r.userId} />
+                    <input
+                      type="hidden"
+                      name="holderType"
+                      value={r.holderType}
+                    />
+                    <input
+                      type="hidden"
+                      name={
+                        r.holderType === "ORGANIZATION"
+                          ? "organizationId"
+                          : "userId"
+                      }
+                      value={r.holderId}
+                    />
                     <button
                       type="submit"
                       className="dash-btn"
@@ -334,22 +376,27 @@ export default async function AdminWalletPage() {
           </Table>
 
           <div style={{ padding: "1.35rem" }}>
-            <p
-              className="dash-field-label"
-              style={{ marginBottom: "0.6rem" }}
-            >
-              Set a partner&rsquo;s shares
+            <p className="dash-field-label" style={{ marginBottom: "0.6rem" }}>
+              Set a shareholder&rsquo;s shares
             </p>
 
             <form action={setHolding}>
               <div className="dash-formgrid">
                 <label>
-                  <span className="dash-field-label">Partner</span>
-                  <select name="userId" required className="dash-select">
+                  <span className="dash-field-label">Shareholder</span>
+                  <select name="holder" required className="dash-select">
                     <option value="">Select…</option>
                     {partners.map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option key={`user:${s.id}`} value={`USER:${s.id}`}>
                         {s.name ?? s.email}
+                      </option>
+                    ))}
+                    {organizations.map((organization) => (
+                      <option
+                        key={`organization:${organization.id}`}
+                        value={`ORGANIZATION:${organization.id}`}
+                      >
+                        {organization.name} (organization)
                       </option>
                     ))}
                   </select>
@@ -411,7 +458,7 @@ export default async function AdminWalletPage() {
         <div style={{ marginTop: "1.5rem" }}>
           <Card
             title="Pay a dividend"
-            subtitle="Splits an amount across shareholders by holding and credits it to their wallets."
+            subtitle="Splits an amount across partner wallets by holding. Organization-held shares remain with the company."
           >
             <form action={payDividend}>
               <div className="dash-formgrid">

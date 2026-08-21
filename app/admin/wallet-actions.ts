@@ -22,7 +22,17 @@ export async function assignToProject(formData: FormData) {
   if (!admin) throw new Error("Not authorized");
 
   const projectId = String(formData.get("projectId"));
-  const userId = String(formData.get("userId"));
+  const holderValue = String(formData.get("holder") ?? "");
+  const holderType = holderValue
+    ? holderValue.split(":", 1)[0]
+    : String(formData.get("holderType") ?? "USER");
+  const holderId = holderValue
+    ? holderValue.slice(holderType.length + 1)
+    : String(
+        formData.get(
+          holderType === "ORGANIZATION" ? "organizationId" : "userId",
+        ) ?? "",
+      );
   const role = String(formData.get("role") ?? "").trim() || null;
 
   if (!projectId || !userId) throw new Error("Project and person are required");
@@ -421,11 +431,21 @@ export async function setHolding(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) throw new Error("Not authorized");
 
-  const userId = String(formData.get("userId"));
+  const holderValue = String(formData.get("holder") ?? "");
+  const holderType = holderValue
+    ? holderValue.split(":", 1)[0]
+    : String(formData.get("holderType") ?? "USER");
+  const holderId = holderValue
+    ? holderValue.slice(holderType.length + 1)
+    : String(
+        formData.get(
+          holderType === "ORGANIZATION" ? "organizationId" : "userId",
+        ) ?? "",
+      );
   const raw = String(formData.get("shares") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim();
 
-  if (!userId) throw new Error("Choose a team member");
+  if (!holderId) throw new Error("Choose a shareholder");
   if (raw === "") throw new Error("Enter a number of shares");
 
   const target = Number(raw);
@@ -433,19 +453,29 @@ export async function setHolding(formData: FormData) {
     throw new Error("Enter a whole number of shares, zero or more");
   }
 
-  const holder = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true, name: true, email: true },
-  });
-  if (!holder) throw new Error("No such user");
-  if (!holder.role.includes("PARTNER")) {
+  if (holderType !== "USER" && holderType !== "ORGANIZATION") {
+    throw new Error("Unknown shareholder type");
+  }
+
+  const holder =
+    holderType === "USER"
+      ? await prisma.user.findUnique({
+          where: { id: holderId },
+          select: { role: true, name: true, email: true },
+        })
+      : await prisma.organization.findUnique({
+          where: { id: holderId },
+          select: { name: true },
+        });
+  if (!holder) throw new Error("No such shareholder");
+  if (holderType === "USER" && !holder.role.includes("PARTNER")) {
     throw new Error(
       `${holder.name ?? holder.email} is not a partner. Use “Make partner” on the Team page first.`,
     );
   }
 
   const table = await getCapTable();
-  const held = table.rows.find((r) => r.userId === userId)?.shares ?? 0;
+  const held = table.rows.find((r) => r.holderId === holderId)?.shares ?? 0;
   const delta = target - held;
 
   if (delta === 0) return; // Nothing changed — don't pad the ledger.
@@ -462,18 +492,26 @@ export async function setHolding(formData: FormData) {
 
   await prisma.shareGrant.create({
     data: {
-      userId,
+      ...(holderType === "USER"
+        ? { userId: holderId }
+        : { organizationId: holderId }),
       shares: delta,
       note: note || (delta > 0 ? `Set to ${target}` : `Reduced to ${target}`),
       grantedById: admin.id,
     },
   });
 
-  await logActivity(admin.id, "shares.set", "User", userId, {
-    from: held,
-    to: target,
-    delta,
-  });
+  await logActivity(
+    admin.id,
+    "shares.set",
+    holderType === "USER" ? "User" : "Organization",
+    holderId,
+    {
+      from: held,
+      to: target,
+      delta,
+    },
+  );
 
   revalidatePath("/admin/wallet");
   revalidatePath("/admin/team");
@@ -485,24 +523,42 @@ export async function removeShares(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) throw new Error("Not authorized");
 
-  const userId = String(formData.get("userId"));
-  if (!userId) throw new Error("Choose a team member");
+  const holderValue = String(formData.get("holder") ?? "");
+  const holderType = holderValue
+    ? holderValue.split(":", 1)[0]
+    : String(formData.get("holderType") ?? "USER");
+  const holderId = holderValue
+    ? holderValue.slice(holderType.length + 1)
+    : String(
+        formData.get(
+          holderType === "ORGANIZATION" ? "organizationId" : "userId",
+        ) ?? "",
+      );
+  if (!holderId) throw new Error("Choose a shareholder");
 
   const table = await getCapTable();
-  const held = table.rows.find((r) => r.userId === userId)?.shares ?? 0;
+  const held = table.rows.find((r) => r.holderId === holderId)?.shares ?? 0;
 
   if (held === 0) return; // Already holds nothing.
 
   await prisma.shareGrant.create({
     data: {
-      userId,
+      ...(holderType === "USER"
+        ? { userId: holderId }
+        : { organizationId: holderId }),
       shares: -held,
       note: "Holding removed",
       grantedById: admin.id,
     },
   });
 
-  await logActivity(admin.id, "shares.removed", "User", userId, { was: held });
+  await logActivity(
+    admin.id,
+    "shares.removed",
+    holderType === "USER" ? "User" : "Organization",
+    holderId,
+    { was: held },
+  );
 
   revalidatePath("/admin/wallet");
   revalidatePath("/admin/team");

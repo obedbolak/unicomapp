@@ -14,6 +14,18 @@ datasource db {
 // Your 5 team members from /about live here. Role drives which dashboard you see:
 // ADMIN → /admin (everything), STAFF → /dashboard (your own work).
 
+model Organization {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shareGrants ShareGrant[]
+
+  @@map("organizations")
+}
+
 model User {
   id            String     @id @default(cuid())
   name          String?
@@ -925,8 +937,9 @@ enum PayoutStatus {
 // buyback or forfeit.
 
 model ShareGrant {
-  id     String @id @default(cuid())
-  userId String
+  id             String  @id @default(cuid())
+  userId         String?
+  organizationId String?
 
   /// Negative for a buyback or forfeit.
   shares Int
@@ -935,10 +948,12 @@ model ShareGrant {
   grantedById String?
   createdAt   DateTime @default(now())
 
-  user      User  @relation("UserShares", fields: [userId], references: [id], onDelete: Cascade)
-  grantedBy User? @relation("GrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+  user         User?         @relation("UserShares", fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  grantedBy    User?         @relation("GrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([organizationId])
   @@index([createdAt])
   @@map("share_grants")
 }

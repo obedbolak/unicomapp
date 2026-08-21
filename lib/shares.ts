@@ -55,7 +55,10 @@ export async function getHolding(userId: string): Promise<Holding> {
 }
 
 export type CapTableRow = {
-  userId: string;
+  userId: string | null;
+  organizationId: string | null;
+  holderId: string;
+  holderType: "USER" | "ORGANIZATION";
   name: string;
   email: string;
   image: string | null;
@@ -74,28 +77,44 @@ export type CapTable = {
 };
 
 export async function getCapTable(): Promise<CapTable> {
-  const [grouped, users, authorizedRaw, valuationRaw] = await Promise.all([
-    prisma.shareGrant.groupBy({ by: ["userId"], _sum: { shares: true } }),
-    prisma.user.findMany({
-      select: { id: true, name: true, email: true, image: true },
-    }),
-    getSetting("authorizedShares"),
-    getSetting("companyValuation"),
-  ]);
+  const [grouped, users, organizations, authorizedRaw, valuationRaw] =
+    await Promise.all([
+      prisma.shareGrant.groupBy({
+        by: ["userId", "organizationId"],
+        _sum: { shares: true },
+      }),
+      prisma.user.findMany({
+        select: { id: true, name: true, email: true, image: true },
+      }),
+      prisma.organization.findMany({
+        select: { id: true, name: true, slug: true },
+      }),
+      getSetting("authorizedShares"),
+      getSetting("companyValuation"),
+    ]);
 
   const byUser = new Map(users.map((u) => [u.id, u]));
+  const byOrganization = new Map(organizations.map((o) => [o.id, o]));
   const issued = grouped.reduce((sum, g) => sum + (g._sum.shares ?? 0), 0);
   const authorized = Number(authorizedRaw) || 0;
   const valuation = Number(valuationRaw) || 0;
 
   const rows: CapTableRow[] = grouped
     .map((g) => {
-      const u = byUser.get(g.userId);
+      const u = g.userId ? byUser.get(g.userId) : undefined;
+      const organization = g.organizationId
+        ? byOrganization.get(g.organizationId)
+        : undefined;
       const shares = g._sum.shares ?? 0;
       const pctOfIssued = issued > 0 ? (shares / issued) * 100 : 0;
       return {
         userId: g.userId,
-        name: u?.name ?? u?.email ?? "Unknown",
+        organizationId: g.organizationId,
+        holderId: g.userId ?? g.organizationId ?? "unknown",
+        holderType: organization
+          ? ("ORGANIZATION" as const)
+          : ("USER" as const),
+        name: organization?.name ?? u?.name ?? u?.email ?? "Unknown",
         email: u?.email ?? "",
         image: u?.image ?? null,
         shares,
@@ -137,10 +156,12 @@ export async function distributeDividend(
     throw new Error("Enter an amount greater than zero");
   }
 
-  const exact = rows.map((r) => ({
-    userId: r.userId,
-    raw: (totalAmount * r.shares) / issued,
-  }));
+  const exact = rows
+    .filter((r): r is CapTableRow & { userId: string } => r.userId !== null)
+    .map((r) => ({
+      userId: r.userId,
+      raw: (totalAmount * r.shares) / issued,
+    }));
 
   const allocations = exact.map((e) => ({
     userId: e.userId,
@@ -161,6 +182,11 @@ export async function distributeDividend(
       }
     });
 
+  const credited = allocations.reduce(
+    (sum, allocation) => sum + allocation.amount,
+    0,
+  );
+
   await prisma.earning.createMany({
     data: allocations
       .filter((a) => a.amount > 0)
@@ -178,5 +204,5 @@ export async function distributeDividend(
     note,
   });
 
-  return { credited: totalAmount, recipients: allocations.length };
+  return { credited, recipients: allocations.length };
 }

@@ -547,6 +547,13 @@ async function main() {
   }
   console.log(`✅ ${team.length} team members`);
 
+  await prisma.organization.upsert({
+    where: { slug: "unicomteam" },
+    update: { name: "unicomteam" },
+    create: { slug: "unicomteam", name: "unicomteam" },
+  });
+  console.log("✅ unicomteam organization holder");
+
   // ── Services ───────────────────────────────────────────────────────────
   for (const [i, s] of services.entries()) {
     await prisma.service.upsert({
