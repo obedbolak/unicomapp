@@ -21,10 +21,16 @@ import {
   IconTeam,
 } from "@/components/dashboard/icons";
 import ProjectManage from "@/components/dashboard/ProjectManage";
+import StatusSelect from "@/components/dashboard/StatusSelect";
 import ProjectFields, {
   PROJECT_STATUSES,
   humanise,
 } from "@/components/dashboard/ProjectFields";
+
+const statusOptions = PROJECT_STATUSES.map((s) => ({
+  value: s,
+  label: humanise(s),
+}));
 
 export const dynamic = "force-dynamic";
 
@@ -201,27 +207,13 @@ export default async function ProjectsPage() {
                       </form>
                     </td>
                     <td>
-                      <form
+                      <StatusSelect
+                        id={p.id}
+                        current={p.status}
+                        options={statusOptions}
                         action={updateProjectStatus}
-                        className="dash-inline-form"
-                      >
-                        <input type="hidden" name="id" value={p.id} />
-                        <select
-                          name="status"
-                          defaultValue={p.status}
-                          className="dash-select"
-                          style={{ width: "auto" }}
-                        >
-                          {PROJECT_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {humanise(s)}
-                            </option>
-                          ))}
-                        </select>
-                        <button type="submit" className="dash-btn">
-                          Move
-                        </button>
-                      </form>
+                        buttonLabel="Move"
+                      />
                     </td>
                   </tr>
 
