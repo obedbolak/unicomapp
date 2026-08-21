@@ -83,7 +83,7 @@ export async function recordPayment(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) throw new Error("Not authorized");
 
-  const enrollmentId = String(formData.get("enrollmentId"));
+  const enrollmentId = String(formData.get("enrollmentId") ?? "");
   const amount = Number(formData.get("amount"));
   if (!enrollmentId || !amount || Number.isNaN(amount)) {
     throw new Error("An enrollment and a valid amount are required");

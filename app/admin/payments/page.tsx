@@ -54,7 +54,6 @@ export default async function PaymentsPage() {
         _sum: { amount: true },
       }),
       prisma.enrollment.findMany({
-        where: { status: { notIn: ["REJECTED", "WITHDRAWN", "COMPLETED"] } },
         orderBy: { createdAt: "desc" },
         take: 100,
         select: { id: true, reference: true, fullName: true, courseName: true },
@@ -97,7 +96,11 @@ export default async function PaymentsPage() {
           <label>
             <span className="dash-field-label">Enrollment</span>
             <select name="enrollmentId" required className="dash-select">
-              <option value="">Select…</option>
+              <option value="">
+                {openEnrollments.length > 0
+                  ? "Select…"
+                  : "No enrollments found"}
+              </option>
               {openEnrollments.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.fullName} — {e.courseName} ({e.reference})
