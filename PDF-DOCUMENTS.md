@@ -68,6 +68,35 @@ admin-only.
 Documents are rendered from the database at request time, so what a client
 receives is always what is stored — there is no cached copy to go stale.
 
+## Client verification
+
+Every document carries a random 8-character code, printed in its footer beside
+the number on every page:
+
+```
+UCT-QTE-2026-0001 · Groupe ZONECINQ®
+Verify this document at unicomteam.com/verify/document — code 7K2M-9QXA
+```
+
+A client enters both at **/verify/document** and gets back: the number, type,
+what it is about, who it was issued to, the issue date, validity, and its
+current status — issued, partly settled, settled, overdue or cancelled. No
+amounts and no line items; those are in the PDF the client is already holding,
+so restating them here would only widen what a leaked code is worth.
+
+Both halves are required *because document numbers run in sequence*. A lookup
+keyed on the number alone would let anyone walk `-0001`, `-0002`, `-0003` and
+read off the client list. A wrong code and a wrong number return the same "no
+match" for the same reason — confirming that a number exists is exactly what
+enumeration wants. Ten misses from one IP address in fifteen minutes stops
+answering, counted from the `document_verifications` audit table that every
+lookup writes.
+
+Codes are minted the first time a document is printed (`ensureVerifyCode` in
+the PDF route), so documents that predate this feature get one automatically
+with no backfill to run. The links live in the site footer alongside
+**Verify a certificate**, and the two verification pages cross-link.
+
 ## Schema
 
 | Addition | Purpose |
@@ -79,6 +108,8 @@ receives is always what is stored — there is no cached copy to go stale.
 | `InvoiceSection` | A phase: title, subtitle, order |
 | `InvoiceItem.sectionId`, `.label` | Which phase a line sits in, and its short label |
 | `InvoiceInstallment` + `InstallmentStatus` | The payment schedule |
+| `Invoice.verifyCode` (unique) | The client-facing verification code |
+| `DocumentVerification` | Audit of every public lookup, matched or not |
 
 New settings keys (all defaulted, so nothing needs configuring first):
 `companySubname`, `companyTagline`, `companyWebsite`, `companyPhoneCode`,
@@ -93,6 +124,8 @@ components/pdf/theme.ts        colours, column widths, styles
 components/pdf/fonts.ts        Carlito registration (falls back to Helvetica)
 components/pdf/BusinessDocument.tsx   the document itself
 app/api/invoices/[id]/pdf/route.ts    admin-only download
+lib/verification.ts            code minting, lookup, throttle
+app/verify/document/           the public verification page
 public/fonts/                  Carlito, OFL 1.1 — see its README
 ```
 

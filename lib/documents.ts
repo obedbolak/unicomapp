@@ -75,6 +75,10 @@ export type DocumentPayload = {
   terms: string[];
   notes: string | null;
 
+  /** Printed in the footer with the number, so the client can check the
+   *  document at /verify/document without asking us for anything. */
+  verify: { code: string; url: string } | null;
+
   company: {
     name: string;
     subname: string;

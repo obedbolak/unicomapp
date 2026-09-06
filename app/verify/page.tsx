@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function VerifyLandingPage() {
@@ -123,6 +124,26 @@ export default function VerifyLandingPage() {
             Verify →
           </button>
         </form>
+
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.8125rem",
+            color: "var(--color-text-muted)",
+            textAlign: "center",
+            margin: "1.5rem 0 0",
+            lineHeight: 1.6,
+          }}
+        >
+          Checking a quote or invoice instead?{" "}
+          <Link
+            href="/verify/document"
+            style={{ color: "var(--color-primary)" }}
+          >
+            Verify a quote or invoice
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );

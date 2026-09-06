@@ -662,6 +662,15 @@ model Invoice {
   issuerSignerName String?
   issuerSignerRole String?
 
+  /// Printed on the PDF and required to look the document up at /verify.
+  ///
+  /// Document numbers run in sequence, so a public lookup keyed on the number
+  /// alone would let anyone walk UCT-QTE-2026-0001, -0002, -0003 and learn who
+  /// every client is. This code is random, so holding the PDF is what proves
+  /// entitlement — and the client can forward that PDF to their accountant
+  /// without the check breaking.
+  verifyCode String? @unique
+
   notes String?
 
   client  Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -769,6 +778,26 @@ enum InstallmentStatus {
   DUE
   PAID
   WAIVED
+}
+
+/// Every public lookup at /verify/document, matched or not.
+///
+/// The mirror of CertificateVerification, and useful for the same reason: it
+/// shows which documents clients are actually checking. It also makes a
+/// guessing attempt visible — a run of misses against one number, or many
+/// numbers from one address, is a pattern you can see rather than infer.
+model DocumentVerification {
+  id        String   @id @default(cuid())
+  number    String
+  found     Boolean
+  invoiceId String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([number])
+  @@index([createdAt])
+  @@map("document_verifications")
 }
 
 // Covers both student MoMo payments and client invoice payments.

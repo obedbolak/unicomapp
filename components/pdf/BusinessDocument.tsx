@@ -648,11 +648,21 @@ export function BusinessDocument({
 
         <Signatures s={s} doc={doc} />
 
+        {/* Repeated on every page so the check survives a document that
+            reaches the client as a photo of one page. */}
         <View style={s.footer} fixed>
-          <Text>
-            {doc.number}
-            {doc.clientName ? ` · ${doc.clientName}` : ""}
-          </Text>
+          <View>
+            <Text>
+              {doc.number}
+              {doc.clientName ? ` · ${doc.clientName}` : ""}
+            </Text>
+            {!!doc.verify && (
+              <Text style={s.footerVerify}>
+                Verify this document at {doc.verify.url} — code{" "}
+                <Text style={s.footerCode}>{doc.verify.code}</Text>
+              </Text>
+            )}
+          </View>
           <Text
             render={({ pageNumber, totalPages }) =>
               `Page ${pageNumber} of ${totalPages}`

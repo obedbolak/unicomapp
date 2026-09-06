@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { getSettings } from "@/lib/settings";
 import { nextInvoiceNumber, nextQuoteNumber } from "@/lib/reference";
+import { newVerifyCode } from "@/lib/verification";
 import type {
   DocumentType,
   InstallmentStatus,
@@ -87,6 +88,7 @@ export async function createInvoice(formData: FormData) {
       currency: settings.currency,
       tax,
       total: tax,
+      verifyCode: newVerifyCode(),
       notes: String(formData.get("notes") ?? "").slice(0, 2000) || null,
       // A brand-new quote starts with the boilerplate every quote needs, so
       // the common case is edit-and-send rather than write-from-nothing.

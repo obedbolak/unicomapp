@@ -30,6 +30,14 @@ const legalLinks = [
   { label: "Terms of Service", href: "/terms" },
 ];
 
+// Clients and employers arrive looking for these specifically — someone
+// holding a certificate or a quote wants to know it is real — so they sit in
+// the bottom bar on every page rather than inside a services column.
+const verifyLinks = [
+  { label: "Verify a certificate", href: "/verify" },
+  { label: "Verify a quote or invoice", href: "/verify/document" },
+];
+
 const socials = [
   {
     label: "Facebook",
@@ -413,6 +421,40 @@ export default function Footer() {
             flexWrap: "wrap",
           }}
         >
+          {verifyLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: "var(--color-text-muted)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-primary)")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-text-muted)")
+              }
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <span
+            aria-hidden
+            style={{
+              width: 1,
+              height: "0.9rem",
+              background: "var(--color-border)",
+            }}
+          />
+
           {legalLinks.map((link) => (
             <Link
               key={link.href}

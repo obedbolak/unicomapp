@@ -16,6 +16,7 @@ import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { requireAdmin } from "@/lib/auth";
 import { loadDocument } from "@/lib/documents.server";
+import { ensureVerifyCode } from "@/lib/verification";
 import { documentFilename } from "@/lib/documents";
 import { registerFonts } from "@/components/pdf/fonts";
 import { BusinessDocument } from "@/components/pdf/BusinessDocument";
@@ -35,6 +36,19 @@ export async function GET(
   }
 
   const { id } = await params;
+
+  // Mint the verification code here rather than at creation, so documents that
+  // predate the feature get one the first time they are printed. Nothing can
+  // be verified before it has been printed, so this is the earliest moment the
+  // code is needed and the latest it can be assigned unnoticed.
+  try {
+    await ensureVerifyCode(id);
+  } catch (err) {
+    // A document that prints without a code is worse than no document only if
+    // you are the client trying to check it; carry on and log.
+    console.warn(`[pdf] no verification code for invoice ${id}:`, err);
+  }
+
   const doc = await loadDocument(id);
   if (!doc) {
     return new Response("Not found", { status: 404 });
@@ -45,7 +59,7 @@ export async function GET(
   let pdf: Buffer;
   try {
     pdf = await renderToBuffer(
-      React.createElement(BusinessDocument, { doc, font }),
+      React.createElement(BusinessDocument, { doc, font }) as any,
     );
   } catch (err) {
     // Rendering can fail on a malformed image or an unrepresentable glyph.

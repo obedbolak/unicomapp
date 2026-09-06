@@ -19,8 +19,33 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+// Prefer the direct, unpooled endpoint — the same choice prisma.config.ts
+// makes, and for the same reason. This is one batch of writes run once, not
+// the app's workload of many short queries, so there is nothing for PgBouncer
+// to help with and one less hop to fail on.
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error("Set DATABASE_URL (or DIRECT_URL) in .env first.");
+  process.exit(1);
+}
+
+const pool = new pg.Pool({
+  connectionString,
+  // Fail in fifteen seconds with a message you can act on, rather than after
+  // the operating system's two-minute TCP timeout with an ETIMEDOUT stack.
+  connectionTimeoutMillis: 15_000,
+});
+
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool as any) });
+
+function hostOf(url: string) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "(unparseable connection string)";
+  }
+}
 
 const NUMBER = "UCT-2026-GZ5-001";
 const ISSUED = new Date("2026-09-03T00:00:00.000Z");
@@ -196,6 +221,8 @@ const TERMS = [
 ];
 
 async function main() {
+  console.log(`→ ${hostOf(connectionString!)}`);
+
   const client = await prisma.client.upsert({
     where: { slug: "groupe-zonecinq" },
     update: {},
@@ -234,6 +261,16 @@ async function main() {
     update: {},
     create: { number: NUMBER, currency: "XAF" },
   });
+
+  // A fixed code rather than a random one, so re-seeding does not invalidate a
+  // copy the client is already holding. Every other document gets a random one
+  // the first time it is printed.
+  if (!invoice.verifyCode) {
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: { verifyCode: "GZ5QUOTE" },
+    });
+  }
 
   // Rebuild the body from scratch. Deleting items before sections matters:
   // items point at sections with onDelete SetNull, so removing sections first
@@ -347,6 +384,7 @@ async function main() {
 
   console.log(`\n  /admin/invoices/${invoice.id}`);
   console.log(`  /api/invoices/${invoice.id}/pdf`);
+  console.log(`  /verify/document?no=${NUMBER}&code=GZ5QUOTE`);
 }
 
 function ordinal(n: number) {
@@ -356,8 +394,24 @@ function ordinal(n: number) {
 }
 
 main()
-  .catch((err) => {
-    console.error(err);
+  .catch((err: unknown) => {
+    const code = (err as { code?: string })?.code;
+
+    if (code === "ETIMEDOUT" || code === "ECONNREFUSED" || code === "ENOTFOUND") {
+      console.error(
+        `\nCould not reach the database at ${hostOf(connectionString!)} (${code}).\n` +
+          `This is a connectivity problem, not a data one — nothing was written.\n\n` +
+          `  · Check that host and port 5432 are reachable from this machine.\n` +
+          `    Some office and campus networks block outbound 5432 outright.\n` +
+          `  · DIRECT_URL is used here when set; DATABASE_URL otherwise. If one\n` +
+          `    host works and the other does not, the URLs have drifted apart.\n` +
+          `  · If the app itself cannot reach the database either, fix that\n` +
+          `    first — this script is only the messenger.\n`,
+      );
+    } else {
+      console.error(err);
+    }
+
     process.exitCode = 1;
   })
   .finally(async () => {

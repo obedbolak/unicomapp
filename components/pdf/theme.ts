@@ -245,6 +245,9 @@ export function createStyles(font: string) {
       paddingTop: 5,
     },
 
+    footerVerify: { marginTop: 2, color: COLORS.muted },
+    footerCode: { fontWeight: 700, color: COLORS.navy, letterSpacing: 0.4 },
+
     /* ── Status pill in the schedule ─────────────────────────────────── */
     statusText: { fontSize: 8.5, fontWeight: 700, textAlign: "center" },
 
