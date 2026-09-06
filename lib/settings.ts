@@ -11,11 +11,34 @@ export const SETTING_DEFAULTS = {
   companyEmail: "contact@unicomteam.com",
   companyPhone: "681529488",
   companyAddress: "",
+  /**
+   * Small-caps line under the company name in the printed letterhead, which
+   * completes the logo lockup because /public/images/logo.png is the mark
+   * alone, without the wordmark.
+   */
+  companySubname: "SOFTWARE DEVELOPMENT COMPANY",
+  /** Italic strapline printed in the letterhead of every quote and invoice. */
+  companyTagline: "Elite Software Strategy, Design & Engineering",
+  /** Printed in the letterhead contact line, after e-mail and phone. */
+  companyWebsite: "unicomteam.com",
+  /**
+   * Dialling prefix prepended to companyPhone in the printed letterhead only.
+   * Stored apart from the number itself so the MoMo screens keep showing the
+   * local form students actually dial.
+   */
+  companyPhoneCode: "+237",
+  /**
+   * Signed on the company half of every document's signature block. Blank
+   * falls back to companyName.
+   */
+  signatoryName: "",
+  signatoryRole: "Authorized Signature",
   /** Shown on /admin/payments as the number students send MoMo to. */
   momoNumber: "681529488",
   orangeMoneyNumber: "",
   currency: "XAF",
   invoicePrefix: "UCT-INV",
+  quotePrefix: "UCT-QTE",
   certificatePrefix: "UCT",
   /** Registration fee quoted to new enrollments, in the currency above. */
   registrationFee: "5000",

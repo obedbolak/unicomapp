@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+
+  // @react-pdf/renderer ships native-ish font and image code and reads the
+  // Carlito faces off disk at render time. Bundling it breaks both, so it is
+  // required from node_modules at runtime instead.
+  serverExternalPackages: ["@react-pdf/renderer"],
 };
 
 export default nextConfig;

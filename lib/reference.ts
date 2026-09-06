@@ -36,6 +36,21 @@ export async function nextInvoiceNumber(
   return nextSequence(prefix, count);
 }
 
+/**
+ * UCT-QTE-2026-0001. Quotes and invoices live in one table but number
+ * independently, so the two series each stay contiguous — a client should not
+ * see their first quote arrive as number 0007 because six invoices went out
+ * to other people first.
+ */
+export async function nextQuoteNumber(basePrefix = "UCT-QTE", date = new Date()) {
+  const year = date.getFullYear();
+  const prefix = `${basePrefix}-${year}`;
+  const count = await prisma.invoice.count({
+    where: { number: { startsWith: prefix } },
+  });
+  return nextSequence(prefix, count);
+}
+
 /** UCT-INT-2026-0015 — kind matches the certificate type. */
 export async function nextCertificateNumber(
   kind: Kind = "INT",

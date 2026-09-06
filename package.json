@@ -12,7 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:ping": "tsx prisma/db-ping.ts",
     "seed": "tsx prisma/seed.ts",
+    "seed:zonecinq": "tsx prisma/seed-zonecinq.ts",
     "db:clear-shares": "tsx prisma/clear-project-shares.ts"
   },
   "dependencies": {
@@ -24,6 +26,7 @@
     "@iconify/react": "^6.0.2",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.7.0",
+    "@react-pdf/renderer": "^4.9.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",

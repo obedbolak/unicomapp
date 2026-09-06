@@ -615,10 +615,16 @@ model CertificateVerification {
 
 // ─── MONEY ───────────────────────────────────────────────────────────────────
 
+/// One business document: a quote or an invoice. Both share this table because
+/// they are the same document with different wording — a quote that the client
+/// signs becomes the invoice it is billed against, and keeping one row means
+/// the reference number, the line items and the payment schedule survive that
+/// transition instead of being retyped.
 model Invoice {
-  id     String        @id @default(cuid())
-  number String        @unique // UCT-INV-2026-0001
-  status InvoiceStatus @default(DRAFT)
+  id      String        @id @default(cuid())
+  number  String        @unique // UCT-INV-2026-0001 / UCT-QTE-2026-0001
+  status  InvoiceStatus @default(DRAFT)
+  docType DocumentType  @default(INVOICE)
 
   clientId  String?
   projectId String?
@@ -626,10 +632,35 @@ model Invoice {
   issueDate DateTime  @default(now())
   dueDate   DateTime?
 
+  /// Quotes expire; invoices fall due. Null means "no expiry stated".
+  validUntil DateTime?
+
   currency String  @default("XAF")
   subtotal Decimal @default(0) @db.Decimal(12, 2)
   tax      Decimal @default(0) @db.Decimal(12, 2)
   total    Decimal @default(0) @db.Decimal(12, 2)
+
+  // ── Printed document ──────────────────────────────────────────────────────
+  // Everything below exists only to make the rendered PDF read like a proper
+  // company document. None of it affects the arithmetic.
+
+  /// Headline: "QUOTE & FUND DISTRIBUTION". Falls back to the doc type.
+  title String?
+  /// Sub-headline: "Groupe ZONECINQ® — Website & Mobile Application".
+  subject String?
+  /// The italic paragraph under the meta table describing what is being built.
+  scope String?
+  /// Headline figure printed in the meta table, e.g. "750,000 FCFA
+  /// (including iOS & Bonus)". Null prints the computed total instead.
+  budgetLabel String?
+  /// Numbered "Terms & Conditions" clauses, in print order.
+  terms String[] @default([])
+
+  /// Signature block. The client half is named on the document; the company
+  /// half defaults to the settings company name when left blank.
+  clientSignerName String?
+  issuerSignerName String?
+  issuerSignerRole String?
 
   notes String?
 
@@ -639,11 +670,19 @@ model Invoice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items    InvoiceItem[]
-  payments Payment[]
+  items        InvoiceItem[]
+  sections     InvoiceSection[]
+  installments InvoiceInstallment[]
+  payments     Payment[]
 
   @@index([status])
+  @@index([docType, status])
   @@map("invoices")
+}
+
+enum DocumentType {
+  QUOTE
+  INVOICE
 }
 
 enum InvoiceStatus {
@@ -655,18 +694,81 @@ enum InvoiceStatus {
   VOID
 }
 
+/// A printed group of line items — "PHASE 1 — WEBSITE (NEXT.JS & REACT)".
+/// Each section renders as its own table with its own subtotal row. An invoice
+/// with no sections still prints correctly: its items fall into one unnamed
+/// table, which is the ordinary single-table invoice.
+model InvoiceSection {
+  id        String  @id @default(cuid())
+  invoiceId String
+  title     String
+  /// Small italic line under the heading: "Estimated delivery: 4–6 weeks".
+  subtitle  String?
+  sortOrder Int     @default(0)
+
+  invoice Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  items   InvoiceItem[]
+
+  @@index([invoiceId, sortOrder])
+  @@map("invoice_sections")
+}
+
 model InvoiceItem {
   id          String  @id @default(cuid())
   invoiceId   String
+  /// Null = the item belongs to no phase. It is left out of the phase tables
+  /// and printed as its own line in the financial summary — which is how
+  /// "Technical Reserve & Contingency" sits beside the phase totals.
+  sectionId   String?
   description String
+  /// Second column of the printed table. The sample document uses a short
+  /// label ("UI/UX Design") plus a longer description; when this is null the
+  /// description carries the whole cell.
+  label       String?
   quantity    Decimal @default(1) @db.Decimal(10, 2)
   unitPrice   Decimal @db.Decimal(12, 2)
   amount      Decimal @db.Decimal(12, 2)
   sortOrder   Int     @default(0)
 
+  invoice Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  section InvoiceSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId, sortOrder])
+  @@index([sectionId, sortOrder])
+  @@map("invoice_items")
+}
+
+/// A row of the payment schedule: what unlocks the money, how much, and
+/// whether it has landed. Deliberately separate from Payment — an installment
+/// is a plan, a Payment is a fact. The schedule is agreed at signing; payments
+/// arrive against it later, and reconciling the two is the point.
+model InvoiceInstallment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  /// "1st — 20%". Derived from sortOrder + percent when left blank.
+  label     String?
+  /// Share of the total, printed in the label. Informational only: `amount` is
+  /// what is owed, so rounding the percentages can never move the money.
+  percent   Decimal? @db.Decimal(5, 2)
+  /// "Contract signed — Phase 1 kickoff (Next.js website design & setup)"
+  trigger   String
+  amount    Decimal  @db.Decimal(12, 2)
+  status    InstallmentStatus @default(PENDING)
+  dueDate   DateTime?
+  paidAt    DateTime?
+  sortOrder Int      @default(0)
+
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  @@map("invoice_items")
+  @@index([invoiceId, sortOrder])
+  @@map("invoice_installments")
+}
+
+enum InstallmentStatus {
+  PENDING
+  DUE
+  PAID
+  WAIVED
 }
 
 // Covers both student MoMo payments and client invoice payments.

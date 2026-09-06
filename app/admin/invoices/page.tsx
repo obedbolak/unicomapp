@@ -64,8 +64,8 @@ export default async function InvoicesPage() {
   return (
     <>
       <PageHeader
-        title="Invoices"
-        subtitle="Client billing. Totals are derived from line items."
+        title="Quotes & invoices"
+        subtitle="Client billing. Totals are derived from line items; every document prints as a PDF."
       />
 
       <StatGrid>
@@ -88,11 +88,19 @@ export default async function InvoicesPage() {
       </StatGrid>
 
       <Card
-        title="New invoice"
-        subtitle={`The number is generated automatically from the ${settings.invoicePrefix} prefix. Add line items on the next screen.`}
+        title="New document"
+        subtitle={`Numbered automatically — ${settings.quotePrefix} for quotes, ${settings.invoicePrefix} for invoices. Add phases and line items on the next screen.`}
       >
         <form action={createInvoice}>
           <div className="dash-formgrid">
+            <label>
+              <span className="dash-field-label">Type</span>
+              <select name="docType" className="dash-select" defaultValue="INVOICE">
+                <option value="INVOICE">Invoice</option>
+                <option value="QUOTE">Quote</option>
+              </select>
+            </label>
+
             <label>
               <span className="dash-field-label">Client</span>
               <select name="clientId" className="dash-select">
@@ -146,6 +154,7 @@ export default async function InvoicesPage() {
           <Table
             headers={[
               "Number",
+              "Type",
               "Client",
               "Project",
               "Issued",
@@ -154,8 +163,9 @@ export default async function InvoicesPage() {
               "Total",
               "Status",
               "",
+              " ",
             ]}
-            empty="No invoices yet. Create a draft above."
+            empty="No documents yet. Create a draft above."
           >
             {invoices.map((inv) => (
               <tr key={inv.id}>
@@ -170,6 +180,9 @@ export default async function InvoicesPage() {
                   >
                     {inv.number}
                   </Link>
+                </td>
+                <td className="dash-td-muted">
+                  {inv.docType === "QUOTE" ? "Quote" : "Invoice"}
                 </td>
                 <td>{inv.client?.name ?? "—"}</td>
                 <td className="dash-td-muted">{inv.project?.title ?? "—"}</td>
@@ -208,6 +221,16 @@ export default async function InvoicesPage() {
                       Set
                     </button>
                   </form>
+                </td>
+                <td>
+                  <a
+                    href={`/api/invoices/${inv.id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dash-btn"
+                  >
+                    PDF
+                  </a>
                 </td>
               </tr>
             ))}
