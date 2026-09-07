@@ -12,40 +12,20 @@
 // admin UI is therefore overwritten, which is the point — this file is the
 // source of truth for this one document.
 
+// dotenv first: ESM evaluates imports in order, so anything below that reads
+// process.env at module scope must come after this line.
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
-import dotenv from "dotenv";
+import { createAdapter, describeTransport } from "../lib/db-adapter";
 
-dotenv.config();
-
-// Prefer the direct, unpooled endpoint — the same choice prisma.config.ts
-// makes, and for the same reason. This is one batch of writes run once, not
-// the app's workload of many short queries, so there is nothing for PgBouncer
-// to help with and one less hop to fail on.
-const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
 
 if (!connectionString) {
-  console.error("Set DATABASE_URL (or DIRECT_URL) in .env first.");
+  console.error("Set DATABASE_URL in .env first.");
   process.exit(1);
 }
 
-const pool = new pg.Pool({
-  connectionString,
-  // Fail in fifteen seconds with a message you can act on, rather than after
-  // the operating system's two-minute TCP timeout with an ETIMEDOUT stack.
-  connectionTimeoutMillis: 15_000,
-});
-
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool as any) });
-
-function hostOf(url: string) {
-  try {
-    return new URL(url).host;
-  } catch {
-    return "(unparseable connection string)";
-  }
-}
+const prisma = new PrismaClient({ adapter: createAdapter(connectionString) });
 
 const NUMBER = "UCT-2026-GZ5-001";
 const ISSUED = new Date("2026-09-03T00:00:00.000Z");
@@ -221,7 +201,7 @@ const TERMS = [
 ];
 
 async function main() {
-  console.log(`→ ${hostOf(connectionString!)}`);
+  console.log(`→ ${describeTransport(connectionString!)}`);
 
   const client = await prisma.client.upsert({
     where: { slug: "groupe-zonecinq" },
@@ -399,12 +379,11 @@ main()
 
     if (code === "ETIMEDOUT" || code === "ECONNREFUSED" || code === "ENOTFOUND") {
       console.error(
-        `\nCould not reach the database at ${hostOf(connectionString!)} (${code}).\n` +
+        `\nCould not reach the database — ${describeTransport(connectionString!)} (${code}).\n` +
           `This is a connectivity problem, not a data one — nothing was written.\n\n` +
-          `  · Check that host and port 5432 are reachable from this machine.\n` +
-          `    Some office and campus networks block outbound 5432 outright.\n` +
-          `  · DIRECT_URL is used here when set; DATABASE_URL otherwise. If one\n` +
-          `    host works and the other does not, the URLs have drifted apart.\n` +
+          `  · Run \`npm run db:ping\` — it tests both transports separately.\n` +
+          `  · A Neon URL should be going over 443. If this says 5432, the\n` +
+          `    hostname is not a .neon.tech one and the adapter fell back.\n` +
           `  · If the app itself cannot reach the database either, fix that\n` +
           `    first — this script is only the messenger.\n`,
       );
@@ -416,5 +395,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

@@ -8,10 +8,14 @@ summary, a payment schedule, numbered terms and a signature block.
 ## Install
 
 ```bash
-npm install                 # picks up @react-pdf/renderer
+npm install                 # @react-pdf/renderer + the Neon serverless driver
+npx prisma db push          # if 5432 is blocked, use prisma/manual-schema.sql
 npx prisma generate
-npx prisma db push          # or: npx prisma migrate dev -n document_fields
 ```
+
+See **DATABASE.md** — the app now reaches Neon over 443 rather than 5432, and
+`prisma/manual-schema.sql` applies every change below without the Prisma CLI if
+that port is filtered on your network.
 
 `db push` adds the new columns, tables and enums listed under
 [Schema](#schema). Nothing existing is dropped and every new column is

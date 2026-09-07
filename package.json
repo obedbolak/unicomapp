@@ -24,6 +24,8 @@
     "@emailjs/browser": "^4.4.1",
     "@heroicons/react": "^2.2.0",
     "@iconify/react": "^6.0.2",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.10.0",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.7.0",
     "@react-pdf/renderer": "^4.9.0",
@@ -43,7 +45,8 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.77.0",
     "react-icons": "^5.6.0",
-    "three": "^0.184.0"
+    "three": "^0.184.0",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -55,6 +58,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",
     "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "prisma": "^7.4.0",

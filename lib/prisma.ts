@@ -1,24 +1,19 @@
 // lib/prisma.ts
+//
+// The single Prisma client the app shares.
+//
+// The transport lives in lib/db-adapter.ts — port 5432 by default, with
+// `DB_TRANSPORT=neon` switching to Neon's WebSocket driver on 443. See that
+// file for why the default is what it is, and DATABASE.md for how to measure
+// which one this network actually wants.
+
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { createAdapter } from "@/lib/db-adapter";
 
-const connectionString = `${process.env.DATABASE_URL}`;
+const connectionString = process.env.DATABASE_URL ?? "";
 
-const pool = new pg.Pool({
-  connectionString,
-  // Neon's pooled endpoint fronts Postgres with PgBouncer, so a large local
-  // pool buys nothing and just queues. Keep it modest and fail fast rather
-  // than hanging a request for the default 0 (wait forever).
-  max: 10,
-  connectionTimeoutMillis: 10_000,
-  idleTimeoutMillis: 30_000,
-});
-const adapter = new PrismaPg(pool as any);
-
-const prismaClientSingleton = () => {
-  return new PrismaClient({ adapter });
-};
+const prismaClientSingleton = () =>
+  new PrismaClient({ adapter: createAdapter(connectionString) });
 
 declare global {
   var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
@@ -29,4 +24,6 @@ const prisma = globalThis.prisma ?? prismaClientSingleton();
 export default prisma;
 export { prisma };
 
+// Dev only. Next's hot reload re-evaluates this module on every edit, and a
+// fresh client per edit leaks connections until the pool is exhausted.
 if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
