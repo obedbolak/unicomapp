@@ -27,7 +27,7 @@ export default function FileUpload({
   currentUrl,
   onUploaded,
 }: {
-  category: "avatars" | "projects" | "certificates" | "materials";
+  category: "avatars" | "projects" | "certificates" | "materials" | "media";
   accept?: string;
   label?: string;
   /** Existing file, shown as a preview before anything new is picked. */
