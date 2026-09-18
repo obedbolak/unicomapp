@@ -135,6 +135,7 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           font-family: var(--font-display);
           background: none; border: none; cursor: pointer;
           transition: color 0.2s ease;
+          white-space: nowrap;
         }
         .hamburger-btn {
           display: flex; align-items: center; justify-content: center;
@@ -160,9 +161,13 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
         .svc-dropdown-item:hover {
           background: rgba(255,140,0,0.08); color: var(--color-primary);
         }
+        .desktop-actions { display: none; }
+        .mobile-actions { display: flex; flex: 1; justify-content: flex-end; align-items: center; gap: 0.25rem; }
         @media (min-width: 768px) {
-          .desktop-nav { display: flex; }
+          .desktop-nav { display: flex; flex: 1; justify-content: center; gap: 0.5rem; }
+          .desktop-actions { display: flex; flex: 1; justify-content: flex-end; gap: 0.75rem; align-items: center; }
           .hamburger-btn { display: none; }
+          .mobile-actions { display: none; }
         }
       `}</style>
 
@@ -180,17 +185,19 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
       >
         <div className="header-content">
           {/* Logo */}
-          <button className="logo-btn" onClick={() => handleNav("home")}>
-            <Image
-              src="/images/logo.png"
-              alt="UnicomTeam Logo"
-              width={32}
-              height={26}
-            />
-            <span className="logo-text">
-              UNICOM<span className="gradient-text">TEAM</span>
-            </span>
-          </button>
+          <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
+            <button className="logo-btn" onClick={() => handleNav("home")}>
+              <Image
+                src="/images/logo.png"
+                alt="UnicomTeam Logo"
+                width={32}
+                height={26}
+              />
+              <span className="logo-text">
+                UNICOM<span className="gradient-text">TEAM</span>
+              </span>
+            </button>
+          </div>
 
           {/* Desktop Nav */}
           <nav className="desktop-nav">
@@ -354,24 +361,43 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
                 </button>
               ),
             )}
+          </nav>
+
+          {/* Desktop Actions */}
+          <div className="desktop-actions">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/verify")}
+            >
+              Verify Quote
+            </Button>
             <Button
               variant="primary"
               size="sm"
-              className="ml-4"
               onClick={() => handleNav("contact")}
             >
               Get Started
             </Button>
-          </nav>
+          </div>
 
-          {/* Hamburger */}
-          <button
-            className="hamburger-btn"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          {/* Mobile Actions */}
+          <div className="mobile-actions">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/verify")}
+            >
+              Verify Quote
+            </Button>
+            <button
+              className="hamburger-btn"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+            >
+              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
       </motion.header>
 

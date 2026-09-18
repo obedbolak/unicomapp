@@ -3,7 +3,7 @@
 /* ── CSS Variables ───────────────────────────────────────────────────────── */
 :root {
   --max-width: 1920px;
-  --container-7xl: 1280px;
+  --container-7xl: 100%;
   --container-4xl: 896px;
 
   /* Spacing */

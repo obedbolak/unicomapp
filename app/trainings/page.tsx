@@ -1,215 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 
-const programs = [
-  {
-    badge: "Beginner",
-    badgeColor: "rgba(34,197,94,0.15)",
-    badgeBorder: "rgba(34,197,94,0.3)",
-    badgeText: "#22c55e",
-    title: "Frontend Development",
-    subtitle: "HTML · CSS · JavaScript · React",
-    description:
-      "Master the fundamentals of the web. Go from zero to building fully responsive, interactive UIs with React and modern CSS.",
-    duration: "3, 6 Months",
-    category: "Beginner",
-    price: "From 75,000 FCFA",
-    sessions: "24 Live Sessions",
-    mentorship: "1-on-1 Mentorship",
-    outcome: "Portfolio + Certificate",
-    icon: "🖥️",
-    accent: "rgba(255,140,0,0.12)",
-    accentBorder: "rgba(255,140,0,0.25)",
-    featured: false,
-    topics: null,
-  },
-  {
-    badge: "Intermediate",
-    badgeColor: "rgba(59,130,246,0.15)",
-    badgeBorder: "rgba(59,130,246,0.3)",
-    badgeText: "#3b82f6",
-    title: "Backend Development",
-    subtitle: "Node.js · Express · PostgreSQL · REST APIs",
-    description:
-      "Build powerful server-side applications. Learn databases, authentication, REST API design, and deploy production-ready backends with confidence.",
-    duration: "3, 6 Months",
-    category: "Intermediate",
-    price: "From 75,000 FCFA",
-    sessions: "48 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "Portfolio + Certificate",
-    icon: "⚙️",
-    accent: "rgba(59,130,246,0.08)",
-    accentBorder: "rgba(59,130,246,0.2)",
-    featured: false,
-    topics: ["Auth & JWT", "SQL & ORMs", "Caching & Queues", "CI/CD Deploys"],
-  },
-  {
-    badge: "Intermediate",
-    badgeColor: "rgba(168,85,247,0.15)",
-    badgeBorder: "rgba(168,85,247,0.3)",
-    badgeText: "#a855f7",
-    title: "UI/UX Design",
-    subtitle: "Figma · Design Systems · Prototyping",
-    description:
-      "Learn to design products people love. From wireframes to high-fidelity prototypes, build a designer's eye and a real-world portfolio.",
-    duration: "3, 6 Months",
-    category: "Intermediate",
-    price: "From 75,000 FCFA",
-    sessions: "20 Live Sessions",
-    mentorship: "Portfolio Reviews",
-    outcome: "Figma Portfolio + Certificate",
-    icon: "🎨",
-    accent: "rgba(168,85,247,0.08)",
-    accentBorder: "rgba(168,85,247,0.2)",
-    featured: false,
-    topics: null,
-  },
-  {
-    badge: "Advanced",
-    badgeColor: "rgba(239,68,68,0.15)",
-    badgeBorder: "rgba(239,68,68,0.3)",
-    badgeText: "#ef4444",
-    title: "Full-Stack Engineering",
-    subtitle: "React · Node · Databases · DevOps",
-    description:
-      "The complete track. Build, deploy, and scale full-stack web applications end-to-end with industry-grade tooling and battle-tested engineering practices.",
-    duration: "3, 6 Months, 1Y",
-    category: "Advanced",
-    price: "From 75,000 FCFA",
-    sessions: "96 Live Sessions",
-    mentorship: "Dedicated Mentor",
-    outcome: "Full Portfolio + Certificate",
-    icon: "🚀",
-    accent: "rgba(255,140,0,0.12)",
-    accentBorder: "rgba(255,140,0,0.25)",
-    featured: true,
-    topics: [
-      "Frontend with React",
-      "REST & GraphQL APIs",
-      "Databases & Auth",
-      "Docker & DevOps",
-      "Testing & CI/CD",
-      "System Design",
-    ],
-  },
-  {
-    badge: "Beginner",
-    badgeColor: "rgba(34,197,94,0.15)",
-    badgeBorder: "rgba(34,197,94,0.3)",
-    badgeText: "#22c55e",
-    title: "Digital Marketing",
-    subtitle: "SEO · Ads · Social Media · Analytics",
-    description:
-      "Drive traffic, generate leads, and grow brands online. Master SEO, paid ads, content strategy, and data-driven marketing.",
-    duration: "3, 6 Months",
-    category: "Beginner",
-    price: "From 75,000 FCFA",
-    sessions: "18 Live Sessions",
-    mentorship: "Strategy Reviews",
-    outcome: "Campaign Portfolio + Certificate",
-    icon: "📈",
-    accent: "rgba(34,197,94,0.08)",
-    accentBorder: "rgba(34,197,94,0.2)",
-    featured: false,
-    topics: null,
-  },
-  {
-    badge: "Intermediate",
-    badgeColor: "rgba(251,191,36,0.15)",
-    badgeBorder: "rgba(251,191,36,0.3)",
-    badgeText: "#fbbf24",
-    title: "Mobile Development",
-    subtitle: "React Native · Expo · App Store Deployment",
-    description:
-      "Build cross-platform mobile apps for iOS and Android. Learn React Native, state management, and ship real apps to the stores.",
-    duration: "3, 6 Months, 1Y",
-    category: "Intermediate",
-    price: "From 75,000 FCFA",
-    sessions: "40 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "App Portfolio + Certificate",
-    icon: "📱",
-    accent: "rgba(251,191,36,0.08)",
-    accentBorder: "rgba(251,191,36,0.2)",
-    featured: false,
-    topics: ["RN Fundamentals", "Navigation", "Native APIs", "Store Deploy"],
-  },
-  {
-    badge: "Advanced",
-    badgeColor: "rgba(14,165,233,0.15)",
-    badgeBorder: "rgba(14,165,233,0.3)",
-    badgeText: "#0ea5e9",
-    title: "Desktop App Development",
-    subtitle: "Electron · Tauri · Cross-Platform Desktop",
-    description:
-      "Build native-feeling desktop applications for Windows, macOS, and Linux. Learn Electron and Tauri, packaging, auto-updates, and shipping installable apps.",
-    duration: "3, 6 Months, 1Y",
-    category: "Advanced",
-    price: "From 75,000 FCFA",
-    sessions: "36 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "Desktop App Portfolio + Certificate",
-    icon: "💻",
-    accent: "rgba(14,165,233,0.08)",
-    accentBorder: "rgba(14,165,233,0.2)",
-    featured: false,
-    topics: [
-      "Electron & Tauri",
-      "Native Menus & APIs",
-      "Packaging & Installers",
-      "Auto-Updates",
-    ],
-  },
-];
-
-// ── Quick crash courses (short, high-volume, easy-buy) ──
-const crashCourses = [
-  {
-    title: "Graphics Design (Crash Course)",
-    subtitle: "Photoshop · Illustrator · Canva",
-    description:
-      "Design logos, flyers, social posts, and brand kits in weeks. Perfect for freelancers and side hustles.",
-    duration: "1,2,4 Weeks",
-    category: "Crash Course",
-    price: "From 25,000 FCFA",
-    sessions: "8 Live Sessions",
-    icon: "🎨",
-    accent: "rgba(236,72,153,0.12)",
-    accentBorder: "rgba(236,72,153,0.3)",
-    badgeText: "#ec4899",
-  },
-  {
-    title: "Microsoft Excel (Crash Course)",
-    subtitle: "Formulas · Pivot Tables · Dashboards",
-    description:
-      "Go from beginner to spreadsheet pro. Master formulas, charts, pivot tables, and automation that employers love.",
-    duration: "1,2,3 Weeks",
-    category: "Crash Course",
-    price: "From 25,000 FCFA",
-    sessions: "6 Live Sessions",
-    icon: "📊",
-    accent: "rgba(34,197,94,0.12)",
-    accentBorder: "rgba(34,197,94,0.3)",
-    badgeText: "#22c55e",
-  },
-  {
-    title: "Microsoft Office (Crash Course)",
-    subtitle: "Word · Excel · PowerPoint · Outlook",
-    description:
-      "Become office-ready fast. Master the everyday tools every workplace expects you to know inside out.",
-    duration: "1,2,4 Weeks",
-    category: "Crash Course",
-    price: "From 25,000 FCFA",
-    sessions: "8 Live Sessions",
-    icon: "🗂️",
-    accent: "rgba(59,130,246,0.12)",
-    accentBorder: "rgba(59,130,246,0.3)",
-    badgeText: "#3b82f6",
-  },
-];
+import { programs, crashCourses } from "@/lib/data/trainings";
 
 const valueProps = [
   {
@@ -262,22 +57,29 @@ function enrollHref({
 }
 
 export default function TrainingSection() {
+  const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  const filteredPrograms = programs.filter((program) =>
-    [program.title, program.subtitle, program.description, program.category]
+  const filteredPrograms = programs.filter((program) => {
+    const matchesSearch = [program.title, program.subtitle, program.description, program.category]
       .join(" ")
       .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase()),
-  );
+      .includes(searchQuery.trim().toLowerCase());
+    const matchesCategory = activeCategory === "All" || activeCategory === "Courses";
+    return matchesSearch && matchesCategory;
+  });
 
-  const filteredCrashCourses = crashCourses.filter((course) =>
-    [course.title, course.subtitle, course.description, course.category]
+  const filteredCrashCourses = crashCourses.filter((course) => {
+    const matchesSearch = [course.title, course.subtitle, course.description, course.category]
       .join(" ")
       .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase()),
-  );
+      .includes(searchQuery.trim().toLowerCase());
+    const matchesCategory = activeCategory === "All" || activeCategory === "Crash Courses";
+    return matchesSearch && matchesCategory;
+  });
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -306,50 +108,160 @@ export default function TrainingSection() {
         paddingTop: "calc(var(--header-height-mobile) + 2rem)",
       }}
     >
+      <style>{`
+        .filters-desktop {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          flex: 1;
+        }
+        .filter-toggle-mobile {
+          display: none;
+        }
+        .filters-mobile {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .filters-desktop {
+            display: none !important;
+          }
+          .mobile-search-row {
+            display: flex;
+            width: 100%;
+            gap: 0.5rem;
+          }
+          .filter-toggle-mobile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: var(--font-display);
+            cursor: pointer;
+            flex-shrink: 0;
+          }
+          .filters-mobile.open {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+            margin-bottom: 1rem;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-search-row {
+            width: 100%;
+            max-width: 320px;
+          }
+        }
+      `}</style>
       <div
         style={{
-          maxWidth: 1200,
+          maxWidth: "var(--container-7xl)",
           margin: "0 auto",
           padding: "0 1.5rem",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          flexWrap: "wrap",
           gap: "1rem",
           marginBottom: "1rem",
-          flexWrap: "wrap",
         }}
       >
-        <div style={{ flex: 1, minWidth: 240 }}>
+        {/* Category Pills (Desktop) */}
+        <div className="filters-desktop">
+          {["All", "Courses", "Crash Courses", "Internships"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                if (cat === "Internships") {
+                  router.push("/trainings/internships");
+                } else {
+                  setActiveCategory(cat);
+                }
+              }}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: "999px",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                border: activeCategory === cat ? "1px solid var(--color-primary)" : "1px solid var(--color-border)",
+                background: activeCategory === cat ? "rgba(255,140,0,0.1)" : "var(--color-surface)",
+                color: activeCategory === cat ? "var(--color-primary)" : "var(--color-text-muted)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile Search Row (Button + Search beside each other) */}
+        <div className="mobile-search-row">
+          
+          {/* Mobile Filter Toggle */}
+          <button className="filter-toggle-mobile" onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}>
+            <span>Filter</span>
+            <span style={{ fontSize: "0.7rem" }}>{isMobileFilterOpen ? "▲" : "▼"}</span>
+          </button>
+
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by course name or skill"
+            placeholder="Search courses..."
             style={{
+              flex: 1,
               width: "100%",
-              padding: "0.95rem 1rem",
+              padding: "0.65rem 1rem",
               borderRadius: "999px",
               border: "1px solid var(--color-border)",
               background: "var(--color-surface)",
               color: "var(--color-text)",
-              fontSize: "0.95rem",
+              fontSize: "0.875rem",
               outline: "none",
             }}
           />
         </div>
-        <a
-          href="/trainings/internships"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "0.875rem",
-            fontWeight: 700,
-            color: "var(--color-primary)",
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          See Internships →
-        </a>
+
+        {/* Mobile Filters Dropdown (Appears full width below the row) */}
+        <div className={`filters-mobile ${isMobileFilterOpen ? 'open' : ''}`}>
+          {["All", "Courses", "Crash Courses", "Internships"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                if (cat === "Internships") {
+                  router.push("/trainings/internships");
+                } else {
+                  setActiveCategory(cat);
+                  setIsMobileFilterOpen(false);
+                }
+              }}
+              style={{
+                padding: "0.75rem 1rem",
+                borderRadius: "0.75rem",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                textAlign: "left",
+                border: activeCategory === cat ? "1px solid var(--color-primary)" : "1px solid var(--color-border)",
+                background: activeCategory === cat ? "rgba(255,140,0,0.1)" : "var(--color-surface)",
+                color: activeCategory === cat ? "var(--color-primary)" : "var(--color-text-muted)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
       {/* ── Live banner ── */}
       <div
@@ -388,7 +300,7 @@ export default function TrainingSection() {
       {/* ── Masonry grid ── */}
       <div
         className="masonry"
-        style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}
+        style={{ maxWidth: "var(--container-7xl)", margin: "0 auto", padding: "0 1.5rem" }}
       >
         {filteredPrograms.map((p, i) => (
           <div
@@ -398,13 +310,13 @@ export default function TrainingSection() {
             onMouseLeave={() => setHovered(null)}
             style={{
               breakInside: "avoid",
-              marginBottom: "1.5rem",
+              marginBottom: "1.25rem",
               position: "relative",
               borderRadius: "1.25rem",
               border: `1px solid ${hovered === i || p.featured ? p.accentBorder : "var(--color-border)"}`,
               background:
                 hovered === i || p.featured ? p.accent : "var(--color-surface)",
-              padding: "1.75rem",
+              padding: "1.5rem",
               display: "flex",
               flexDirection: "column",
               gap: "1rem",
@@ -556,15 +468,12 @@ export default function TrainingSection() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr",
                 gap: "0.5rem",
               }}
             >
               {[
-                { icon: "🕐", label: p.duration },
-                { icon: "📡", label: p.sessions },
-                { icon: "👤", label: p.mentorship },
-                { icon: "🏆", label: p.outcome },
+                { icon: "🕐", label: p.variants.map((v) => v.duration).join(", ") },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -615,10 +524,10 @@ export default function TrainingSection() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {p.price}
+                From {p.variants[0].price}
               </span>
-              <a
-                href={enrollHref(p)}
+              <button
+                onClick={() => router.push(`/trainings/${p.slug}`)}
                 style={{
                   flex: "1 1 150px",
                   display: "flex",
@@ -641,10 +550,11 @@ export default function TrainingSection() {
                   fontWeight: 700,
                   textDecoration: "none",
                   transition: "background 0.2s, color 0.2s",
+                  cursor: "pointer",
                 }}
               >
-                Enroll Now →
-              </a>
+                View Details →
+              </button>
             </div>
           </div>
         ))}
@@ -652,7 +562,7 @@ export default function TrainingSection() {
 
       {/* ── Crash courses ── */}
       <div
-        style={{ maxWidth: 1100, margin: "5rem auto 0", padding: "0 1.5rem" }}
+        style={{ maxWidth: "var(--container-7xl)", margin: "5rem auto 0", padding: "0 1.5rem" }}
       >
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span
@@ -706,7 +616,7 @@ export default function TrainingSection() {
                 borderRadius: "1.25rem",
                 border: `1px solid ${c.accentBorder}`,
                 background: c.accent,
-                padding: "1.75rem",
+                padding: "1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 gap: "1rem",
@@ -789,19 +699,7 @@ export default function TrainingSection() {
                     color: "var(--color-text-muted)",
                   }}
                 >
-                  🕐 {c.duration}
-                </span>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.3rem",
-                    fontFamily: "var(--font-display)",
-                    fontSize: "0.75rem",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  📡 {c.sessions}
+                  🕐 {c.variants.map(v => v.duration).join(", ")}
                 </span>
               </div>
               <div
@@ -822,10 +720,10 @@ export default function TrainingSection() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {c.price}
+                  From {c.variants[0].price}
                 </span>
-                <a
-                  href={enrollHref(c)}
+                <button
+                  onClick={() => router.push(`/trainings/${c.slug}`)}
                   style={{
                     flex: "1 1 150px",
                     display: "flex",
@@ -833,17 +731,20 @@ export default function TrainingSection() {
                     justifyContent: "center",
                     padding: "0.7rem 1rem",
                     borderRadius: "0.75rem",
-                    background: "var(--color-primary)",
-                    border: "1px solid var(--color-primary)",
-                    color: "#000",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid var(--color-border)",
+                    color: "var(--color-text-muted)",
                     fontFamily: "var(--font-display)",
                     fontSize: "0.8125rem",
                     fontWeight: 700,
                     textDecoration: "none",
+                    cursor: "pointer",
                   }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)")}
                 >
-                  Enroll Now →
-                </a>
+                  View Details →
+                </button>
               </div>
             </div>
           ))}

@@ -12,11 +12,13 @@ interface Message {
   id: number;
   role: "user" | "bot";
   text: string;
+  reasoning_details?: string;
 }
 
 interface ConversationTurn {
   role: "user" | "assistant";
   content: string;
+  reasoning_details?: string;
 }
 
 const WELCOME: Message = {
@@ -28,7 +30,7 @@ const WELCOME: Message = {
 async function sendMessage(
   text: string,
   history: ConversationTurn[],
-): Promise<string> {
+): Promise<{ reply: string; reasoning_details?: string }> {
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -36,9 +38,12 @@ async function sendMessage(
       body: JSON.stringify({ message: text, history }),
     });
     const data = await res.json();
-    return data.reply ?? "I didn't catch that. Could you rephrase?";
+    return {
+      reply: data.reply ?? "I didn't catch that. Could you rephrase?",
+      reasoning_details: data.reasoning_details,
+    };
   } catch {
-    return "Something went wrong. Please try again.";
+    return { reply: "Something went wrong. Please try again." };
   }
 }
 
@@ -106,6 +111,7 @@ export default function ChatBot() {
       .map((m) => ({
         role: m.role === "user" ? "user" : "assistant",
         content: m.text,
+        reasoning_details: m.reasoning_details,
       }));
 
   useEffect(() => {
@@ -186,12 +192,12 @@ export default function ChatBot() {
 
     // Pass conversation history (excluding the new user message, which is sent separately)
     const history = buildHistory(messages);
-    const reply = await sendMessage(text, history);
+    const { reply, reasoning_details } = await sendMessage(text, history);
 
     // Drop the dots, then type the answer into an initially empty bubble.
     const replyId = Date.now() + 1;
     setLoading(false);
-    setMessages((m) => [...m, { id: replyId, role: "bot", text: "" }]);
+    setMessages((m) => [...m, { id: replyId, role: "bot", text: "", reasoning_details }]);
     await typeOut(replyId, reply);
   };
 

@@ -12,6 +12,7 @@
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
+  reasoning_details?: string;
 };
 
 type ProviderName = "groq" | "groq-lite" | "gemini" | "openrouter";
@@ -20,7 +21,7 @@ type Provider = {
   name: ProviderName;
   /** Only attempted when this returns true. */
   configured: () => boolean;
-  complete: (messages: ChatMessage[], maxTokens: number) => Promise<string>;
+  complete: (messages: ChatMessage[], maxTokens: number) => Promise<{ reply: string; reasoning_details?: string }>;
 };
 
 /** Shared shape for every OpenAI-compatible endpoint (Groq, OpenRouter, …). */
@@ -31,7 +32,8 @@ async function openAiCompatible(opts: {
   messages: ChatMessage[];
   maxTokens: number;
   extraHeaders?: Record<string, string>;
-}): Promise<string> {
+  reasoning?: boolean;
+}): Promise<{ reply: string; reasoning_details?: string }> {
   const res = await fetch(opts.url, {
     method: "POST",
     headers: {
@@ -44,6 +46,7 @@ async function openAiCompatible(opts: {
       messages: opts.messages,
       max_tokens: opts.maxTokens,
       temperature: 0.4,
+      ...(opts.reasoning ? { reasoning: { enabled: true } } : {}),
     }),
   });
 
@@ -54,7 +57,10 @@ async function openAiCompatible(opts: {
   const data = await res.json();
   const reply = data.choices?.[0]?.message?.content;
   if (!reply) throw new Error("Empty completion");
-  return reply as string;
+  return { 
+    reply: reply as string, 
+    reasoning_details: data.choices[0].message.reasoning_details 
+  };
 }
 
 const PROVIDERS: Provider[] = [
@@ -137,7 +143,7 @@ const PROVIDERS: Provider[] = [
       const data = await res.json();
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!reply) throw new Error("Empty completion");
-      return reply as string;
+      return { reply: reply as string };
     },
   },
 
@@ -160,6 +166,7 @@ const PROVIDERS: Provider[] = [
           "HTTP-Referer": "https://unicomteam.com",
           "X-Title": "UnicomTeam Assistant",
         },
+        reasoning: true,
       }),
   },
 
@@ -183,6 +190,7 @@ export type ChatResult = {
   reply: string | null;
   /** Which provider actually answered — handy for debugging quota problems. */
   provider: ProviderName | null;
+  reasoning_details?: string;
 };
 
 /**
@@ -204,8 +212,8 @@ export async function chatComplete(
 
   for (const provider of chain) {
     try {
-      const reply = await provider.complete(messages, maxTokens);
-      return { reply, provider: provider.name };
+      const result = await provider.complete(messages, maxTokens);
+      return { reply: result.reply, provider: provider.name, reasoning_details: result.reasoning_details };
     } catch (err) {
       // Rate limits and quota exhaustion are expected on free tiers — log and
       // move to the next provider rather than failing the request.

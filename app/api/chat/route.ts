@@ -199,7 +199,7 @@ ${siteContent}
 
   // Walks the configured provider chain (see lib/ai.ts) and falls through on
   // rate limits, so hitting one free tier's daily cap doesn't kill the bot.
-  const { reply, provider } = await chatComplete(messages, 500);
+  const { reply, provider, reasoning_details } = await chatComplete(messages, 500);
 
   if (!reply) {
     return NextResponse.json({
@@ -212,5 +212,5 @@ ${siteContent}
     console.log(`[chat] answered by ${provider}`);
   }
 
-  return NextResponse.json({ reply: normalizeReply(reply) });
+  return NextResponse.json({ reply: normalizeReply(reply), reasoning_details });
 }
