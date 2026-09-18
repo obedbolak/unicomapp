@@ -29,7 +29,10 @@ export async function deleteMediaAction(uploadId: string) {
       where: { id: uploadId },
     });
 
-    await logActivity(admin.id, `Deleted media file: ${upload.filename}`);
+    await logActivity(admin.id, "media.deleted", "User", upload.id, {
+      filename: upload.filename,
+      key: upload.key,
+    });
     revalidatePath("/admin/media");
 
     return { success: true };

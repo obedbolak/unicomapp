@@ -15,10 +15,10 @@ if (typeof window !== "undefined") {
 
 const carouselImages = [
   "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/d5d9b668-ca4a-4030-a249-30fb1d82a935-d1570c9e2eec347288e189dc96ace828-edited.png",
-  "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/68c2be0c-e429-478e-a778-a550e3b5ebe0-screenshot-from-2026-09-15-18-28-22-edited.png",
+  "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/e4717b70-63a3-49a2-8008-0bbd3bbcb1fc-96e51f04-ad45-4560-87d7-4f7e8a7cb1ba_removalai_preview.png",
   "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/20273d53-ffcf-447b-9f37-736b2b69f70d-eeaca5bae7807810e402477eddbcba42-edited.png",
-  "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/b8f496ab-8812-47d8-b08d-1159d9b22019-chatgpt-image-sep-18-2026-12_35_40-pm.png",
-  "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80",
+  "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/e4717b70-63a3-49a2-8008-0bbd3bbcb1fc-96e51f04-ad45-4560-87d7-4f7e8a7cb1ba_removalai_preview.png",
+  "https://pub-7fd63a2e70b04035b7d924eefdda4be9.r2.dev/media/e4717b70-63a3-49a2-8008-0bbd3bbcb1fc-96e51f04-ad45-4560-87d7-4f7e8a7cb1ba_removalai_preview.png",
 ];
 
 const slides = services.map((service, index) => ({
@@ -202,7 +202,8 @@ export default function HeroSection() {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
   const currentSlide = slides[displayedSlide];
