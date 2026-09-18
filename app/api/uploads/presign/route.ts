@@ -59,9 +59,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // Certificates and course materials are staff-facing content, not something
-  // any signed-in account should be able to write.
-  const adminOnly: string[] = ["certificates", "materials", "projects"];
+  // Certificates, course materials, and general media are staff-facing content,
+  // not something any signed-in account should be able to write.
+  const adminOnly: string[] = ["certificates", "materials", "projects", "media"];
   if (adminOnly.includes(category) && !user.role?.includes("ADMIN")) {
     return NextResponse.json(
       { error: "Only admins can upload to this category" },

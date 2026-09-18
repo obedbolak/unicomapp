@@ -173,3 +173,24 @@ export const IconShield = (p: P) => (
     <path d="m9.2 12 1.9 1.9 3.7-3.8" />
   </Svg>
 );
+
+export const IconImage = (p: P) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <polyline points="21 15 16 10 5 21" />
+  </Svg>
+);
+
+export const IconChevronDown = (p: P) => (
+  <Svg {...p}>
+    <polyline points="6 9 12 15 18 9" />
+  </Svg>
+);
+
+export const IconChevronRight = (p: P) => (
+  <Svg {...p}>
+    <polyline points="9 18 15 12 9 6" />
+  </Svg>
+);
+

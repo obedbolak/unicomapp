@@ -10,31 +10,57 @@ export const metadata = {
 
 const nav: NavItem[] = [
   { href: "/admin", label: "Overview", icon: "grid" },
-  { href: "/admin/messages", label: "Messages", icon: "mail" },
-  { href: "/admin/enrollments", label: "Enrollments", icon: "users" },
-  { href: "/admin/payments", label: "Payments", icon: "wallet" },
-  { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
-  { href: "/admin/certificates", label: "Certificates", icon: "award" },
-  { href: "/admin/projects", label: "Projects", icon: "briefcase" },
-  { href: "/admin/team", label: "Team", icon: "team" },
-  { href: "/admin/wallet", label: "Wallet", icon: "wallet" },
-
   {
-    href: "/admin/activity",
-    label: "Activity",
-    icon: "pulse",
+    href: "#operations",
+    label: "Operations",
+    icon: "briefcase",
+    children: [
+      { href: "/admin/projects", label: "Projects", icon: "briefcase" },
+      { href: "/admin/messages", label: "Messages", icon: "mail" },
+      { href: "/admin/team", label: "Team", icon: "team" },
+      { href: "/admin/media", label: "Media Gallery", icon: "image" },
+    ]
+  },
+  {
+    href: "#finance",
+    label: "Finance",
+    icon: "wallet",
+    children: [
+      { href: "/admin/payments", label: "Payments", icon: "wallet" },
+      { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
+      { href: "/admin/wallet", label: "Wallet", icon: "wallet" },
+    ]
+  },
+  {
+    href: "#students",
+    label: "Students",
+    icon: "users",
+    children: [
+      { href: "/admin/enrollments", label: "Enrollments", icon: "users" },
+      { href: "/admin/certificates", label: "Certificates", icon: "award" },
+    ]
+  },
+  {
+    href: "#audit",
+    label: "Audit & Security",
+    icon: "shield",
     section: "Audit",
+    children: [
+      { href: "/admin/activity", label: "Activity", icon: "pulse" },
+      { href: "/admin/verifications", label: "Verifications", icon: "shield" },
+    ]
   },
-  { href: "/admin/verifications", label: "Verifications", icon: "shield" },
-
   {
-    href: "/dashboard",
-    label: "My work",
-    icon: "spark",
+    href: "#personal",
+    label: "Personal",
+    icon: "user",
     section: "Personal",
+    children: [
+      { href: "/dashboard", label: "My work", icon: "spark" },
+      { href: "/admin/profile", label: "Profile", icon: "user" },
+      { href: "/admin/settings", label: "Settings", icon: "settings" },
+    ]
   },
-  { href: "/admin/profile", label: "Profile", icon: "user" },
-  { href: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
 export default async function AdminLayout({

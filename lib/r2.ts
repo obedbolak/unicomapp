@@ -80,6 +80,16 @@ export const CATEGORIES = {
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ],
   },
+  media: {
+    visibility: "public",
+    maxBytes: 50 * 1024 * 1024, // 50 MB
+    mimeTypes: [
+      ...IMAGE_TYPES,
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+    ],
+  },
 } as const;
 
 export type Category = keyof typeof CATEGORIES;

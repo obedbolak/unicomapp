@@ -16,6 +16,7 @@ import {
   IconBriefcase,
   IconClose,
   IconGrid,
+  IconImage,
   IconLogout,
   IconMenu,
   IconMail,
@@ -29,6 +30,8 @@ import {
   IconUser,
   IconUsers,
   IconWallet,
+  IconChevronDown,
+  IconChevronRight,
 } from "./icons";
 import NotificationBell from "./NotificationBell";
 
@@ -46,6 +49,7 @@ const ICONS = {
   shield: IconShield,
   settings: IconSettings,
   user: IconUser,
+  image: IconImage,
 } as const;
 
 export type IconKey = keyof typeof ICONS;
@@ -56,6 +60,7 @@ export type NavItem = {
   icon: IconKey;
   /** Renders a small uppercase heading above this item. */
   section?: string;
+  children?: NavItem[];
 };
 
 /** "Obed Bolak" → "OB". Falls back to the first character for one-word names. */
@@ -64,6 +69,75 @@ function initials(name: string) {
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function NavAccordion({ 
+  item, 
+  pathname, 
+  setOpen,
+  isOpen,
+  onToggle
+}: { 
+  item: NavItem; 
+  pathname: string; 
+  setOpen: (v: boolean) => void;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const Icon = ICONS[item.icon];
+  // Check if any child is active
+  const isActive = item.children?.some(child => child.href === pathname || pathname.startsWith(child.href + "/"));
+
+  return (
+    <div key={item.href}>
+      {item.section && <div className="dash-navlabel">{item.section}</div>}
+      <button 
+        className={`dash-navitem`}
+        onClick={onToggle}
+        style={{ 
+          width: '100%', 
+          background: 'transparent', 
+          cursor: 'pointer', 
+          justifyContent: 'space-between',
+          border: '1px solid transparent'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span className="dash-navicon" style={{ 
+            background: isActive ? 'var(--gradient-primary)' : '', 
+            color: isActive ? '#0b0b0b' : '',
+            boxShadow: isActive ? '0 5px 14px rgba(255, 140, 0, 0.4)' : ''
+          }}>
+            <Icon size={16} />
+          </span>
+          <span style={{ color: isActive ? 'var(--dash-ink)' : '' }}>{item.label}</span>
+        </div>
+        <span style={{ color: 'var(--dash-ink-dim)', flex: 'none' }}>
+          {isOpen ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem', paddingLeft: '2.75rem' }}>
+          {item.children?.map(child => {
+            const isChildActive = child.href === pathname || pathname.startsWith(child.href + "/");
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                className="dash-navitem"
+                aria-current={isChildActive ? "page" : undefined}
+                onClick={() => setOpen(false)}
+                style={{ padding: '0.5rem 0.7rem' }}
+              >
+                {child.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function Shell({
@@ -87,9 +161,17 @@ export default function Shell({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  // Figure out which accordion should be open on initial load
+  const [openAccordion, setOpenAccordion] = useState<string | null>(() => {
+    const activeParent = nav.find(item => item.children?.some(child => child.href === pathname || pathname.startsWith(child.href + "/")));
+    return activeParent ? activeParent.label : null;
+  });
+
+  // Flatten nav to find current item for the title
+  const flatNav = nav.flatMap(n => n.children ? [n, ...n.children] : [n]);
   const current =
-    nav.find((n) => n.href === pathname) ??
-    nav
+    flatNav.find((n) => n.href === pathname) ??
+    flatNav
       .filter((n) => pathname.startsWith(n.href + "/"))
       .sort((a, b) => b.href.length - a.href.length)[0];
 
@@ -126,6 +208,19 @@ export default function Shell({
 
         <nav className="dash-nav">
           {nav.map((item) => {
+            if (item.children && item.children.length > 0) {
+              return (
+                <NavAccordion 
+                  key={item.label} 
+                  item={item} 
+                  pathname={pathname} 
+                  setOpen={setOpen} 
+                  isOpen={openAccordion === item.label}
+                  onToggle={() => setOpenAccordion(openAccordion === item.label ? null : item.label)}
+                />
+              );
+            }
+
             const Icon = ICONS[item.icon];
             const active =
               item.href === pathname || pathname.startsWith(item.href + "/");
