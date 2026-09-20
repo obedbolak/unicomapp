@@ -1,0 +1,492 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PROJECTS — the carousel section right after the hero
+   Every selector is prefixed `up-`.
+
+   Side padding uses the same steps as the header (1 / 1.5 / 2 / 3 / 4rem), so
+   the heading, the first card and the logo all start on the same line.
+
+   The track is a continuous marquee: the project list is duplicated once and
+   the whole strip slides left forever. Because the two halves are identical,
+   the moment the first half has scrolled fully off, the strip is back to
+   pixel-for-pixel the position it started at — so the loop point is
+   invisible. There is no "jump back to the start" the way a scroll-based
+   carousel needs.
+
+   Note: nothing here puts `mask-image`, `filter` or `opacity < 1` on an
+   ancestor of the cards. Those create a "backdrop root" and would silently
+   switch off the cards' glass blur.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.up-section {
+  --up-pad: var(--padding-xs, 1rem);
+  --up-gap: 1.5rem;
+  --up-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  width: 100%;
+  padding: 5rem 0 4.5rem;
+}
+
+@media (min-width: 480px) {
+  .up-section {
+    --up-pad: var(--padding-sm, 1.5rem);
+  }
+}
+@media (min-width: 768px) {
+  .up-section {
+    --up-pad: var(--padding-md, 2rem);
+  }
+}
+@media (min-width: 1024px) {
+  .up-section {
+    --up-pad: var(--padding-lg, 3rem);
+  }
+}
+@media (min-width: 1280px) {
+  .up-section {
+    --up-pad: var(--padding-xl, 4rem);
+  }
+}
+
+/* Soft divider between the hero and this section */
+.up-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--up-pad);
+  right: var(--up-pad);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 140, 0, 0.4),
+    transparent
+  );
+}
+
+/* ── Heading row ──────────────────────────────────────────────────────── */
+
+.up-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 0 var(--up-pad) 2.5rem;
+}
+
+.up-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-primary, #ff8c00);
+}
+
+.up-eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.up-title {
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: clamp(2rem, 1.4rem + 2.2vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.up-grad {
+  background: linear-gradient(100deg, #ffb300 0%, #ff8c00 45%, #ff3b00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.up-sub {
+  max-width: 34rem;
+  margin-top: 0.85rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.up-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.up-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.25rem;
+  border-radius: 999px;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    gap 0.25s var(--up-ease);
+}
+
+.up-all:hover {
+  gap: 0.8rem;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.up-round {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(9, 17, 31, 0.5);
+  color: rgba(255, 255, 255, 0.82);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.25s var(--up-ease);
+}
+
+.up-round:hover {
+  color: var(--color-primary, #ff8c00);
+  border-color: rgba(255, 140, 0, 0.55);
+  background: rgba(255, 140, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.up-round:active {
+  transform: scale(0.94);
+}
+
+/* ── Marquee viewport ─────────────────────────────────────────────────── */
+
+/* The mask fades the two edges to transparent, so cards don't appear to be
+   sliced off — they dissolve in and out instead. Vertical padding leaves
+   room for the hover lift and shadow, which `overflow: hidden` would
+   otherwise clip. */
+.up-viewport {
+  overflow: hidden;
+  padding: 1rem 0 2rem;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--up-pad),
+    #000 calc(100% - var(--up-pad)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--up-pad),
+    #000 calc(100% - var(--up-pad)),
+    transparent 100%
+  );
+}
+
+.up-track {
+  display: flex;
+  width: max-content;
+  gap: var(--up-gap);
+  padding-left: var(--up-gap);
+  animation: upMarquee var(--up-duration, 30s) linear infinite;
+}
+
+/* Hover, keyboard focus, or the pause button all stop the same animation —
+   nothing about the loop's position is stored in JS, so resuming just
+   un-pauses it exactly where it left off. */
+.up-viewport:hover .up-track,
+.up-viewport:focus-within .up-track,
+.up-track[data-paused="true"] {
+  animation-play-state: paused;
+}
+
+@keyframes upMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Exactly half: the track holds two identical copies of the project
+       list back to back, so -50% lines the second copy up exactly where
+       the first one started. */
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────── */
+
+.up-card {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: clamp(17.5rem, 42vw, 23rem);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(13, 27, 46, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    0 18px 40px -12px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  transition:
+    transform 0.45s var(--up-ease),
+    border-color 0.3s ease,
+    box-shadow 0.45s ease;
+}
+
+.up-card:hover,
+.up-card:focus-within {
+  transform: translateY(-6px);
+  border-color: rgba(255, 140, 0, 0.4);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 30px 60px -16px rgba(0, 0, 0, 0.65),
+    0 0 44px -10px rgba(255, 140, 0, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.up-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.up-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--up-ease);
+}
+
+.up-card:hover .up-media img {
+  transform: scale(1.07);
+}
+
+.up-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 8, 20, 0.15) 0%,
+    transparent 40%,
+    rgba(0, 8, 20, 0.78) 100%
+  );
+  pointer-events: none;
+}
+
+.up-chip {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(0, 8, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.up-num {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 0.7rem;
+  z-index: 1;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.up-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.35rem 1.5rem 1.5rem;
+}
+
+.up-card-title {
+  margin-bottom: 0.6rem;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.up-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Stretched link: the ::after covers the whole card, so the entire card is
+   the click target while the link text stays the accessible name. */
+.up-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--color-primary, #ff8c00);
+  transition:
+    gap 0.25s var(--up-ease),
+    color 0.2s ease;
+}
+
+.up-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.up-card:hover .up-link {
+  gap: 0.75rem;
+  color: #ffb300;
+}
+
+.up-link:focus-visible {
+  outline: none;
+}
+
+.up-card:has(.up-link:focus-visible) {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.up-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Entrance ─────────────────────────────────────────────────────────── */
+/* `backwards` fill: the hidden start state holds only during the stagger
+   delay. Afterwards the normal styles take over again, so hover transforms
+   still work. */
+
+.up-reveal {
+  opacity: 0;
+}
+
+.up-section[data-in="true"] .up-reveal {
+  opacity: 1;
+  animation: upRise 0.9s var(--up-ease) backwards;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+@keyframes upRise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 599px) {
+  .up-head {
+    align-items: flex-start;
+  }
+  .up-card {
+    width: clamp(15.5rem, 78vw, 21rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .up-reveal,
+  .up-section[data-in="true"] .up-reveal {
+    opacity: 1;
+    animation: none;
+  }
+  .up-card,
+  .up-media img,
+  .up-round,
+  .up-link,
+  .up-all {
+    transition-duration: 0.01ms;
+  }
+  .up-card:hover,
+  .up-card:focus-within {
+    transform: none;
+  }
+  .up-card:hover .up-media img {
+    transform: none;
+  }
+  /* The marquee itself is switched off from the component (it renders a
+     single, non-duplicated, non-scrolling row), but this is a second,
+     belt-and-suspenders guard in case CSS ever runs without it. */
+  .up-track {
+    animation: none;
+  }
+  .up-viewport {
+    overflow-x: auto;
+  }
+}

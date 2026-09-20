@@ -1,16 +1,26 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
-import { motion, useInView } from "framer-motion";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import Link from "next/link";
+import { useInView, useReducedMotion } from "framer-motion";
+import { ArrowRight, ArrowUpRight, Pause, Play } from "lucide-react";
+import "@/app/projects-carousel.css";
 
+/* ── Content ─────────────────────────────────────────────────────────────── */
+
+// `link` of "#" (or empty) means "no case-study page yet" — those cards send
+// visitors to the projects page instead of jumping to the top of the home page.
 const projects = [
   {
     title: "VIHIPEX Academy Portal",
     category: "Software Development",
     description:
       "A fully bespoke school management infrastructure with real-time grading metrics and high-security administrative controls.",
-    image: "https://images.unsplash.com/photo-1623461487986-9400110de28e",
+    // The original URL had no size parameters, so the browser downloaded the
+    // full-resolution photo for a card that is 400px wide.
+    image:
+      "https://images.unsplash.com/photo-1623461487986-9400110de28e?w=800&q=80&auto=format&fit=crop",
     link: "#",
   },
   {
@@ -51,305 +61,143 @@ const projects = [
   },
 ];
 
-const loopedProjects = [...projects, ...projects];
+// Seconds per card. Total loop time scales with the list, so adding a sixth
+// project doesn't speed the whole strip up.
+const SECONDS_PER_CARD = 5;
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const rise = (i: number) => ({ "--i": i }) as CSSProperties;
+
+function ProjectLink({ href, title }: { href: string; title: string }) {
+  const content = (
+    <>
+      View project <ArrowUpRight size={16} aria-hidden />
+      <span className="up-sr">: {title}</span>
+    </>
+  );
+  return /^https?:\/\//.test(href) ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="up-link"
+    >
+      {content}
+    </a>
+  ) : (
+    <Link href={href} className="up-link">
+      {content}
+    </Link>
+  );
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
 
 export default function ProjectsCarousel() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
-  const isPaused = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const revealed = useInView(sectionRef, { once: true, margin: "-80px" });
+  const reduce = useReducedMotion();
+  const [userPaused, setUserPaused] = useState(false);
 
-  // Silently reset to midpoint to create seamless loop
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    // Start at midpoint so left-scroll also works
-    const onReady = () => {
-      track.scrollLeft = track.scrollWidth / 2;
-    };
-    // Wait for layout
-    setTimeout(onReady, 50);
-
-    const handleScroll = () => {
-      const mid = track.scrollWidth / 2;
-      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) {
-        track.scrollLeft = mid - track.clientWidth;
-      } else if (track.scrollLeft <= 2) {
-        track.scrollLeft = mid;
-      }
-    };
-    track.addEventListener("scroll", handleScroll, { passive: true });
-    return () => track.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scroll = useCallback((dir: "left" | "right") => {
-    if (!trackRef.current) return;
-    const card = trackRef.current.querySelector(
-      ".proj-card-inner",
-    ) as HTMLElement;
-    const amount = card ? card.offsetWidth + 24 : 360;
-    trackRef.current.scrollBy({
-      left: dir === "right" ? amount : -amount,
-      behavior: "smooth",
-    });
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isPaused.current) scroll("right");
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [scroll]);
+  // A seamless loop needs the list drawn twice back to back — the CSS slides
+  // the whole strip left by exactly one set's width, so the moment the first
+  // copy scrolls out, the second is sitting exactly where the first began.
+  // With reduced motion there is no animation, so a single copy is enough
+  // and it stays a plain scrollable row instead.
+  const track = reduce ? projects : [...projects, ...projects];
 
   return (
     <section
       ref={sectionRef}
-      style={{
-        width: "100%",
-        paddingTop: "5rem",
-        paddingBottom: "5rem",
-        overflow: "hidden",
-      }}
+      className="up-section"
+      data-in={revealed}
+      aria-labelledby="up-heading"
     >
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          paddingLeft: "clamp(1rem, 5vw, 4rem)",
-          paddingRight: "clamp(1rem, 5vw, 4rem)",
-          marginBottom: "2.5rem",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-        }}
-      >
-        <div>
-          <span className="section-eyebrow">What We've Done</span>
-          <h2
-            className="section-heading"
-            style={{
-              color: "var(--color-text)",
-              fontSize: "2rem",
-              marginBottom: 0,
-            }}
-          >
-            Selected <span className="gradient-text">Projects</span>
+      <div className="up-head">
+        <div className="up-reveal" style={rise(0)}>
+          <span className="up-eyebrow">{"What We've Done"}</span>
+          <h2 id="up-heading" className="up-title">
+            Selected <span className="up-grad">Projects</span>
           </h2>
+          <p className="up-sub">
+            A look at recent work across engineering, design and growth.
+          </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          {(
-            [
-              { dir: "left", Icon: ArrowLeft },
-              { dir: "right", Icon: ArrowRight },
-            ] as const
-          ).map(({ dir, Icon }) => (
+        <div className="up-tools up-reveal" style={rise(1)}>
+          <Link href="/projects" className="up-all">
+            View all projects <ArrowRight size={16} aria-hidden />
+          </Link>
+          {!reduce && (
             <button
-              key={dir}
-              aria-label={`Scroll projects ${dir}`}
-              title={`Scroll ${dir}`}
-              onClick={() => {
-                isPaused.current = true;
-                scroll(dir);
-                setTimeout(() => {
-                  isPaused.current = false;
-                }, 8000);
-              }}
-              style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid var(--color-border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                color: "var(--color-text-muted)",
-                transition: "background 0.2s, color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(255,140,0,0.1)";
-                (e.currentTarget as HTMLElement).style.color =
-                  "var(--color-primary)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(255,255,255,0.04)";
-                (e.currentTarget as HTMLElement).style.color =
-                  "var(--color-text-muted)";
-              }}
+              type="button"
+              className="up-round"
+              aria-label={
+                userPaused ? "Resume auto-scroll" : "Pause auto-scroll"
+              }
+              aria-pressed={userPaused}
+              onClick={() => setUserPaused((v) => !v)}
             >
-              <Icon size={18} />
+              {userPaused ? (
+                <Play size={16} aria-hidden />
+              ) : (
+                <Pause size={16} aria-hidden />
+              )}
             </button>
-          ))}
+          )}
         </div>
-      </motion.div>
-
-      {/* Carousel track */}
-      <div
-        ref={trackRef}
-        onMouseEnter={() => {
-          isPaused.current = true;
-        }}
-        onMouseLeave={() => {
-          isPaused.current = false;
-        }}
-        style={{
-          display: "flex",
-          gap: "1.5rem",
-          overflowX: "auto",
-          paddingLeft: "clamp(1rem, 5vw, 4rem)",
-          paddingRight: "clamp(1rem, 5vw, 4rem)",
-          paddingBottom: "1rem",
-          WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-      >
-        {loopedProjects.map((project, i) => (
-          <div
-            key={i}
-            /* The list is duplicated to fake an infinite loop, so the second
-               copy is hidden from screen readers — otherwise they announce
-               ten projects when there are five. */
-            aria-hidden={i >= projects.length}
-            className="proj-card-inner floating-card floating-card--static"
-            style={{
-              flexShrink: 0,
-              width: "clamp(280px, 75vw, 680px)",
-              borderRadius: "1rem",
-              overflow: "hidden",
-            }}
-          >
-            {/* Image */}
-            <div
-              className="proj-image"
-              style={{ overflow: "hidden", flexShrink: 0 }}
-            >
-              <img
-                src={project.image}
-                alt={`${project.title} — ${project.category}`}
-                width={440}
-                height={400}
-                loading="lazy"
-                decoding="async"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  objectPosition: "center",
-                  transition: "transform 0.4s ease",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLImageElement).style.transform =
-                    "scale(1.05)")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLImageElement).style.transform =
-                    "scale(1)")
-                }
-              />
-            </div>
-
-            {/* Description */}
-            <div
-              style={{
-                padding: "1.5rem",
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.6875rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "var(--color-primary)",
-                  background: "rgba(255,140,0,0.08)",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: "6px",
-                  alignSelf: "flex-start",
-                  marginBottom: "0.75rem",
-                }}
-              >
-                {project.category}
-              </span>
-              <h3
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  fontSize: "1.125rem",
-                  color: "var(--color-text)",
-                  marginBottom: "0.5rem",
-                  lineHeight: 1.4,
-                }}
-              >
-                {project.title}
-              </h3>
-              <p
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.875rem",
-                  color: "var(--color-text-muted)",
-                  lineHeight: 1.6,
-                  flex: 1,
-                }}
-              >
-                {project.description}
-              </p>
-              <a
-                href={project.link}
-                style={{
-                  marginTop: "1.25rem",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  color: "var(--color-primary)",
-                  textDecoration: "none",
-                  letterSpacing: "0.03em",
-                  transition: "gap 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.gap = "0.65rem")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.gap = "0.4rem")
-                }
-              >
-                View Project <ArrowUpRight size={15} />
-              </a>
-            </div>
-          </div>
-        ))}
       </div>
 
-      <style>{`
-        .proj-card-inner {
-          display: flex;
-          flex-direction: column;
-        }
-        .proj-image {
-          width: 100%;
-          height: 200px;
-        }
-        @media (min-width: 600px) {
-          .proj-card-inner { flex-direction: row; }
-          .proj-image { width: 220px; min-width: 220px; height: auto; }
-        }
-      `}</style>
+      <div className="up-viewport" role="region" aria-label="Selected projects">
+        <div
+          className="up-track"
+          data-paused={userPaused}
+          style={
+            {
+              "--up-duration": `${projects.length * SECONDS_PER_CARD}s`,
+            } as CSSProperties
+          }
+        >
+          {track.map((p, i) => {
+            const href = p.link && p.link !== "#" ? p.link : "/projects";
+            // The second copy exists only so the strip has something to
+            // slide onto — screen readers should only ever hear the first.
+            const isDuplicate = i >= projects.length;
+            return (
+              <article
+                key={i}
+                className="up-card up-reveal"
+                style={rise(i + 2)}
+                aria-hidden={isDuplicate || undefined}
+                tabIndex={isDuplicate ? -1 : undefined}
+                inert={isDuplicate ? true : undefined}
+              >
+                <div className="up-media">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.image}
+                    alt={`${p.title} — ${p.category}`}
+                    width={800}
+                    height={500}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="up-chip">{p.category}</span>
+                  <span className="up-num" aria-hidden="true">
+                    {pad((i % projects.length) + 1)}
+                  </span>
+                </div>
+
+                <div className="up-body">
+                  <h3 className="up-card-title">{p.title}</h3>
+                  <p className="up-desc">{p.description}</p>
+                  <ProjectLink href={href} title={p.title} />
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }
