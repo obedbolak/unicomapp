@@ -11,6 +11,8 @@ import { formatCode } from "@/lib/verification";
 import {
   ordinal,
   readLogo,
+  readSignature,
+  readStamp,
   type DocLine,
   type DocSection,
   type DocInstallment,
@@ -165,6 +167,8 @@ export async function loadDocument(
       issuerName:
         invoice.issuerSignerName || settings.signatoryName || settings.companyName,
       issuerRole: invoice.issuerSignerRole || settings.signatoryRole,
+      issuerSignature: readSignature(),
+      issuerStamp: readStamp(),
       date: invoice.issueDate.toISOString(),
     },
   };

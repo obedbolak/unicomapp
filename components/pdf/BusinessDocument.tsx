@@ -587,11 +587,25 @@ function Signatures({ s, doc }: { s: DocStyles; doc: DocumentPayload }) {
             </View>
           </Cell>
           <Cell s={s} width={c2} flush>
-            <View style={s.signBody}>
+            <View style={[s.signBody, s.signBodyStamped]}>
+              {/* Laid out exactly like the unsigned box… */}
               <Text style={s.signPrompt}>{doc.signatures.issuerRole}:</Text>
               <View style={s.signRule} />
               <Text style={s.signName}>Name: {doc.signatures.issuerName}</Text>
               <Text style={s.signName}>Date: {date}</Text>
+
+              {/* …then the signature and the stamp are drawn last, so they sit
+                  ON TOP of the signing line, as ink on a printed form would. */}
+              {doc.signatures.issuerSignature && (
+                <View style={s.signOverlay}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image takes no alt */}
+                  <Image src={doc.signatures.issuerSignature} style={s.signImage} />
+                </View>
+              )}
+              {doc.signatures.issuerStamp && (
+                // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image takes no alt
+                <Image src={doc.signatures.issuerStamp} style={s.stamp} />
+              )}
             </View>
           </Cell>
         </View>

@@ -235,6 +235,33 @@ export function createStyles(font: string) {
       fontSize: 9.5,
       marginBottom: 30,
     },
+    // With a signature: prompt 2 + image 36 − 8 overlap = the same 30 pt as
+    // the blank signing space, so signed and unsigned blocks line up.
+    // Signature overlay: centred across the box, resting on the signing line.
+    signOverlay: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 26,
+      alignItems: "center",
+    },
+    signImage: {
+      height: 36,
+      width: 110,
+      objectFit: "contain",
+    },
+    // Stamp sits on the right of the company box, overlapping the signature,
+    // tilted and slightly see-through like real stamp-pad ink.
+    signBodyStamped: { position: "relative" },
+    stamp: {
+      position: "absolute",
+      right: 5,
+      top: 11,
+      width: 80,
+      height: 80,
+      opacity: 0.88,
+      transform: "rotate(-9deg)",
+    },
     signRule: {
       borderBottomWidth: 0.75,
       borderColor: COLORS.border,

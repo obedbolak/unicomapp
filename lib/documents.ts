@@ -96,6 +96,10 @@ export type DocumentPayload = {
     issuerLabel: string;
     issuerName: string;
     issuerRole: string;
+    /** Handwritten signature (data URI) placed above the issuer's line, or null. */
+    issuerSignature: string | null;
+    /** Company stamp (data URI) pressed over the issuer's signature, or null. */
+    issuerStamp: string | null;
     date: string;
   };
 };
@@ -183,6 +187,37 @@ export function readLogo(): string | null {
   logoCache = null;
   return logoCache;
 }
+
+/**
+ * The signature and the company stamp, inlined as data URIs.
+ *
+ * Kept in /private, NOT /public: anything in /public can be downloaded by
+ * anyone who guesses the URL, and these should only ever appear inside a
+ * document we generated. The deploy workflow must copy /private to the server.
+ * Delete a file to stop using it; the document simply prints without it.
+ */
+const privateCache = new Map<string, string | null>();
+
+function readPrivatePng(name: string): string | null {
+  if (privateCache.has(name)) return privateCache.get(name)!;
+  const file = path.join(process.cwd(), "private", name);
+  let value: string | null = null;
+  try {
+    if (fs.existsSync(file)) {
+      value = `data:image/png;base64,${fs.readFileSync(file).toString("base64")}`;
+    }
+  } catch {
+    // A missing image must never stop a document from rendering.
+  }
+  privateCache.set(name, value);
+  return value;
+}
+
+/** The authorised signatory's handwritten signature (private/signature.png). */
+export const readSignature = () => readPrivatePng("signature.png");
+
+/** The company stamp (private/stamp.png). */
+export const readStamp = () => readPrivatePng("stamp.png");
 
 /**
  * The filename the browser saves. Uses the document number, which is unique
