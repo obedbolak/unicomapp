@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/SubmitButton";
 
 export default function VerifyLandingPage() {
   const router = useRouter();
   const [certNo, setCertNo] = useState("");
   const [error, setError] = useState("");
+  // Stays true until the result page has loaded (it queries the database).
+  const [checking, startChecking] = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +19,9 @@ export default function VerifyLandingPage() {
       setError("Please enter a certificate number.");
       return;
     }
-    router.push(`/verify/${encodeURIComponent(trimmed)}`);
+    startChecking(() => {
+      router.push(`/verify/${encodeURIComponent(trimmed)}`);
+    });
   };
 
   return (
@@ -109,6 +114,8 @@ export default function VerifyLandingPage() {
           )}
           <button
             type="submit"
+            disabled={checking}
+            aria-busy={checking || undefined}
             style={{
               padding: "0.8rem 1.5rem",
               borderRadius: "0.75rem",
@@ -118,10 +125,18 @@ export default function VerifyLandingPage() {
               fontFamily: "var(--font-display)",
               fontSize: "0.875rem",
               fontWeight: 700,
-              cursor: "pointer",
+              cursor: checking ? "progress" : "pointer",
+              opacity: checking ? 0.75 : 1,
             }}
           >
-            Verify →
+            {checking ? (
+              <>
+                <Spinner />
+                Checking…
+              </>
+            ) : (
+              "Verify →"
+            )}
           </button>
         </form>
 

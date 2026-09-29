@@ -10,6 +10,7 @@ import {
 } from "@/components/dashboard/ui";
 import type { EnrollmentStatus } from "@prisma/client";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 const STATUSES: EnrollmentStatus[] = [
@@ -201,9 +202,9 @@ export default async function EnrollmentsPage({
                         </option>
                       ))}
                     </select>
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Save
-                    </button>
+                    </SubmitButton>
                   </form>
                   <div style={{ marginTop: "0.4rem" }}>
                     <Badge value={e.status} />

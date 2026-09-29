@@ -16,6 +16,7 @@ import {
 import { IconWallet, IconTrend, IconBriefcase } from "@/components/dashboard/icons";
 import type { InvoiceStatus } from "@prisma/client";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 const STATUSES: InvoiceStatus[] = [
@@ -142,9 +143,9 @@ export default async function InvoicesPage() {
               />
             </label>
 
-            <button type="submit" className="dash-btn dash-btn--primary">
+            <SubmitButton className="dash-btn dash-btn--primary">
               Create draft →
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </Card>
@@ -217,9 +218,9 @@ export default async function InvoicesPage() {
                         </option>
                       ))}
                     </select>
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Set
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
                 <td>

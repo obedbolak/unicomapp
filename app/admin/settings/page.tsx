@@ -5,6 +5,7 @@ import { getSettings } from "@/lib/settings";
 import { updateNotificationPrefs, updateOrgSettings } from "../settings-actions";
 import { Card, PageHeader } from "@/components/dashboard/ui";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
@@ -186,9 +187,9 @@ export default async function SettingsPage() {
           </p>
 
           <div className="dash-actions">
-            <button type="submit" className="dash-btn dash-btn--primary">
+            <SubmitButton className="dash-btn dash-btn--primary">
               Save organization settings
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </Card>
@@ -231,9 +232,9 @@ export default async function SettingsPage() {
             </p>
 
             <div className="dash-actions">
-              <button type="submit" className="dash-btn dash-btn--primary">
+              <SubmitButton className="dash-btn dash-btn--primary">
                 Save preferences
-              </button>
+              </SubmitButton>
             </div>
           </form>
 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState, type ReactNode } from "react";
+import { Spinner } from "@/components/ui/SubmitButton";
 import "./dashboard.css";
 // Imported after dashboard.css on purpose — it thins the dashboard's opaque
 // background layers so the 3D scene reads through the cards.
@@ -177,6 +178,9 @@ export default function Shell({
 
   const pageTitle = title ?? current?.label ?? "Dashboard";
 
+  // Sign-out calls the auth API and then redirects; show that it's working.
+  const [signingOut, setSigningOut] = useState(false);
+
   return (
     <div className="dash" data-open={open}>
       {open && (
@@ -314,11 +318,16 @@ export default function Shell({
             <NotificationBell />
             <button
               className="dash-iconbtn"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              aria-label="Sign out"
+              onClick={() => {
+                setSigningOut(true);
+                signOut({ callbackUrl: "/login" }).catch(() => setSigningOut(false));
+              }}
+              disabled={signingOut}
+              aria-busy={signingOut || undefined}
+              aria-label={signingOut ? "Signing out" : "Sign out"}
               title="Sign out"
             >
-              <IconLogout size={16} />
+              {signingOut ? <Spinner size={16} iconOnly /> : <IconLogout size={16} />}
             </button>
           </div>
         </header>

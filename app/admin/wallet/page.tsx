@@ -26,6 +26,7 @@ import {
   IconCheck,
 } from "@/components/dashboard/icons";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function AdminWalletPage() {
@@ -151,9 +152,9 @@ export default async function AdminWalletPage() {
                     <option value="APPROVE">Approve</option>
                     <option value="REJECT">Reject</option>
                   </select>
-                  <button type="submit" className="dash-btn">
+                  <SubmitButton className="dash-btn">
                     Go
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>
@@ -208,9 +209,9 @@ export default async function AdminWalletPage() {
                       <option value="APPROVED">Approve</option>
                       <option value="REJECTED">Reject</option>
                     </select>
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Go
-                    </button>
+                    </SubmitButton>
                   </form>
                 )}
               </td>
@@ -328,9 +329,9 @@ export default async function AdminWalletPage() {
                       className="dash-input"
                       style={{ width: 96 }}
                     />
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Save
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
 
@@ -362,13 +363,12 @@ export default async function AdminWalletPage() {
                       }
                       value={r.holderId}
                     />
-                    <button
-                      type="submit"
+                    <SubmitButton
                       className="dash-btn"
                       style={{ color: "#f87171" }}
                     >
                       Remove
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
               </tr>
@@ -425,9 +425,9 @@ export default async function AdminWalletPage() {
                   />
                 </label>
 
-                <button type="submit" className="dash-btn dash-btn--primary">
+                <SubmitButton className="dash-btn dash-btn--primary">
                   Save
-                </button>
+                </SubmitButton>
               </div>
             </form>
 
@@ -484,9 +484,9 @@ export default async function AdminWalletPage() {
                   />
                 </label>
 
-                <button type="submit" className="dash-btn dash-btn--primary">
+                <SubmitButton className="dash-btn dash-btn--primary">
                   Distribute
-                </button>
+                </SubmitButton>
               </div>
             </form>
 
@@ -541,9 +541,9 @@ export default async function AdminWalletPage() {
                 />
               </label>
 
-              <button type="submit" className="dash-btn dash-btn--primary">
+              <SubmitButton className="dash-btn dash-btn--primary">
                 Add to ledger
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </Card>

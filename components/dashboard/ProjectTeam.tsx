@@ -10,6 +10,7 @@
 import { prisma } from "@/lib/prisma";
 import { assignToProject, removeAssignment } from "@/app/admin/wallet-actions";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export default async function ProjectTeam({
   projectId,
 }: {
@@ -66,18 +67,18 @@ export default async function ProjectTeam({
                       className="dash-input"
                       style={{ width: 150 }}
                     />
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Save
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
 
                 <td>
                   <form action={removeAssignment}>
                     <input type="hidden" name="assignmentId" value={a.id} />
-                    <button type="submit" className="dash-btn">
+                    <SubmitButton className="dash-btn">
                       Remove
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
               </tr>
@@ -118,9 +119,9 @@ export default async function ProjectTeam({
               />
             </label>
 
-            <button type="submit" className="dash-btn dash-btn--primary">
+            <SubmitButton className="dash-btn dash-btn--primary">
               Add
-            </button>
+            </SubmitButton>
           </div>
         </form>
       )}

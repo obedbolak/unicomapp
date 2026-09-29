@@ -11,6 +11,7 @@ import {
 import { Badge, Card, PageHeader, Table, money } from "@/components/dashboard/ui";
 import NewMemberForm from "@/components/dashboard/NewMemberForm";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
@@ -157,13 +158,12 @@ export default async function TeamPage() {
                       <option value="STAFF">Staff</option>
                       <option value="ADMIN">Admin</option>
                     </select>
-                    <button
-                      type="submit"
+                    <SubmitButton
                       className="dash-btn"
                       disabled={isLastAdmin}
                     >
                       Set
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
 
@@ -296,9 +296,9 @@ export default async function TeamPage() {
                           className="dash-input"
                           autoComplete="off"
                         />
-                        <button type="submit" className="dash-btn">
+                        <SubmitButton className="dash-btn">
                           Reset
-                        </button>
+                        </SubmitButton>
                       </form>
 
                       <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.5rem" }}>
@@ -307,34 +307,32 @@ export default async function TeamPage() {
                             and nothing else. */}
                         <form action={togglePartner}>
                           <input type="hidden" name="id" value={u.id} />
-                          <button type="submit" className="dash-btn">
+                          <SubmitButton className="dash-btn">
                             {u.role.includes("PARTNER")
                               ? "Remove partner"
                               : "Make partner"}
-                          </button>
+                          </SubmitButton>
                         </form>
 
                         <form action={toggleUserActive}>
                           <input type="hidden" name="id" value={u.id} />
-                          <button
-                            type="submit"
+                          <SubmitButton
                             className="dash-btn"
                             disabled={isLastAdmin}
                           >
                             {u.active ? "Deactivate" : "Reactivate"}
-                          </button>
+                          </SubmitButton>
                         </form>
 
                         {!hasFinancials && !isSelf && (
                           <form action={deleteTeamMember}>
                             <input type="hidden" name="id" value={u.id} />
-                            <button
-                              type="submit"
+                            <SubmitButton
                               className="dash-btn"
                               style={{ color: "#f87171" }}
                             >
                               Delete
-                            </button>
+                            </SubmitButton>
                           </form>
                         )}
                       </div>

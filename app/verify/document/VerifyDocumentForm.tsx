@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/SubmitButton";
 
 const field: React.CSSProperties = {
   width: "100%",
@@ -35,6 +36,8 @@ export default function VerifyDocumentForm({
   const [number, setNumber] = useState(defaultNumber);
   const [code, setCode] = useState(defaultCode);
   const [error, setError] = useState("");
+  // Stays true until the result has loaded (it queries the database).
+  const [checking, startChecking] = useTransition();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,11 +50,13 @@ export default function VerifyDocumentForm({
     // A GET with the answer in the query string, so the result is a real URL:
     // it can be bookmarked, sent to an accountant, or reached straight from a
     // link printed on the document.
-    router.push(
-      `/verify/document?no=${encodeURIComponent(
-        number.trim(),
-      )}&code=${encodeURIComponent(code.trim())}`,
-    );
+    startChecking(() => {
+      router.push(
+        `/verify/document?no=${encodeURIComponent(
+          number.trim(),
+        )}&code=${encodeURIComponent(code.trim())}`,
+      );
+    });
   };
 
   return (
@@ -128,6 +133,8 @@ export default function VerifyDocumentForm({
 
       <button
         type="submit"
+        disabled={checking}
+        aria-busy={checking || undefined}
         style={{
           padding: "0.8rem 1.5rem",
           borderRadius: "0.75rem",
@@ -137,10 +144,18 @@ export default function VerifyDocumentForm({
           fontFamily: "var(--font-display)",
           fontSize: "0.875rem",
           fontWeight: 700,
-          cursor: "pointer",
+          cursor: checking ? "progress" : "pointer",
+          opacity: checking ? 0.75 : 1,
         }}
       >
-        Verify →
+        {checking ? (
+          <>
+            <Spinner />
+            Checking…
+          </>
+        ) : (
+          "Verify →"
+        )}
       </button>
     </form>
   );

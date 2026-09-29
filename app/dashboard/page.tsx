@@ -18,6 +18,7 @@ import {
 } from "@/components/dashboard/icons";
 import type { TaskStatus } from "@prisma/client";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 const STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "BLOCKED", "DONE"];
@@ -197,9 +198,9 @@ export default async function StaffDashboard() {
                       </option>
                     ))}
                   </select>
-                  <button type="submit" className="dash-btn">
+                  <SubmitButton className="dash-btn">
                     Save
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>

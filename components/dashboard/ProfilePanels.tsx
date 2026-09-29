@@ -16,6 +16,7 @@ import {
 import { Card, Table, shortDate } from "./ui";
 import AvatarField from "./AvatarField";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 function formatMeta(meta: unknown): string {
   if (!meta || typeof meta !== "object") return "—";
   const entries = Object.entries(meta as Record<string, unknown>);
@@ -135,9 +136,9 @@ export default async function ProfilePanels({
             </label>
 
             <div className="dash-actions">
-              <button type="submit" className="dash-btn dash-btn--primary">
+              <SubmitButton className="dash-btn dash-btn--primary">
                 Save changes
-              </button>
+              </SubmitButton>
             </div>
           </form>
 
@@ -209,9 +210,9 @@ export default async function ProfilePanels({
             </label>
 
             <div className="dash-actions">
-              <button type="submit" className="dash-btn dash-btn--primary">
+              <SubmitButton className="dash-btn dash-btn--primary">
                 Update password
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </Card>
@@ -224,9 +225,9 @@ export default async function ProfilePanels({
           subtitle="Sign-in activity for your account."
           action={
             <form action={signOutEverywhere}>
-              <button type="submit" className="dash-btn">
+              <SubmitButton className="dash-btn">
                 Sign out everywhere
-              </button>
+              </SubmitButton>
             </form>
           }
         >

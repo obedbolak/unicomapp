@@ -10,6 +10,7 @@
 import { useState } from "react";
 import { createTeamMember } from "@/app/admin/team-actions";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 function generatePassword() {
   // Ambiguous characters left out — these get read aloud and retyped.
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
@@ -119,9 +120,9 @@ export default function NewMemberForm() {
       )}
 
       <div className="dash-actions">
-        <button type="submit" className="dash-btn dash-btn--primary">
+        <SubmitButton className="dash-btn dash-btn--primary">
           Create account
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );

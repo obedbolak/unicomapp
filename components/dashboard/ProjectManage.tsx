@@ -13,6 +13,7 @@ import ProjectTeam from "./ProjectTeam";
 import ProjectFields, { humanise } from "./ProjectFields";
 import { Badge, money, shortDate } from "./ui";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 type Option = { id: string; label: string };
 
 const DAY = 1000 * 60 * 60 * 24;
@@ -447,9 +448,9 @@ export default async function ProjectManage({
             <span className="dash-field-label">Due</span>
             <input name="dueDate" type="date" className="dash-input" />
           </label>
-          <button type="submit" className="dash-btn dash-btn--primary">
+          <SubmitButton className="dash-btn dash-btn--primary">
             Add task
-          </button>
+          </SubmitButton>
         </form>
       ) : (
         <p className="dash-hint">Assign a team member before creating tasks.</p>
@@ -497,13 +498,12 @@ export default async function ProjectManage({
             }}
           />
 
-          <button
-            type="submit"
+          <SubmitButton
             className="dash-btn dash-btn--primary"
             style={{ marginTop: "1rem" }}
           >
             Save project
-          </button>
+          </SubmitButton>
 
           <p className="dash-hint">
             Renaming changes the public URL — the slug follows the title.
@@ -529,13 +529,12 @@ export default async function ProjectManage({
           <div style={{ paddingTop: "0.6rem" }}>
             <form action={deleteProject}>
               <input type="hidden" name="id" value={project.id} />
-              <button
-                type="submit"
+              <SubmitButton
                 className="dash-btn"
                 style={{ color: "#f87171" }}
               >
                 Delete {project.title} permanently
-              </button>
+              </SubmitButton>
             </form>
             <p className="dash-hint">
               Tasks, milestones and assignments go with it. Once a project has

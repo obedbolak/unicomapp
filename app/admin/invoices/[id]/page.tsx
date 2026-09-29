@@ -23,6 +23,7 @@ import {
 } from "@/components/dashboard/ui";
 import type { InstallmentStatus, InvoiceStatus } from "@prisma/client";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 const STATUSES: InvoiceStatus[] = [
@@ -158,9 +159,9 @@ export default async function InvoiceDetailPage({
             />
           </label>
 
-          <button type="submit" className="dash-btn dash-btn--primary">
+          <SubmitButton className="dash-btn dash-btn--primary">
             Add line
-          </button>
+          </SubmitButton>
         </div>
       </form>
       <p className="dash-hint">
@@ -206,9 +207,9 @@ export default async function InvoiceDetailPage({
           <form action={deleteInvoiceItem}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="invoiceId" value={invoice.id} />
-            <button type="submit" className="dash-btn">
+            <SubmitButton className="dash-btn">
               Remove
-            </button>
+            </SubmitButton>
           </form>
         </td>
       </tr>
@@ -288,9 +289,9 @@ export default async function InvoiceDetailPage({
                           name="invoiceId"
                           value={invoice.id}
                         />
-                        <button type="submit" className="dash-btn">
+                        <SubmitButton className="dash-btn">
                           Remove phase
-                        </button>
+                        </SubmitButton>
                       </form>
                     </div>
                   }
@@ -336,9 +337,9 @@ export default async function InvoiceDetailPage({
                     className="dash-input"
                   />
                 </label>
-                <button type="submit" className="dash-btn dash-btn--primary">
+                <SubmitButton className="dash-btn dash-btn--primary">
                   Add phase
-                </button>
+                </SubmitButton>
               </div>
             </form>
           </Card>
@@ -426,9 +427,9 @@ export default async function InvoiceDetailPage({
                             </option>
                           ))}
                         </select>
-                        <button type="submit" className="dash-btn">
+                        <SubmitButton className="dash-btn">
                           Set
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                     <td>
@@ -443,9 +444,9 @@ export default async function InvoiceDetailPage({
                           name="invoiceId"
                           value={invoice.id}
                         />
-                        <button type="submit" className="dash-btn">
+                        <SubmitButton className="dash-btn">
                           Remove
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                   </tr>
@@ -492,9 +493,9 @@ export default async function InvoiceDetailPage({
                         className="dash-input"
                       />
                     </label>
-                    <button type="submit" className="dash-btn dash-btn--primary">
+                    <SubmitButton className="dash-btn dash-btn--primary">
                       Add instalment
-                    </button>
+                    </SubmitButton>
                   </div>
                 </form>
               </div>
@@ -590,9 +591,9 @@ export default async function InvoiceDetailPage({
                   </option>
                 ))}
               </select>
-              <button type="submit" className="dash-btn">
+              <SubmitButton className="dash-btn">
                 Update
-              </button>
+              </SubmitButton>
             </form>
           </Card>
 
@@ -638,9 +639,9 @@ export default async function InvoiceDetailPage({
                 </label>
 
                 <div className="dash-actions">
-                  <button type="submit" className="dash-btn dash-btn--primary">
+                  <SubmitButton className="dash-btn dash-btn--primary">
                     Save
-                  </button>
+                  </SubmitButton>
                 </div>
               </form>
 
@@ -801,9 +802,9 @@ export default async function InvoiceDetailPage({
                 </label>
 
                 <div className="dash-actions">
-                  <button type="submit" className="dash-btn dash-btn--primary">
+                  <SubmitButton className="dash-btn dash-btn--primary">
                     Save document
-                  </button>
+                  </SubmitButton>
                 </div>
               </form>
 

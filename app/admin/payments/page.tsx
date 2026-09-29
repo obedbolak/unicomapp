@@ -18,6 +18,7 @@ import {
   IconBriefcase,
 } from "@/components/dashboard/icons";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage() {
@@ -151,9 +152,9 @@ export default async function PaymentsPage() {
             <input name="momoNumber" className="dash-input" />
           </label>
 
-          <button type="submit" className="dash-btn dash-btn--primary">
+          <SubmitButton className="dash-btn dash-btn--primary">
             Record →
-          </button>
+          </SubmitButton>
         </form>
       </Card>
 
@@ -212,9 +213,9 @@ export default async function PaymentsPage() {
                     name="status"
                     value={p.status === "CONFIRMED" ? "REFUNDED" : "CONFIRMED"}
                   />
-                  <button type="submit" className="dash-btn">
+                  <SubmitButton className="dash-btn">
                     {p.status === "CONFIRMED" ? "Refund" : "Confirm"}
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>

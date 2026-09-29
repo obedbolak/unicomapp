@@ -27,6 +27,7 @@ import ProjectFields, {
   humanise,
 } from "@/components/dashboard/ProjectFields";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 const statusOptions = PROJECT_STATUSES.map((s) => ({
   value: s,
   label: humanise(s),
@@ -139,13 +140,12 @@ export default async function ProjectsPage() {
               clients={clientOptions}
               leads={leadOptions}
             />
-            <button
-              type="submit"
+            <SubmitButton
               className="dash-btn dash-btn--primary"
               style={{ marginTop: "1rem" }}
             >
               Create project
-            </button>
+            </SubmitButton>
           </form>
         </details>
       </Card>
@@ -201,9 +201,9 @@ export default async function ProjectsPage() {
                     <td>
                       <form action={toggleProjectPublished}>
                         <input type="hidden" name="id" value={p.id} />
-                        <button type="submit" className="dash-btn">
+                        <SubmitButton className="dash-btn">
                           {p.published ? "Published" : "Hidden"}
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                     <td>

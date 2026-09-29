@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { submitClaim, withdrawClaim } from "@/app/admin/wallet-actions";
 import { Badge, Card, Table, money, shortDate } from "./ui";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 function currentMonth(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -86,9 +87,9 @@ export default async function ClaimsCard({ userId }: { userId: string }) {
                 />
               </label>
 
-              <button type="submit" className="dash-btn dash-btn--primary">
+              <SubmitButton className="dash-btn dash-btn--primary">
                 Claim
-              </button>
+              </SubmitButton>
             </div>
           </form>
         ) : (
@@ -138,9 +139,9 @@ export default async function ClaimsCard({ userId }: { userId: string }) {
               />
             </label>
 
-            <button type="submit" className="dash-btn dash-btn--primary">
+            <SubmitButton className="dash-btn dash-btn--primary">
               Claim
-            </button>
+            </SubmitButton>
           </div>
         </form>
 
@@ -219,9 +220,9 @@ export default async function ClaimsCard({ userId }: { userId: string }) {
                   {c.status === "PENDING" && (
                     <form action={withdrawClaim}>
                       <input type="hidden" name="id" value={c.id} />
-                      <button type="submit" className="dash-btn">
+                      <SubmitButton className="dash-btn">
                         Withdraw
-                      </button>
+                      </SubmitButton>
                     </form>
                   )}
                 </td>

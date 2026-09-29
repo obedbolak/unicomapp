@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { updateNotificationPrefs } from "@/app/admin/settings-actions";
 import { Card, PageHeader } from "@/components/dashboard/ui";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function StaffSettingsPage() {
@@ -54,9 +55,9 @@ export default async function StaffSettingsPage() {
           </p>
 
           <div className="dash-actions">
-            <button type="submit" className="dash-btn dash-btn--primary">
+            <SubmitButton className="dash-btn dash-btn--primary">
               Save preferences
-            </button>
+            </SubmitButton>
           </div>
         </form>
 

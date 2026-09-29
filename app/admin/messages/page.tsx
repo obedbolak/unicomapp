@@ -13,6 +13,7 @@ import {
 import { IconUsers, IconBell, IconAward } from "@/components/dashboard/icons";
 import type { LeadStatus } from "@prisma/client";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 const STATUSES: LeadStatus[] = ["NEW", "READ", "REPLIED", "ARCHIVED"];
@@ -171,9 +172,9 @@ export default async function MessagesPage({
                       </option>
                     ))}
                   </select>
-                  <button type="submit" className="dash-btn">
+                  <SubmitButton className="dash-btn">
                     Set
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>

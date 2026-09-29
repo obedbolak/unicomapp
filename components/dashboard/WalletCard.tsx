@@ -7,6 +7,7 @@ import { cancelPayoutRequest, requestPayout } from "@/app/admin/wallet-actions";
 import { Badge, Card, StatGrid, StatTile, Table, money, shortDate } from "./ui";
 import { IconWallet, IconTrend, IconCheck } from "./icons";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export default async function WalletCard({ userId }: { userId: string }) {
   const [wallet, earnings, payouts] = await Promise.all([
     getWallet(userId),
@@ -127,9 +128,9 @@ export default async function WalletCard({ userId }: { userId: string }) {
               </div>
 
               <div className="dash-actions">
-                <button type="submit" className="dash-btn dash-btn--primary">
+                <SubmitButton className="dash-btn dash-btn--primary">
                   Request payout
-                </button>
+                </SubmitButton>
               </div>
             </form>
           ) : (
@@ -161,9 +162,9 @@ export default async function WalletCard({ userId }: { userId: string }) {
                   {p.status === "REQUESTED" && (
                     <form action={cancelPayoutRequest}>
                       <input type="hidden" name="id" value={p.id} />
-                      <button type="submit" className="dash-btn">
+                      <SubmitButton className="dash-btn">
                         Cancel
-                      </button>
+                      </SubmitButton>
                     </form>
                   )}
                 </td>

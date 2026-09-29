@@ -284,6 +284,30 @@ body {
   }
 }
 
+/* ── Button loading state ─────────────────────────────────────────────────
+   Used by <SubmitButton> and any button that calls the API: a spinner that
+   inherits the text colour, and a busy cursor while the request runs. */
+.btn-spinner {
+  flex: none;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 0.45em;
+  animation: btn-spin 0.7s linear infinite;
+}
+.btn-spinner--icon {
+  margin-right: 0;
+  vertical-align: middle;
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+button[aria-busy="true"] {
+  cursor: progress !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner { animation-duration: 2s; }
+}
+
 /* ── Mobile menu ─────────────────────────────────────────────────────────── */
 .mobile-menu {
   position: fixed;

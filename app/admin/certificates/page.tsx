@@ -15,6 +15,7 @@ import {
   IconSearch,
 } from "@/components/dashboard/icons";
 
+import SubmitButton from "@/components/ui/SubmitButton";
 export const dynamic = "force-dynamic";
 
 export default async function CertificatesPage() {
@@ -176,9 +177,9 @@ export default async function CertificatesPage() {
             />
           </label>
 
-          <button type="submit" className="dash-btn dash-btn--primary">
+          <SubmitButton className="dash-btn dash-btn--primary">
             Issue →
-          </button>
+          </SubmitButton>
         </form>
       </Card>
 
@@ -234,9 +235,9 @@ export default async function CertificatesPage() {
                     name="status"
                     value={c.status === "VALID" ? "REVOKED" : "VALID"}
                   />
-                  <button type="submit" className="dash-btn">
+                  <SubmitButton className="dash-btn">
                     {c.status === "VALID" ? "Revoke" : "Restore"}
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>

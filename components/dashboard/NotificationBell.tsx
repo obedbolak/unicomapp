@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/SubmitButton";
 
 type NotificationType = "info" | "success" | "warning" | "error";
 
@@ -67,14 +68,23 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  // Loading states for the buttons that call the API
+  const [markingAll, setMarkingAll] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleMarkAllRead = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (markingAll) return;
+    setMarkingAll(true);
     try {
-      await fetch("/api/notifications", { method: "PATCH" });
+      const res = await fetch("/api/notifications", { method: "PATCH" });
+      if (!res.ok) throw new Error(`Mark all read failed (${res.status})`);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (err) {
       console.error(err);
+    } finally {
+      setMarkingAll(false);
     }
   };
 
@@ -98,8 +108,11 @@ export default function NotificationBell() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(id);
     try {
-      await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`Delete failed (${res.status})`);
       setNotifications((prev) => {
         const item = prev.find((n) => n.id === id);
         if (item && !item.read) {
@@ -109,6 +122,8 @@ export default function NotificationBell() {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -155,8 +170,14 @@ export default function NotificationBell() {
           <div className="notification-header">
             <h3>Notifications</h3>
             {unreadCount > 0 && (
-              <button className="mark-read-btn" onClick={handleMarkAllRead}>
-                Mark all read
+              <button
+                className="mark-read-btn"
+                onClick={handleMarkAllRead}
+                disabled={markingAll}
+                aria-busy={markingAll || undefined}
+              >
+                {markingAll && <Spinner size={12} />}
+                {markingAll ? "Marking…" : "Mark all read"}
               </button>
             )}
           </div>
@@ -186,12 +207,18 @@ export default function NotificationBell() {
                   <button 
                     className="notification-delete" 
                     onClick={(e) => handleDelete(e, n.id)}
+                    disabled={deletingId !== null}
+                    aria-busy={deletingId === n.id || undefined}
                     aria-label="Delete notification"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    {deletingId === n.id ? (
+                      <Spinner size={14} iconOnly />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    )}
                   </button>
                 </div>
               ))
