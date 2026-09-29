@@ -297,6 +297,19 @@ export function createStyles(font: string) {
     },
 
     footerVerify: { marginTop: 2, color: COLORS.muted },
+    // Verification strip under the signatures: QR on the left, text beside it.
+    verifyStrip: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 14,
+      padding: 8,
+      borderWidth: 0.75,
+      borderColor: COLORS.border,
+      borderStyle: "solid",
+    },
+    verifyText: { flex: 1, marginLeft: 10 },
+    verifyTitle: { fontSize: 9.5, fontWeight: 700, color: COLORS.navy, marginBottom: 3 },
+    verifyBody: { fontSize: 8, color: COLORS.muted, marginBottom: 1.5 },
     footerCode: { fontWeight: 700, color: COLORS.navy, letterSpacing: 0.4 },
 
     /* ── Status pill in the schedule ─────────────────────────────────── */

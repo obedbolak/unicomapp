@@ -77,7 +77,12 @@ export type DocumentPayload = {
 
   /** Printed in the footer with the number, so the client can check the
    *  document at /verify/document without asking us for anything. */
-  verify: { code: string; url: string } | null;
+  verify: {
+    code: string;
+    url: string;
+    /** Full link for the QR code: opens the check with number + code filled in. */
+    link: string;
+  } | null;
 
   company: {
     name: string;

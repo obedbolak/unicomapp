@@ -8,6 +8,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatCode } from "@/lib/verification";
+import { documentVerifyLink } from "@/lib/qr";
 import {
   ordinal,
   readLogo,
@@ -143,6 +144,11 @@ export async function loadDocument(
           // The bare host, not a full URL: it is read off paper, and
           // "unicomteam.com/verify" is what someone can actually retype.
           url: `${settings.companyWebsite.replace(/^https?:\/\//, "")}/verify/document`,
+          link: documentVerifyLink(
+            settings.companyWebsite,
+            invoice.number,
+            formatCode(invoice.verifyCode),
+          ),
         }
       : null,
 

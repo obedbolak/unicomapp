@@ -24,6 +24,7 @@ import {
   createStyles,
   type DocStyles,
 } from "./theme";
+import { PdfQrCode } from "./PdfQrCode";
 import {
   amountWithUnit,
   currencyLabel,
@@ -541,6 +542,42 @@ function PaymentSchedule({ s, doc }: { s: DocStyles; doc: DocumentPayload }) {
   );
 }
 
+/* ── Verification QR ─────────────────────────────────────────────────────── */
+
+/**
+ * QR code + fallback text. Scanning opens our verify page with the number and
+ * code already filled in, so the check is one tap; the printed code covers
+ * anyone without a phone camera.
+ */
+function VerifyStrip({
+  s,
+  verify,
+  isQuote,
+}: {
+  s: DocStyles;
+  verify: NonNullable<DocumentPayload["verify"]>;
+  isQuote: boolean;
+}) {
+  return (
+    <View style={s.verifyStrip} wrap={false}>
+      <PdfQrCode value={verify.link} size={62} />
+      <View style={s.verifyText}>
+        <Text style={s.verifyTitle}>
+          Scan to verify this {isQuote ? "quote" : "invoice"}
+        </Text>
+        <Text style={s.verifyBody}>
+          The code opens our verification page, which confirms the document is
+          genuine and shows whether it is still in force.
+        </Text>
+        <Text style={s.verifyBody}>
+          No camera? Visit {verify.url} and enter code{" "}
+          <Text style={s.footerCode}>{verify.code}</Text>
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 /* ── Terms, notes, signatures ────────────────────────────────────────────── */
 
 function Terms({ s, terms }: { s: DocStyles; terms: string[] }) {
@@ -682,6 +719,8 @@ export function BusinessDocument({
         )}
 
         <Signatures s={s} doc={doc} />
+
+        {!!doc.verify && <VerifyStrip s={s} verify={doc.verify} isQuote={isQuote} />}
 
         {/* Repeated on every page so the check survives a document that
             reaches the client as a photo of one page. */}
