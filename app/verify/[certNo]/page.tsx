@@ -1,4 +1,9 @@
-import { findCertificate, formatDate } from "@/lib/certificates";
+import {
+  clientIp,
+  findCertificate,
+  formatDate,
+  tooManyLookups,
+} from "@/lib/certificates";
 import type { Certificate } from "@/lib/certificates";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -25,10 +30,14 @@ export default async function VerifyResultPage({
 }) {
   const { certNo } = await params;
   const h = await headers();
-  const cert = await findCertificate(decodeURIComponent(certNo), {
-    ip: h.get("x-forwarded-for"),
-    userAgent: h.get("user-agent"),
-  });
+  const ip = clientIp(h);
+  const limited = await tooManyLookups(ip);
+  const cert = limited
+    ? null
+    : await findCertificate(decodeURIComponent(certNo), {
+        ip,
+        userAgent: h.get("user-agent"),
+      });
 
   return (
     <main
@@ -40,7 +49,9 @@ export default async function VerifyResultPage({
       }}
     >
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 1.5rem" }}>
-        {cert && cert.status === "valid" ? (
+        {limited ? (
+          <SlowDownCard />
+        ) : cert && cert.status === "valid" ? (
           <ValidCard cert={cert} />
         ) : cert && cert.status === "revoked" ? (
           <RevokedCard certNo={certNo} />
@@ -103,6 +114,20 @@ function RevokedCard({ certNo }: { certNo: string }) {
       <p style={subStyle}>
         The certificate <strong>{certNo}</strong> exists in our records but has
         been revoked. Contact us if you believe this is an error.
+      </p>
+    </div>
+  );
+}
+
+function SlowDownCard() {
+  return (
+    <div style={cardStyle}>
+      <StatusBadge label="Please wait" color="#f59e0b" />
+      <h1 style={nameStyle}>Too Many Checks</h1>
+      <p style={subStyle}>
+        You&apos;ve checked a lot of certificates in a short time. Please try
+        again in about 15 minutes, or contact us if you need to verify several
+        certificates at once.
       </p>
     </div>
   );

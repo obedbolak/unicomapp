@@ -9,13 +9,12 @@ import {
   Table,
   shortDate,
 } from "@/components/dashboard/ui";
-import {
-  IconAward,
-  IconCheck,
-  IconSearch,
-} from "@/components/dashboard/icons";
+import { IconAward, IconCheck, IconSearch } from "@/components/dashboard/icons";
 
 import SubmitButton from "@/components/ui/SubmitButton";
+import EnrollmentPicker, {
+  type EnrollmentOption,
+} from "@/components/dashboard/EnrollmentPicker";
 export const dynamic = "force-dynamic";
 
 export default async function CertificatesPage() {
@@ -42,11 +41,45 @@ export default async function CertificatesPage() {
         },
         orderBy: { createdAt: "desc" },
         take: 100,
-        select: { id: true, fullName: true, courseName: true },
+        select: {
+          id: true,
+          fullName: true,
+          courseName: true,
+          type: true,
+          category: true,
+          months: true,
+          program: { select: { title: true } },
+          cohort: { select: { startDate: true, endDate: true } },
+        },
       }),
     ]);
 
   const today = new Date().toISOString().slice(0, 10);
+
+  // What the "Link to enrollment" dropdown fills in. The end date comes from
+  // the cohort, or failing that from the start date plus the months applied for.
+  const ymd = (d: Date) => d.toISOString().slice(0, 10);
+  const enrollmentOptions: EnrollmentOption[] = completedEnrollments.map(
+    (e) => {
+      const start = e.cohort?.startDate ?? null;
+      let end = e.cohort?.endDate ?? null;
+      if (!end && start && e.months) {
+        end = new Date(start);
+        end.setUTCMonth(end.getUTCMonth() + e.months);
+        end.setUTCDate(end.getUTCDate() - 1);
+      }
+      return {
+        id: e.id,
+        label: `${e.fullName} — ${e.courseName}`,
+        name: e.fullName,
+        type: e.type,
+        program: e.program?.title ?? e.courseName,
+        department: e.category ?? null,
+        periodStart: start ? ymd(start) : null,
+        periodEnd: end ? ymd(end) : null,
+      };
+    },
+  );
   const year = new Date().getFullYear();
 
   return (
@@ -73,21 +106,11 @@ export default async function CertificatesPage() {
 
       <Card
         title="Issue a certificate"
-        subtitle={`Leave the number blank and it's generated for you (UCT-INT-${year}-0001).`}
+        subtitle={`Leave the number blank and it's generated for you (UCT-INT-${year}-0001). Press Preview to see the certificate before issuing it — nothing is saved until you press Issue.`}
         style={{ marginBottom: "1.5rem" }}
       >
         <form action={issueCertificate} className="dash-formgrid">
-          <label>
-            <span className="dash-field-label">Link to enrollment</span>
-            <select name="enrollmentId" defaultValue="" className="dash-select">
-              <option value="">None</option>
-              {completedEnrollments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.fullName} — {e.courseName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <EnrollmentPicker options={enrollmentOptions} />
 
           <label>
             <span className="dash-field-label">Holder name</span>
@@ -96,7 +119,11 @@ export default async function CertificatesPage() {
 
           <label>
             <span className="dash-field-label">Type</span>
-            <select name="type" defaultValue="INTERNSHIP" className="dash-select">
+            <select
+              name="type"
+              defaultValue="INTERNSHIP"
+              className="dash-select"
+            >
               <option value="INTERNSHIP">Internship</option>
               <option value="TRAINING">Training</option>
               <option value="CRASH_COURSE">Crash course</option>
@@ -163,7 +190,7 @@ export default async function CertificatesPage() {
             <span className="dash-field-label">Supervisor</span>
             <input
               name="supervisorName"
-              defaultValue="Obed Bolak F."
+              defaultValue="Obed Bolak Fuchu"
               className="dash-input"
             />
           </label>
@@ -177,9 +204,28 @@ export default async function CertificatesPage() {
             />
           </label>
 
-          <SubmitButton className="dash-btn dash-btn--primary">
-            Issue →
-          </SubmitButton>
+          <div
+            style={{ display: "flex", gap: "0.6rem", alignItems: "flex-end" }}
+          >
+            {/* Opens the PDF in a new tab straight from the form, without
+                saving: the button overrides the form's action for this click. */}
+            <button
+              type="submit"
+              formAction="/api/certificates/preview"
+              formMethod="post"
+              formEncType="multipart/form-data"
+              formTarget="_blank"
+              className="dash-btn"
+            >
+              Preview
+            </button>
+            <SubmitButton
+              className="dash-btn dash-btn--primary"
+              pendingText="Issuing…"
+            >
+              Issue →
+            </SubmitButton>
+          </div>
         </form>
       </Card>
 
@@ -228,17 +274,40 @@ export default async function CertificatesPage() {
                 <Badge value={c.status} />
               </td>
               <td>
-                <form action={setCertificateStatus}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <input
-                    type="hidden"
-                    name="status"
-                    value={c.status === "VALID" ? "REVOKED" : "VALID"}
-                  />
-                  <SubmitButton className="dash-btn">
-                    {c.status === "VALID" ? "Revoke" : "Restore"}
-                  </SubmitButton>
-                </form>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.4rem",
+                    justifyContent: "flex-end",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <a
+                    href={`/api/certificates/${c.id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dash-btn"
+                  >
+                    View
+                  </a>
+                  <a
+                    href={`/api/certificates/${c.id}/pdf?download=1`}
+                    className="dash-btn"
+                  >
+                    Download
+                  </a>
+                  <form action={setCertificateStatus}>
+                    <input type="hidden" name="id" value={c.id} />
+                    <input
+                      type="hidden"
+                      name="status"
+                      value={c.status === "VALID" ? "REVOKED" : "VALID"}
+                    />
+                    <SubmitButton className="dash-btn">
+                      {c.status === "VALID" ? "Revoke" : "Restore"}
+                    </SubmitButton>
+                  </form>
+                </div>
               </td>
             </tr>
           ))}

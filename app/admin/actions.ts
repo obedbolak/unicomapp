@@ -143,7 +143,7 @@ export async function issueCertificate(formData: FormData) {
         String(formData.get("dateIssued") || new Date().toISOString()),
       ),
       supervisorName: String(
-        formData.get("supervisorName") || "Obed Bolak F.",
+        formData.get("supervisorName") || "Obed Bolak Fuchu",
       ).trim(),
       supervisorTitle: String(
         formData.get("supervisorTitle") || "CEO & Internship Supervisor",

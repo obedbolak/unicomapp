@@ -91,6 +91,41 @@ export async function findCertificate(
   return row ? toUi(row) : null;
 }
 
+/* ── Lookup limit ─────────────────────────────────────────────────────────
+ * Certificate numbers run in order (UCT-INT-2026-0001, -0002 …), so someone
+ * could walk through them and collect the names of everyone we have
+ * certified. Counting only failed checks wouldn't stop that — walking the
+ * sequence mostly hits real certificates — so this caps ALL lookups from one
+ * address. An employer checks one or two; 30 in 15 minutes is far more than
+ * any genuine use, even a school checking a whole class. */
+const LOOKUP_WINDOW_MS = 15 * 60 * 1000;
+const MAX_LOOKUPS = 30;
+
+/** The visitor's address: the first entry of x-forwarded-for (the rest are proxies). */
+export function clientIp(h: {
+  get(name: string): string | null;
+}): string | null {
+  const fwd = h.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return fwd || h.get("x-real-ip") || null;
+}
+
+/** True when this address has used up its lookups for now. */
+export async function tooManyLookups(ip: string | null): Promise<boolean> {
+  if (!ip) return false;
+  try {
+    const n = await prisma.certificateVerification.count({
+      where: {
+        ip,
+        createdAt: { gte: new Date(Date.now() - LOOKUP_WINDOW_MS) },
+      },
+    });
+    return n >= MAX_LOOKUPS;
+  } catch {
+    // Never lock genuine visitors out because the count failed.
+    return false;
+  }
+}
+
 /** All certificates, newest first — used by the admin dashboard. */
 export async function listCertificates(): Promise<Certificate[]> {
   const rows = await prisma.certificate.findMany({
