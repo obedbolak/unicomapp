@@ -15,6 +15,7 @@ export type EnrollmentOption = {
   id: string;
   label: string;
   name: string;
+  email?: string | null;
   type: "INTERNSHIP" | "TRAINING";
   program: string;
   department: string | null;
@@ -44,6 +45,7 @@ export default function EnrollmentPicker({
     };
 
     set("name", picked.name);
+    set("email", picked.email ?? null);
     set("type", picked.type);
     set("program", picked.program);
     set("department", picked.department);

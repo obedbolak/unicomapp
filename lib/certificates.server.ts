@@ -6,11 +6,15 @@
 // stamp and logo from the private/ and public/ folders.
 
 import React from "react";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { readLogo, readSignature, readStamp } from "@/lib/documents";
 import { certificateVerifyLink } from "@/lib/qr";
+import { sendCertificateEmail } from "@/lib/emailjs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2, bucketNameFor } from "@/lib/r2";
 import {
   CertificateDocument,
   type CertificateKind,
@@ -60,7 +64,10 @@ export async function certificatePayload(
   mode: "issued" | "preview" = "issued",
 ): Promise<CertificatePayload> {
   const settings = await getSettings();
-  const host = settings.companyWebsite.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  const host = settings.companyWebsite
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/+$/, "");
   const signs = SIGNATURE_OWNER.test(c.supervisorName);
 
   return {
@@ -79,17 +86,26 @@ export async function certificatePayload(
     logo: readLogo(),
     signature: signs ? readSignature() : null,
     stamp: readStamp(),
-    mode: mode === "preview" ? "preview" : c.status === "REVOKED" ? "revoked" : "issued",
+    mode:
+      mode === "preview"
+        ? "preview"
+        : c.status === "REVOKED"
+          ? "revoked"
+          : "issued",
   };
 }
 
-export async function renderCertificate(payload: CertificatePayload): Promise<Buffer> {
+export async function renderCertificate(
+  payload: CertificatePayload,
+): Promise<Buffer> {
   return renderToBuffer(
     React.createElement(CertificateDocument, { c: payload }) as any,
   );
 }
 
-export async function loadCertificateInput(id: string): Promise<CertificateInput | null> {
+export async function loadCertificateInput(
+  id: string,
+): Promise<CertificateInput | null> {
   const row = await prisma.certificate.findUnique({ where: { id } });
   if (!row) return null;
   return {
@@ -126,4 +142,124 @@ export function pdfResponse(pdf: Buffer, filename: string, download: boolean) {
       "Cache-Control": "private, no-store",
     },
   });
+}
+
+/* ── Private download link (for emailing the holder) ─────────────────────
+ * The PDF route is admin-only. The link we email carries a signature made
+ * from the certificate's id and the server's secret: it opens that one
+ * certificate and nothing else, and it can't be guessed or edited into
+ * someone else's. */
+
+function linkSecret(): string {
+  return process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "";
+}
+
+export function certificateToken(id: string): string | null {
+  const secret = linkSecret();
+  if (!secret) return null;
+  return createHmac("sha256", secret)
+    .update(`certificate-download:${id}`)
+    .digest("base64url")
+    .slice(0, 32);
+}
+
+export function checkCertificateToken(id: string, token: string): boolean {
+  const expected = certificateToken(id);
+  if (!expected || token.length !== expected.length) return false;
+  return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+}
+
+function siteOrigin(website: string) {
+  return `https://${website
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/+$/, "")}`;
+}
+
+const TYPE_TITLE: Record<string, string> = {
+  INTERNSHIP: "Certificate of Internship",
+  TRAINING: "Certificate of Training",
+  CRASH_COURSE: "Certificate of Completion",
+};
+
+/** Emails the holder a link to download their certificate. Throws on failure. */
+export async function emailCertificateTo(
+  id: string,
+  to: string,
+): Promise<void> {
+  const row = await prisma.certificate.findUnique({ where: { id } });
+  if (!row) throw new Error("Certificate not found");
+  const token = certificateToken(id);
+  if (!token)
+    throw new Error(
+      "NEXTAUTH_SECRET is not set, so no safe download link can be made",
+    );
+
+  const settings = await getSettings();
+  const origin = siteOrigin(settings.companyWebsite);
+  await sendCertificateEmail({
+    to,
+    name: row.name,
+    certNo: row.certNo,
+    title: TYPE_TITLE[row.type] ?? "Certificate",
+    program: row.program,
+    downloadUrl: `${origin}/api/certificates/${id}/pdf?download=1&t=${token}`,
+    verifyUrl: certificateVerifyLink(settings.companyWebsite, row.certNo),
+  });
+}
+
+/* ── Saved copy ──────────────────────────────────────────────────────────
+ * The PDF from View/Download is always drawn fresh from the database, so it
+ * follows the current design. Alongside that, each certificate keeps the
+ * exact PDF as it was when issued (and after each edit), in the PRIVATE
+ * bucket: a permanent record of what the holder was given. Never fatal —
+ * if storage isn't configured or is down, issuing still succeeds. */
+export async function saveCertificateCopy(
+  id: string,
+  uploadedById?: string,
+): Promise<boolean> {
+  if (!process.env.R2_BUCKET_PRIVATE || !process.env.R2_ACCOUNT_ID)
+    return false;
+  try {
+    const input = await loadCertificateInput(id);
+    if (!input) return false;
+    const pdf = await renderCertificate(await certificatePayload(input));
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = certificateFilename(input.certNo, input.name);
+    const key = `certificates/${input.certNo}/${stamp}-${crypto.randomUUID()}.pdf`;
+    const bucket = bucketNameFor("certificates");
+
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: pdf,
+        ContentType: "application/pdf",
+        ContentDisposition: `attachment; filename="${filename}"`,
+      }),
+    );
+
+    const upload = await prisma.upload.create({
+      data: {
+        key,
+        bucket,
+        category: "certificates",
+        visibility: "private",
+        filename,
+        contentType: "application/pdf",
+        size: pdf.length,
+        confirmed: true,
+        uploadedById: uploadedById ?? null,
+      },
+    });
+    await prisma.certificate.update({
+      where: { id },
+      data: { fileId: upload.id },
+    });
+    return true;
+  } catch (err) {
+    console.error(`[certificates] could not save a copy of ${id}:`, err);
+    return false;
+  }
 }

@@ -31,6 +31,7 @@ type FormData = {
   budget: string;
   timeline: string;
   message: string;
+  website?: string; // honeypot, always empty for people
 };
 
 /* ── Data ────────────────────────────────────────────────────────────────── */
@@ -111,6 +112,7 @@ const labelStyle: React.CSSProperties = {
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState("");
+  const [sendError, setSendError] = useState("");
 
   const {
     register,
@@ -120,10 +122,27 @@ export default function ContactPage() {
   } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
-    // Simulate send — replace with your API call
-    await new Promise((r) => setTimeout(r, 1200));
-    console.log(data);
-    setSubmitted(true);
+    setSendError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setSendError(
+          body?.error ??
+            "We couldn't send your message. Please try again, or email contact@unicomteam.com.",
+        );
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setSendError(
+        "No connection. Check your internet and try again, or email contact@unicomteam.com.",
+      );
+    }
   };
 
   return (
@@ -466,6 +485,36 @@ export default function ContactPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Hidden from people; bots that fill it are ignored. */}
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  {...register("website")}
+                  style={{
+                    position: "absolute",
+                    left: "-10000px",
+                    width: 1,
+                    height: 1,
+                    opacity: 0,
+                  }}
+                />
+
+                {sendError && (
+                  <p
+                    role="alert"
+                    style={{
+                      color: "#ef4444",
+                      fontSize: "0.8125rem",
+                      fontFamily: "var(--font-display)",
+                      margin: "0 0 0.75rem",
+                    }}
+                  >
+                    {sendError}
+                  </p>
+                )}
 
                 {/* Submit */}
                 <button

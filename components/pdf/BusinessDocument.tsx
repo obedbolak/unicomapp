@@ -186,8 +186,7 @@ function MetaTable({ s, doc }: { s: DocStyles; doc: DocumentPayload }) {
       : "30 days"
     : longDate(doc.dueDate);
 
-  const budget =
-    doc.budgetLabel ?? amountWithUnit(doc.total, doc.currency);
+  const budget = doc.budgetLabel ?? amountWithUnit(doc.total, doc.currency);
 
   return (
     <View style={s.table}>
@@ -421,9 +420,7 @@ function FinancialSummary({ s, doc }: { s: DocStyles; doc: DocumentPayload }) {
   const [c1, c2] = SUMMARY_COLS;
 
   const rows: [string, number][] = [
-    ...doc.sections.map(
-      (sec) => [sec.title, sec.total] as [string, number],
-    ),
+    ...doc.sections.map((sec) => [sec.title, sec.total] as [string, number]),
     ...doc.extras.map((x) => [x.label, x.amount] as [string, number]),
   ];
 
@@ -636,7 +633,10 @@ function Signatures({ s, doc }: { s: DocStyles; doc: DocumentPayload }) {
               {doc.signatures.issuerSignature && (
                 <View style={s.signOverlay}>
                   {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image takes no alt */}
-                  <Image src={doc.signatures.issuerSignature} style={s.signImage} />
+                  <Image
+                    src={doc.signatures.issuerSignature}
+                    style={s.signImage}
+                  />
                 </View>
               )}
               {doc.signatures.issuerStamp && (
@@ -720,7 +720,9 @@ export function BusinessDocument({
 
         <Signatures s={s} doc={doc} />
 
-        {!!doc.verify && <VerifyStrip s={s} verify={doc.verify} isQuote={isQuote} />}
+        {!!doc.verify && (
+          <VerifyStrip s={s} verify={doc.verify} isQuote={isQuote} />
+        )}
 
         {/* Repeated on every page so the check survives a document that
             reaches the client as a photo of one page. */}
@@ -743,6 +745,37 @@ export function BusinessDocument({
             }
           />
         </View>
+
+        {/* Across every page of a draft or voided document, so no page of it
+            can pass for the real thing. */}
+        {(doc.status === "DRAFT" || doc.status === "VOID") && (
+          <View
+            fixed
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: font,
+                fontWeight: 700,
+                fontSize: 120,
+                letterSpacing: 10,
+                color: doc.status === "VOID" ? "#C0262D" : COLORS.brandNavy,
+                opacity: 0.08,
+                transform: "rotate(-35deg)",
+              }}
+            >
+              {doc.status === "VOID" ? "VOID" : "DRAFT"}
+            </Text>
+          </View>
+        )}
       </Page>
     </Document>
   );

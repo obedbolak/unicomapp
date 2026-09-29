@@ -6,6 +6,8 @@ import {
 } from "@/lib/certificates";
 import type { Certificate } from "@/lib/certificates";
 import type { Metadata } from "next";
+import { getSettings } from "@/lib/settings";
+import { certificateVerifyLink } from "@/lib/qr";
 import { headers } from "next/headers";
 
 // Always hit the database — a certificate can be revoked at any time.
@@ -52,7 +54,16 @@ export default async function VerifyResultPage({
         {limited ? (
           <SlowDownCard />
         ) : cert && cert.status === "valid" ? (
-          <ValidCard cert={cert} />
+          <ValidCard
+            cert={cert}
+            linkedIn={linkedInUrl(
+              cert,
+              certificateVerifyLink(
+                (await getSettings()).companyWebsite,
+                cert.certNo,
+              ),
+            )}
+          />
         ) : cert && cert.status === "revoked" ? (
           <RevokedCard certNo={certNo} />
         ) : (
@@ -78,7 +89,41 @@ export default async function VerifyResultPage({
   );
 }
 
-function ValidCard({ cert }: { cert: Certificate }) {
+const CERT_TITLE: Record<Certificate["type"], string> = {
+  internship: "Certificate of Internship",
+  training: "Certificate of Training",
+  "crash-course": "Certificate of Completion",
+};
+
+/**
+ * LinkedIn's "Add to profile" link, pre-filled so the holder only presses
+ * Save. It links back here, so anyone viewing their profile can check it.
+ * Set LINKEDIN_ORGANIZATION_ID (the number in your company page's admin URL)
+ * to show UnicomTeam's logo and link to the company page instead of plain text.
+ */
+function linkedInUrl(cert: Certificate, verifyUrl: string): string {
+  const issued = new Date(cert.dateIssued);
+  const q = new URLSearchParams({
+    startTask: "CERTIFICATION_NAME",
+    name: `${CERT_TITLE[cert.type]} — ${cert.program}`,
+    issueYear: String(issued.getUTCFullYear()),
+    issueMonth: String(issued.getUTCMonth() + 1),
+    certUrl: verifyUrl,
+    certId: cert.certNo,
+  });
+  const orgId = process.env.LINKEDIN_ORGANIZATION_ID;
+  if (orgId) q.set("organizationId", orgId);
+  else q.set("organizationName", "UnicomTeam");
+  return `https://www.linkedin.com/profile/add?${q.toString()}`;
+}
+
+function ValidCard({
+  cert,
+  linkedIn,
+}: {
+  cert: Certificate;
+  linkedIn: string;
+}) {
   return (
     <div style={cardStyle}>
       <StatusBadge label="✓ Valid Certificate" color="#22c55e" />
@@ -101,6 +146,45 @@ function ValidCard({ cert }: { cert: Certificate }) {
           label="Signed"
           value={`${cert.supervisor}, ${cert.supervisorTitle}`}
         />
+      </div>
+
+      <div style={{ marginTop: "1.5rem" }}>
+        <a
+          href={linkedIn}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.55rem",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "0.65rem",
+            background: "#0A66C2",
+            color: "#fff",
+            fontFamily: "var(--font-display)",
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"
+            />
+          </svg>
+          Add to LinkedIn profile
+        </a>
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.75rem",
+            color: "var(--color-text-muted)",
+            margin: "0.6rem 0 0",
+          }}
+        >
+          Is this your certificate? Add it to your profile in one click.
+        </p>
       </div>
     </div>
   );

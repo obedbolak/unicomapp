@@ -1,6 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import {
+  emailCertificateTo,
+  saveCertificateCopy,
+} from "@/lib/certificates.server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { nextCertificateNumber } from "@/lib/reference";
@@ -157,8 +162,37 @@ export async function issueCertificate(formData: FormData) {
     certNo,
   });
 
+  await saveCertificateCopy(certificate.id, admin.id);
+
+  // Email the holder their download link, if asked. A failed email never
+  // undoes the certificate — the page says so and it can be resent.
+  const emailTo = String(formData.get("email") ?? "").trim();
+  let email: "sent" | "failed" | "none" = "none";
+  if (formData.get("sendEmail") === "on" && emailTo) {
+    try {
+      await emailCertificateTo(certificate.id, emailTo);
+      email = "sent";
+      await log(
+        admin.id,
+        "certificate.emailed",
+        "Certificate",
+        certificate.id,
+        {
+          certNo,
+          to: emailTo,
+        },
+      );
+    } catch (err) {
+      console.error(`[certificates] email for ${certNo} failed:`, err);
+      email = "failed";
+    }
+  }
+
   revalidatePath("/admin/certificates");
   revalidatePath(`/verify/${certNo}`);
+  redirect(
+    `/admin/certificates?issued=${encodeURIComponent(certNo)}&email=${email}`,
+  );
 }
 
 export async function setCertificateStatus(formData: FormData) {
@@ -485,10 +519,7 @@ export async function createTask(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const assigneeId = String(formData.get("assigneeId") ?? "");
   const priority = String(formData.get("priority") ?? "MEDIUM") as
-    | "LOW"
-    | "MEDIUM"
-    | "HIGH"
-    | "URGENT";
+    "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   const dueDateRaw = String(formData.get("dueDate") ?? "").trim();
 
   if (!projectId || !title || !assigneeId) {
@@ -567,10 +598,7 @@ export async function updateTaskStatus(formData: FormData) {
 
   const id = String(formData.get("id"));
   const status = String(formData.get("status")) as
-    | "TODO"
-    | "IN_PROGRESS"
-    | "BLOCKED"
-    | "DONE";
+    "TODO" | "IN_PROGRESS" | "BLOCKED" | "DONE";
 
   const task = await prisma.task.findUnique({
     where: { id },

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/SubmitButton";
 
 const quickLinks = [
   { label: "Home", href: "/" },
@@ -97,7 +99,11 @@ export default function Footer() {
         {/* Brand column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {/* Logo */}
-          <Link href="/" aria-label="UnicomTeam home" style={{ display: "inline-block", width: "fit-content" }}>
+          <Link
+            href="/"
+            aria-label="UnicomTeam home"
+            style={{ display: "inline-block", width: "fit-content" }}
+          >
             <Image
               src="/images/unicomteam-logo.png"
               alt="UnicomTeam — Software Development Company"
@@ -403,60 +409,7 @@ export default function Footer() {
             >
               Stay in the loop
             </p>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              style={{ display: "flex", gap: "0.5rem" }}
-            >
-              <input
-                type="email"
-                placeholder="your@email.com"
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  padding: "0.5rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid var(--color-border)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "var(--color-text)",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.8125rem",
-                  outline: "none",
-                }}
-                onFocus={(e) =>
-                  ((e.currentTarget as HTMLInputElement).style.borderColor =
-                    "rgba(255,140,0,0.4)")
-                }
-                onBlur={(e) =>
-                  ((e.currentTarget as HTMLInputElement).style.borderColor =
-                    "var(--color-border)")
-                }
-              />
-              <button
-                type="submit"
-                style={{
-                  flexShrink: 0,
-                  padding: "0.5rem 0.875rem",
-                  borderRadius: "0.5rem",
-                  border: "none",
-                  background: "var(--color-primary)",
-                  color: "#000",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  transition: "opacity 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLButtonElement).style.opacity =
-                    "0.85")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLButtonElement).style.opacity = "1")
-                }
-              >
-                →
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
       </div>
@@ -487,5 +440,144 @@ export default function Footer() {
         </p>
       </div>
     </footer>
+  );
+}
+
+/* ── Newsletter ("Stay in the loop") ─────────────────────────────────────── */
+
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error">(
+    "idle",
+  );
+  const [error, setError] = useState("");
+
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (state === "sending") return;
+    setState("sending");
+    setError("");
+    const website = String(new FormData(e.currentTarget).get("website") ?? "");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, website }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError(body?.error ?? "Something went wrong. Please try again.");
+        setState("error");
+        return;
+      }
+      setState("done");
+      setEmail("");
+    } catch {
+      setError("No connection. Please try again.");
+      setState("error");
+    }
+  };
+
+  if (state === "done") {
+    return (
+      <p
+        role="status"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "0.8125rem",
+          color: "var(--color-primary)",
+          margin: 0,
+        }}
+      >
+        ✓ You&apos;re on the list. Thanks!
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <form onSubmit={submit} style={{ display: "flex", gap: "0.5rem" }}>
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          aria-label="Email address for news and updates"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            padding: "0.5rem 0.75rem",
+            borderRadius: "0.5rem",
+            border: "1px solid var(--color-border)",
+            background: "rgba(255,255,255,0.04)",
+            color: "var(--color-text)",
+            fontFamily: "var(--font-display)",
+            fontSize: "0.8125rem",
+            outline: "none",
+          }}
+          onFocus={(e) =>
+            (e.currentTarget.style.borderColor = "rgba(255,140,0,0.4)")
+          }
+          onBlur={(e) =>
+            (e.currentTarget.style.borderColor = "var(--color-border)")
+          }
+        />
+        {/* Hidden from people; bots that fill it are ignored. */}
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "-10000px",
+            width: 1,
+            height: 1,
+            opacity: 0,
+          }}
+        />
+        <button
+          type="submit"
+          disabled={state === "sending"}
+          aria-label="Subscribe"
+          aria-busy={state === "sending" || undefined}
+          style={{
+            flexShrink: 0,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "2.5rem",
+            padding: "0.5rem 0.875rem",
+            borderRadius: "0.5rem",
+            border: "none",
+            background: "var(--color-primary)",
+            color: "#000",
+            fontFamily: "var(--font-display)",
+            fontSize: "0.8125rem",
+            fontWeight: 700,
+            cursor: state === "sending" ? "default" : "pointer",
+            opacity: state === "sending" ? 0.7 : 1,
+            transition: "opacity 0.2s",
+          }}
+        >
+          {state === "sending" ? <Spinner iconOnly /> : "→"}
+        </button>
+      </form>
+      {state === "error" && (
+        <p
+          role="alert"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.75rem",
+            color: "#ef4444",
+            margin: "0.4rem 0 0",
+          }}
+        >
+          {error}
+        </p>
+      )}
+    </>
   );
 }

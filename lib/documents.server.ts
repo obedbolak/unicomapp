@@ -28,6 +28,10 @@ const dec = (v: unknown) => Number(v ?? 0);
  * Returns null when the id does not exist so callers can answer 404 rather
  * than throwing.
  */
+
+/** Statuses whose PDF carries no signature or stamp. */
+const UNSIGNED = new Set(["DRAFT", "VOID"]);
+
 export async function loadDocument(
   id: string,
 ): Promise<DocumentPayload | null> {
@@ -171,10 +175,14 @@ export async function loadDocument(
       clientName: invoice.clientSignerName ?? invoice.client?.name ?? null,
       issuerLabel: `${settings.companyName} (Authorized Developer)`,
       issuerName:
-        invoice.issuerSignerName || settings.signatoryName || settings.companyName,
+        invoice.issuerSignerName ||
+        settings.signatoryName ||
+        settings.companyName,
       issuerRole: invoice.issuerSignerRole || settings.signatoryRole,
-      issuerSignature: readSignature(),
-      issuerStamp: readStamp(),
+      // Drafts and voided documents are never signed or stamped: a draft
+      // that leaks out must not look like a committed, authorised document.
+      issuerSignature: UNSIGNED.has(invoice.status) ? null : readSignature(),
+      issuerStamp: UNSIGNED.has(invoice.status) ? null : readStamp(),
       date: invoice.issueDate.toISOString(),
     },
   };
