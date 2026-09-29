@@ -109,6 +109,21 @@ function HeaderRow({ s, cols }: { s: DocStyles; cols: [number, string][] }) {
 
 /* ── Letterhead ──────────────────────────────────────────────────────────── */
 
+/**
+ * The company name coloured like the logo: "Unicom" navy, "Team" orange.
+ * Any other name (renamed in settings) prints in navy only.
+ */
+function Wordmark({ s, name }: { s: DocStyles; name: string }) {
+  const m = /^(.+?)(Team)$/i.exec(name.trim());
+  if (!m) return <Text style={s.wordmark}>{name}</Text>;
+  return (
+    <Text style={s.wordmark}>
+      {m[1]}
+      <Text style={s.wordmarkAccent}>{m[2]}</Text>
+    </Text>
+  );
+}
+
 function Letterhead({
   s,
   company,
@@ -122,16 +137,22 @@ function Letterhead({
 
   return (
     <View style={s.letterhead}>
-      {/* The logo file is the mark on its own, so the wordmark is set in type
-          beside it. Rendering the name as text also keeps the lockup sharp at
-          any zoom and lets a renamed company update itself from settings. */}
+      {/* Same lockup as the UnicomTeam logo: the U mark, then the name set in
+          type beside it. Rendering the name as text keeps it sharp at any zoom
+          and in print, and lets a renamed company update itself from settings. */}
       <View style={s.lockup}>
         {company.logo && (
-          // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image takes no alt
-          <Image src={company.logo} style={s.logo} />
+          // ™ sits just above the top-right of the U, as in the logo.
+          <View style={s.logoWrap}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image takes no alt */}
+            <Image src={company.logo} style={s.logo} />
+            <Text style={s.trademark}>TM</Text>
+          </View>
         )}
         <View>
-          <Text style={s.wordmark}>{company.name}</Text>
+          <View style={s.wordmarkRow}>
+            <Wordmark s={s} name={company.name} />
+          </View>
           {!!company.subname && (
             <Text style={s.wordmarkSub}>{company.subname}</Text>
           )}

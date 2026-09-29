@@ -9,10 +9,14 @@
 // page lines up because it is derived from the same constant.
 
 import { StyleSheet } from "@react-pdf/renderer";
+import { brandFont } from "./fonts";
 
 /* ── Tokens ──────────────────────────────────────────────────────────────── */
 
 export const COLORS = {
+  /** Logo colours, sampled from the UnicomTeam logo: "Unicom" + tagline, and "Team". */
+  brandNavy: "#0A1545",
+  brandOrange: "#FC400C",
   /** Headings, table headers, totals. Word's "Blue, Accent 1, Darker 50%". */
   navy: "#1F4E79",
   /** Secondary blue for the scope paragraph and the letterhead strapline. */
@@ -76,18 +80,38 @@ export function createStyles(font: string) {
       marginBottom: 26,
     },
     lockup: { flexDirection: "row", alignItems: "center" },
-    logo: { width: 34, height: 34, objectFit: "contain", marginRight: 7 },
+    // Letterhead lockup, matching the UnicomTeam logo: the U mark, then the
+    // name in Poppins ("Unicom" navy + "Team" orange), ™, and the small-caps
+    // tagline underneath. The name stays real text, so it is sharp at any zoom
+    // and in print.
+    logoWrap: { position: "relative", width: 38, height: 40, marginRight: 11 },
+    logo: { width: 38, height: 40, objectFit: "contain" },
+    wordmarkRow: { flexDirection: "row", alignItems: "flex-start" },
     wordmark: {
-      fontSize: 14.5,
-      fontWeight: 700,
-      color: COLORS.navy,
+      fontFamily: brandFont(font),
+      fontSize: 17,
+      fontWeight: 600,
+      color: COLORS.brandNavy,
+      letterSpacing: -0.2,
+    },
+    wordmarkAccent: { color: COLORS.brandOrange },
+    // ™ placed like the logo: right at the U's top-right corner, just above it.
+    trademark: {
+      position: "absolute",
+      left: 37.4,
+      top: -5.3,
+      fontFamily: brandFont(font),
+      fontSize: 4.8,
+      fontWeight: 600,
+      color: COLORS.brandNavy,
     },
     wordmarkSub: {
-      fontSize: 5,
-      fontWeight: 700,
-      color: COLORS.muted,
-      letterSpacing: 1.1,
-      marginTop: 1,
+      fontFamily: brandFont(font),
+      fontSize: 5.2,
+      fontWeight: 600,
+      color: COLORS.brandNavy,
+      letterSpacing: 0.9,
+      marginTop: 0,
     },
     letterheadRight: { alignItems: "flex-end", paddingTop: 4 },
     tagline: {

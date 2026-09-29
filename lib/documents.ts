@@ -159,6 +159,8 @@ export function readLogo(): string | null {
   if (logoCache !== undefined) return logoCache;
 
   const candidates = [
+    // The current UnicomTeam U mark, upscaled and smoothed for print.
+    "public/images/unicomteam-mark-print.png",
     "public/images/logo.png",
     "public/logo.png",
     "public/images/logo.jpg",
