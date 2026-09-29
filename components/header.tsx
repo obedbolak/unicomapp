@@ -128,6 +128,12 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           color: var(--color-text); transition: color 0.2s ease;
         }
         .logo-btn:hover .logo-text { color: var(--color-primary); }
+        .logo-btn .logo-img {
+          height: 42px; width: auto; display: block;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .logo-btn:hover .logo-img { opacity: 0.9; transform: translateY(-1px); }
+        @media (max-width: 640px) { .logo-btn .logo-img { height: 36px; } }
         .desktop-nav { display: none; align-items: center; gap: 0.25rem; }
         .nav-btn {
           position: relative; padding: 0.5rem 1rem;
@@ -188,14 +194,13 @@ export default function Header({ activePage, onNavigate }: HeaderProps) {
           <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
             <button className="logo-btn" onClick={() => handleNav("home")}>
               <Image
-                src="/images/logo.png"
-                alt="UnicomTeam Logo"
-                width={32}
-                height={26}
+                src="/images/unicomteam-logo.png"
+                alt="UnicomTeam — Software Development Company"
+                width={342}
+                height={100}
+                priority
+                className="logo-img"
               />
-              <span className="logo-text">
-                UNICOM<span className="gradient-text">TEAM</span>
-              </span>
             </button>
           </div>
 

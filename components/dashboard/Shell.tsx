@@ -192,16 +192,13 @@ export default function Shell({
             like a different product. */}
         <Link href="/" className="dash-brand" title="Back to the website">
           <Image
-            src="/images/logo.png"
-            alt=""
-            width={32}
-            height={26}
+            src="/images/unicomteam-logo.png"
+            alt="UnicomTeam"
+            width={342}
+            height={100}
             className="dash-brand-logo"
             priority
           />
-          <span className="dash-brand-text">
-            UNICOM<span className="gradient-text">TEAM</span>
-          </span>
         </Link>
 
         <div className="dash-rule" />

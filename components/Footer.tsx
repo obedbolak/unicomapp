@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 const quickLinks = [
   { label: "Home", href: "/" },
@@ -25,17 +26,21 @@ const services = [
   { label: "Business Strategy", href: "/services/business-strategy" },
 ];
 
+// Legal & trust column. Add new policy pages here (e.g. a cookie or refund
+// policy) once the page exists, so the footer never links to a 404.
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
-];
-
-// Clients and employers arrive looking for these specifically — someone
-// holding a certificate or a quote wants to know it is real — so they sit in
-// the bottom bar on every page rather than inside a services column.
-const verifyLinks = [
+  // Clients and employers look for these specifically — someone holding a
+  // certificate or a quote wants to know it is real.
   { label: "Verify a certificate", href: "/verify" },
   { label: "Verify a quote or invoice", href: "/verify/document" },
+];
+
+// Account column: where clients, students and the team sign in.
+const accountLinks = [
+  { label: "Sign in", href: "/login" },
+  { label: "Dashboard", href: "/dashboard" },
 ];
 
 const socials = [
@@ -82,12 +87,9 @@ export default function Footer() {
     >
       {/* ── Main grid ── */}
       <div
+        className="footer-content footer-grid"
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 clamp(1rem, 5vw, 4rem)",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
           gap: "3rem",
           paddingBottom: "3.5rem",
         }}
@@ -95,27 +97,15 @@ export default function Footer() {
         {/* Brand column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {/* Logo */}
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "1.375rem",
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "var(--color-text)",
-            }}
-          >
-            UNICOM
-            <span
-              style={{
-                background:
-                  "linear-gradient(90deg, var(--color-primary), #ff6a00)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              TEAM
-            </span>
-          </div>
+          <Link href="/" aria-label="UnicomTeam home" style={{ display: "inline-block", width: "fit-content" }}>
+            <Image
+              src="/images/unicomteam-logo.png"
+              alt="UnicomTeam — Software Development Company"
+              width={342}
+              height={100}
+              style={{ height: 56, width: "auto", display: "block" }}
+            />
+          </Link>
 
           {/* Tagline */}
           <p
@@ -256,6 +246,90 @@ export default function Footer() {
           ))}
         </div>
 
+        {/* Legal column */}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "0.6875rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--color-text-muted)",
+              margin: 0,
+            }}
+          >
+            Legal
+          </p>
+          {legalLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.875rem",
+                color: "var(--color-text-muted)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-primary)")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-text-muted)")
+              }
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Account column */}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "0.6875rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--color-text-muted)",
+              margin: 0,
+            }}
+          >
+            Account
+          </p>
+          {accountLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.875rem",
+                color: "var(--color-text-muted)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-primary)")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color =
+                  "var(--color-text-muted)")
+              }
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
         {/* Contact + Newsletter column */}
         <div
           style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
@@ -389,10 +463,8 @@ export default function Footer() {
 
       {/* ── Divider ── */}
       <div
+        className="footer-content"
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 clamp(1rem, 5vw, 4rem)",
           borderTop: "1px solid var(--color-border)",
           paddingTop: "1.25rem",
           paddingBottom: "1.25rem",
@@ -413,122 +485,6 @@ export default function Footer() {
         >
           © {new Date().getFullYear()} UnicomTeam. All rights reserved.
         </p>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "1.25rem",
-            flexWrap: "wrap",
-          }}
-        >
-          {verifyLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted)",
-                textDecoration: "none",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color =
-                  "var(--color-primary)")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color =
-                  "var(--color-text-muted)")
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          <span
-            aria-hidden
-            style={{
-              width: 1,
-              height: "0.9rem",
-              background: "var(--color-border)",
-            }}
-          />
-
-          {legalLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "0.8125rem",
-                color: "var(--color-text-muted)",
-                textDecoration: "none",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color =
-                  "var(--color-primary)")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color =
-                  "var(--color-text-muted)")
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {/* Staff entrance. Deliberately quiet — it's an internal door on a
-              marketing page, so it gets a chip rather than a CTA. */}
-          <Link
-            href="/login"
-            rel="nofollow"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              fontFamily: "var(--font-display)",
-              fontSize: "0.8125rem",
-              fontWeight: 600,
-              color: "var(--color-text-muted)",
-              textDecoration: "none",
-              padding: "0.35rem 0.75rem",
-              borderRadius: "999px",
-              border: "1px solid var(--color-border)",
-              background: "rgba(255,255,255,0.03)",
-              transition: "color 0.2s, border-color 0.2s, background 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.color = "var(--color-primary)";
-              el.style.borderColor = "rgba(255,140,0,0.35)";
-              el.style.background = "rgba(255,140,0,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.color = "var(--color-text-muted)";
-              el.style.borderColor = "var(--color-border)";
-              el.style.background = "rgba(255,255,255,0.03)";
-            }}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="4" y="10.5" width="16" height="10" rx="2.5" />
-              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-            </svg>
-            Staff login
-          </Link>
-        </div>
       </div>
     </footer>
   );

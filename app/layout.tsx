@@ -81,12 +81,8 @@ export const metadata: Metadata = {
     images: [`${siteUrl}/images/og-image.jpg`],
   },
 
-  /* App Icons Configuration */
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico", // Or apple-touch-icon.png if available
-  },
+  /* App icons: served automatically from app/favicon.ico, app/icon.png
+     and app/apple-icon.png (Next.js file conventions). */
 };
 
 /* Viewport configurations separated from Metadata (Next.js 14+ standard) */

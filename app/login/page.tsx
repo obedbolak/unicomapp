@@ -66,16 +66,14 @@ function LoginForm() {
             title="Back to the website"
           >
             <Image
-              src="/images/logo.png"
-              alt=""
-              width={38}
-              height={31}
+              src="/images/unicomteam-logo.png"
+              alt="UnicomTeam"
+              width={342}
+              height={100}
               className="dash-brand-logo"
+              style={{ height: 46 }}
               priority
             />
-            <span className="dash-brand-text" style={{ fontSize: "0.9375rem" }}>
-              UNICOM<span className="gradient-text">TEAM</span>
-            </span>
           </Link>
           <h1
             style={{

@@ -255,6 +255,35 @@ body {
   margin: 0 auto;
 }
 
+/* Footer rows use the same width and side padding as the header, so the logo
+   and links line up with the header above at every screen size. The padding
+   steps up in the same @media groups as .header. */
+.footer-content {
+  width: 100%;
+  max-width: var(--container-7xl);
+  margin: 0 auto;
+  padding-left: var(--padding-xs);
+  padding-right: var(--padding-xs);
+}
+
+/* Footer columns: brand · navigation · services · legal · account · contact.
+   1 column on phones, 2 on tablets, 3 on small laptops, all 6 on desktop. */
+.footer-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .footer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  .footer-grid {
+    grid-template-columns: 1.25fr 0.75fr 1.1fr 1fr 0.75fr 1.35fr;
+    column-gap: 2.5rem !important;
+  }
+}
+
 /* ── Mobile menu ─────────────────────────────────────────────────────────── */
 .mobile-menu {
   position: fixed;
@@ -620,6 +649,7 @@ select option {
   .section-hero,
   .section-page,
   .header,
+  .footer-content,
   .mobile-menu,
   .stats-container {
     padding-left: var(--padding-sm);
@@ -670,6 +700,7 @@ select option {
   .section-hero,
   .section-page,
   .header,
+  .footer-content,
   .mobile-menu,
   .stats-container {
     padding-left: var(--padding-md);
@@ -714,6 +745,7 @@ select option {
   .section-hero,
   .section-page,
   .header,
+  .footer-content,
   .stats-container {
     padding-left: var(--padding-lg);
     padding-right: var(--padding-lg);
@@ -729,6 +761,7 @@ select option {
   .section-hero,
   .section-page,
   .header,
+  .footer-content,
   .stats-container {
     padding-left: var(--padding-xl);
     padding-right: var(--padding-xl);

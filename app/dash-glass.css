@@ -227,8 +227,9 @@ textarea.dash-input {
    ────────────────────────────────────────────────────────────────────────── */
 
 .dash-brand-logo {
-  width: 32px;
-  height: auto;
+  /* Full UnicomTeam lockup (mark + wordmark), sized by height. */
+  width: auto;
+  height: 40px;
   flex: none;
   object-fit: contain;
 }
