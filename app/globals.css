@@ -215,8 +215,35 @@ body {
 }
 
 /* ── Team member profiles ──────────────────────────────────────────────── */
+.member-page {
+  /* The only green on the page: the verified tick on the photo. */
+  --color-verified: #22c55e;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.member-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(48rem 30rem at 88% 4%, rgba(255, 140, 0, 0.16), transparent 62%),
+    radial-gradient(38rem 28rem at 0% 36%, rgba(0, 102, 255, 0.13), transparent 64%),
+    radial-gradient(40rem 26rem at 70% 100%, rgba(255, 59, 0, 0.09), transparent 66%);
+}
+
+/* Full-width layout: fills the screen with comfortable side gutters. */
+.member-wide {
+  width: 100%;
+  max-width: 1480px;
+  margin-inline: auto;
+}
+
 .member-profile-back,
-.member-profile-contact {
+.member-profile-contact,
+.member-wa-cta {
   font-family: var(--font-display);
   font-weight: 700;
   text-decoration: none;
@@ -228,87 +255,396 @@ body {
   gap: 0.5rem;
   color: var(--color-text-muted);
   font-size: 0.875rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   transition: color 0.2s ease;
 }
 
 .member-profile-back:hover { color: var(--color-primary); }
 
-.member-profile-hero {
-  display: grid;
-  gap: 2rem;
-  align-items: center;
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.member-card {
+  position: relative;
+  padding: 1.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+  transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
-.member-profile-image-wrap {
-  position: relative;
-  min-height: 22rem;
+.member-card:hover {
+  border-color: var(--color-border-primary);
+  transform: translateY(-3px);
+}
+
+.member-card p {
+  margin-top: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* ── Top row: photo · details · WhatsApp ───────────────────────────────── */
+.member-top {
+  display: grid;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.member-top > .member-card:hover { transform: none; }
+
+/* Photo card */
+.member-photo-card {
+  min-height: 26rem;
+  padding: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 140, 0, 0.2);
-  border-radius: 1.5rem;
-  background: radial-gradient(circle at 50% 20%, rgba(255, 140, 0, 0.2), rgba(255, 255, 255, 0.03) 60%);
+  border-color: rgba(255, 140, 0, 0.25);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 140, 0, 0.3), rgba(255, 255, 255, 0.03) 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.22));
+  box-shadow:
+    0 34px 80px -34px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.member-photo-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 26%;
+  background: linear-gradient(180deg, transparent, rgba(0, 8, 20, 0.55));
+  pointer-events: none;
 }
 
 .member-profile-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
+  object-fit: cover;
+  object-position: center top;
 }
 
-.member-profile-copy h1 {
-  margin: 0.75rem 0 0.5rem;
+/* The single green verified tick */
+.member-photo-tick {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  width: 3rem;
+  height: 3rem;
+  animation: member-tick-pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
+}
+
+.member-photo-tick::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(74, 222, 128, 0.65);
+  opacity: 0;
+  animation: member-tick-ring 2.8s ease-out 1.2s infinite;
+  pointer-events: none;
+}
+
+.verified-seal {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 18px rgba(34, 197, 94, 0.55));
+}
+
+.verified-seal-shape {
+  fill: var(--color-verified);
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 0.7;
+}
+
+.verified-seal-check {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes member-tick-pop {
+  from { opacity: 0; transform: scale(0) rotate(-35deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes member-tick-ring {
+  0%   { opacity: 0.8; transform: scale(0.9); }
+  70%  { opacity: 0;   transform: scale(1.7); }
+  100% { opacity: 0;   transform: scale(1.7); }
+}
+
+/* Details card */
+.member-details-card { display: flex; flex-direction: column; }
+
+.member-details-card .section-eyebrow { margin-bottom: 0.85rem; }
+
+.member-details-card h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 7vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.045em;
+  font-size: clamp(2rem, 4.2vw, 2.9rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
 }
 
 .member-profile-role {
+  margin-top: 0.7rem;
   color: var(--color-primary);
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.member-profile-summary {
-  max-width: 38rem;
-  margin-top: 1.5rem;
-  color: var(--color-text-muted);
-  font-size: 1.0625rem;
-  line-height: 1.75;
+.member-card .member-slogan {
+  margin-top: 1.1rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--color-primary);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
 }
 
-.member-profile-contact {
+.member-card .member-profile-summary {
+  margin-top: 1rem;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.member-contact-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1.4rem 0;
+  list-style: none;
+}
+
+.member-contact-list a,
+.member-contact-list li > div {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.member-contact-list a:hover,
+.member-contact-list a:focus-visible {
+  border-color: var(--color-border-primary);
+  background: var(--color-surface-primary);
+}
+
+.member-contact-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 0.7rem;
+  background: var(--color-surface-primary);
+  color: var(--color-primary);
+}
+
+.member-contact-text { min-width: 0; }
+
+.member-contact-text small {
+  display: block;
+  color: var(--color-text-dim);
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.member-contact-text span {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.member-card .member-verified-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.member-verified-note svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--color-primary);
+}
+
+/* WhatsApp card */
+.member-form-card {
+  display: flex;
+  flex-direction: column;
+  border-color: var(--color-border-primary);
+  background:
+    radial-gradient(24rem 14rem at 100% 0%, rgba(255, 140, 0, 0.14), transparent 70%),
+    var(--color-surface);
+}
+
+.member-message-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  background: var(--gradient-primary);
+  color: #07101e;
+  box-shadow: 0 10px 26px rgba(255, 140, 0, 0.28);
+}
+
+.member-form-title {
+  margin-top: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.member-card .member-form-intro {
+  margin: 0.7rem 0 1.4rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.member-wa-form {
+  display: grid;
+  flex: 1;
+  gap: 1rem;
+  align-content: start;
+}
+
+.member-wa-field label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.member-wa-field label span { color: var(--color-text-dim); font-weight: 500; }
+
+.member-wa-field input,
+.member-wa-field textarea {
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.75rem;
+  background: rgba(0, 8, 20, 0.55);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.member-wa-field textarea { min-height: 8.5rem; resize: vertical; }
+
+.member-wa-field input::placeholder,
+.member-wa-field textarea::placeholder { color: var(--color-text-dim); }
+
+.member-wa-field input:focus,
+.member-wa-field textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.22);
+}
+
+.member-wa-field textarea[aria-invalid="true"] {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
+}
+
+.member-wa-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.45rem;
+  color: var(--color-text-dim);
+  font-size: 0.78rem;
+}
+
+.member-card .member-wa-error { margin-top: 0; color: #fca5a5; font-size: 0.9rem; line-height: 1.5; }
+
+.member-card .member-wa-fallback { margin-top: 0; font-size: 0.875rem; line-height: 1.5; }
+
+.member-wa-fallback a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.member-profile-contact,
+.member-wa-cta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
-  margin-top: 2rem;
-  padding: 0.8rem 1.1rem;
+  padding: 0.85rem 1.2rem;
+  border: 0;
   border-radius: 0.65rem;
   background: var(--gradient-primary);
   color: #07101e;
+  font-size: 0.95rem;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.member-profile-contact:hover {
-  box-shadow: 0 10px 24px rgba(255, 140, 0, 0.22);
+.member-profile-contact:hover,
+.member-wa-cta:hover {
+  box-shadow: 0 10px 24px rgba(255, 140, 0, 0.25);
   transform: translateY(-2px);
 }
 
-.member-profile-details {
-  display: grid;
-  gap: 1rem;
-  margin-top: 3.5rem;
+.member-profile-contact:focus-visible,
+.member-wa-cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
 }
 
-.member-profile-details > div {
-  padding: 1.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  background: var(--color-surface);
+.member-wa-submit { width: 100%; }
+
+/* ── Sections below ────────────────────────────────────────────────────── */
+.member-section { margin-top: 4.5rem; }
+
+.member-section-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
 }
 
 .member-profile-label {
@@ -323,15 +659,182 @@ body {
   text-transform: uppercase;
 }
 
-.member-profile-details p,
-.member-profile-details li {
-  color: var(--color-text-muted);
-  line-height: 1.65;
+.member-about {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
 }
 
-.member-profile-details p { margin-top: 0.85rem; }
-.member-profile-details ul { margin: 0.85rem 0 0; padding-left: 1.15rem; }
-.member-profile-details li + li { margin-top: 0.35rem; }
+.member-bio { margin-top: 1.5rem; }
+
+.member-bio p {
+  max-width: 46rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+
+.member-bio p + p { margin-top: 1.1rem; }
+
+.member-card--accent {
+  border-color: var(--color-border-primary);
+  background:
+    radial-gradient(22rem 12rem at 100% 0%, rgba(255, 140, 0, 0.14), transparent 70%),
+    var(--color-surface);
+}
+
+.member-card--accent .member-profile-contact { margin-top: 1.5rem; }
+
+.member-card .member-card-lead {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.member-steps {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  list-style: none;
+}
+
+.member-step-num {
+  display: block;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.member-steps .member-card p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.02rem;
+}
+
+.member-focus-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  list-style: none;
+}
+
+.member-focus-list li {
+  padding: 0.42rem 0.85rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 999px;
+  background: var(--color-surface-primary);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Rest of the team */
+.member-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.75rem;
+  list-style: none;
+}
+
+.member-team-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.member-team-photo {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  background: radial-gradient(circle at 50% 20%, rgba(255, 140, 0, 0.2), rgba(255, 255, 255, 0.03) 65%);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.member-team-card:hover .member-team-photo,
+.member-team-card:focus-visible .member-team-photo {
+  border-color: var(--color-border-primary);
+  transform: translateY(-4px);
+}
+
+.member-team-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.member-team-name {
+  display: block;
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.member-team-role {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* ── Wider screens ─────────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  .member-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Tablet: photo + details side by side, WhatsApp card full width below. */
+@media (min-width: 760px) {
+  .member-top { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
+  .member-form-card { grid-column: 1 / -1; }
+  .member-photo-card { min-height: 34rem; }
+  .member-form-card .member-wa-form { max-width: 40rem; }
+}
+
+/* Desktop: the three cards in one row. */
+@media (min-width: 1180px) {
+  .member-top {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .member-form-card { grid-column: auto; }
+  .member-form-card .member-wa-form { max-width: none; }
+  .member-photo-card { min-height: 40rem; }
+  .member-card { padding: 1.9rem; }
+  .member-photo-card { padding: 0; }
+}
+
+@media (min-width: 900px) {
+  .member-about { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 3.5rem; }
+  .member-team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; }
+}
+
+@media (min-width: 1280px) {
+  .member-section { margin-top: 5.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member-photo-tick { animation: none; }
+  .member-photo-tick::after { display: none; }
+  .member-card,
+  .member-team-photo,
+  .member-profile-contact,
+  .member-wa-cta { transition: none; }
+}
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .header {
@@ -882,19 +1385,8 @@ select option {
     font-size: 3.75rem;
   }
 
-  .member-profile-hero {
-    grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
-    gap: 3.5rem;
-  }
 
-  .member-profile-image-wrap {
-    min-height: 30rem;
-  }
 
-  .member-profile-details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
 }
 
 @media (min-width: 1024px) {
