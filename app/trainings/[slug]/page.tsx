@@ -30,8 +30,13 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ slug: 
   };
 
   return (
-    <main style={{ minHeight: "100vh", paddingTop: "calc(var(--header-height-mobile) + 3rem)", paddingBottom: "5rem" }}>
-      <div style={{ maxWidth: "var(--container-3xl)", margin: "0 auto", padding: "0 1.5rem" }}>
+    <main className="section-page">
+      <div
+        style={{
+          maxWidth: "var(--container-4xl)",
+          margin: 0,
+        }}
+      >
         
         {/* Back Button */}
         <button
