@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { teamMembers } from "@/lib/data/team";
 
 const baseUrl = "https://www.unicomteam.com";
 const now = new Date();
@@ -35,5 +36,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    ...teamMembers.map((member) => ({
+      url: `${baseUrl}/${member.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
   ];
 }

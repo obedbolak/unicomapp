@@ -6,6 +6,8 @@ import {
   LightBulbIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { teamMembers } from "@/lib/data/team";
 
 /* ── Data ────────────────────────────────────────────────────────────────── */
 
@@ -45,37 +47,6 @@ const departments = [
     name: "Growth Strategy",
     role: "Marketing & Operations",
     bio: "Driving massive user acquisition via targeted digital marketing setups and data-backed business growth.",
-  },
-];
-
-// Team Members
-const teamMembers = [
-  {
-    name: "Alvine Malyka",
-    role: "Core Systems Engineer",
-    image: "/team/bbty.png",
-  },
-  {
-    name: "Fomusoh Stephanie",
-    role: "Frontend & UI/UX Designer",
-    image: "/team/steph.png",
-  },
-
-  {
-    name: "Rosine Mbashi",
-    role: "Marketing & Business Strategist",
-    image: "/team/rosin.png",
-  },
-  {
-    name: " lilian martin",
-    role: "Frontend & UI Specialist",
-    image: "/team/lili.png",
-  },
-
-  {
-    name: "Obed Bolak",
-    role: "CEO & FULL-STACK DEVELOPER",
-    image: "/team/ceo.png",
   },
 ];
 
@@ -422,61 +393,74 @@ export default function AboutPage() {
                 transition: "background 0.3s ease, border-color 0.3s ease",
               }}
             >
-              <div
+              <Link
+                href={`/${member.slug}`}
+                aria-label={`View ${member.name}'s profile`}
                 style={{
-                  position: "relative",
-                  width: "130px",
-                  height: "130px",
-                  borderRadius: "50%",
-                  marginBottom: "1.5rem",
-                  padding: "4px",
-                  background:
-                    "linear-gradient(135deg, rgba(255,140,0,0.3) 0%, rgba(255,255,255,0.05) 100%)",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                  color: "inherit",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "100%",
                 }}
               >
                 <div
                   style={{
-                    width: "100%",
-                    height: "100%",
+                    position: "relative",
+                    width: "130px",
+                    height: "130px",
                     borderRadius: "50%",
-                    overflow: "hidden",
+                    marginBottom: "1.5rem",
+                    padding: "4px",
+                    background:
+                      "linear-gradient(135deg, rgba(255,140,0,0.3) 0%, rgba(255,255,255,0.05) 100%)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
                   }}
                 >
-                  <img
-                    src={member.image}
-                    alt={member.name}
+                  <div
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "contain",
-                      objectPosition: "center",
+                      borderRadius: "50%",
+                      overflow: "hidden",
                     }}
-                  />
+                  >
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        objectPosition: "center",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <h3
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  fontSize: "1.125rem",
-                  color: "var(--color-text)",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {member.name}
-              </h3>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.05em",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                {member.role}
-              </span>
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: "1.125rem",
+                    color: "var(--color-text)",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {member.name}
+                </h3>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  {member.role}
+                </span>
+              </Link>
             </motion.div>
           ))}
 
@@ -552,7 +536,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <a
+            <Link
               href="/contact"
               style={{
                 display: "inline-flex",
@@ -573,7 +557,7 @@ export default function AboutPage() {
               }}
             >
               Get in touch →
-            </a>
+            </Link>
           </motion.div>
         </div>
       </div>
