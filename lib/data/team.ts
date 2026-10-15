@@ -75,6 +75,8 @@ export const teamMembers: TeamMember[] = [
       "Turns designs into responsive, polished front-end experiences",
     ],
     focus: ["UI/UX design", "Front-end development", "Design systems"],
+    phone: "+237 674 85 45 81",
+    email: "stephanie@unicomteam.com",
   },
   {
     slug: "rosine-mbashi",
@@ -96,6 +98,8 @@ export const teamMembers: TeamMember[] = [
       "Turns goals into practical growth plans the team can act on",
     ],
     focus: ["Business strategy", "Digital marketing", "Growth planning"],
+    phone: "+237 696 76 79 23",
+    email: "rosine@unicomteam.com",
   },
   {
     slug: "lilian-martin",
@@ -117,6 +121,8 @@ export const teamMembers: TeamMember[] = [
       "Works with design and engineering to ship ideas quickly and cleanly",
     ],
     focus: ["Front-end development", "Interface design", "Responsive experiences"],
+    phone: "+237 670 83 40 19",
+    email: "lilian@unicomteam.com",
   },
   {
     slug: "obedbolakfuchu",
@@ -138,6 +144,8 @@ export const teamMembers: TeamMember[] = [
       "Guides the team on technical decisions and quality",
     ],
     focus: ["Full-stack development", "Product architecture", "Technical leadership"],
+    phone: "+237 681 52 94 88",
+    email: "obedbolak@unicomteam.com",
   },
 ];
 
