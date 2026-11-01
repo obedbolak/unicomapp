@@ -365,6 +365,17 @@ model Program {
   outcome        String? // "Portfolio + Certificate"
   topics         String[]
 
+  // Delivery + catalogue detail (read by the public pages)
+  deliveryModes DeliveryMode[]
+  category      String? // "Web", "Mobile", "Desktop", "Design"…
+  variants      Json? // [{duration, months?, price, sessions, mentorship, outcome}]
+  // Udemy-style outline: [{title, lessons:[{title, type:"VIDEO"|"PDF"|"ARTICLE",
+  //   url?, minutes?, free?}]}]. Lessons without a url show as "coming soon".
+  curriculum    Json?
+  instructor    String?
+  badgeColor    String?
+  badgeBorder   String?
+
   priceFrom       Int? // 75000 (FCFA)
   registrationFee Int? // 5000 (FCFA)
   currency        String @default("XAF")
@@ -401,6 +412,14 @@ enum ProgramKind {
   TRAINING
   CRASH_COURSE
   INTERNSHIP
+  ONLINE_COURSE // self-paced, video/PDF lessons (Udemy-style)
+}
+
+// How a program is delivered. A program can offer several.
+enum DeliveryMode {
+  PHYSICAL // in-person at our Yaoundé centre
+  LIVE_ONLINE // live sessions over video call
+  SELF_PACED // recorded lessons, learn any time
 }
 
 enum ProgramLevel {
@@ -482,6 +501,7 @@ model Enrollment {
   category    String?
   level       String? // "Complete Beginner", …
   months      Int?
+  deliveryMode DeliveryMode?
   cohortLabel String? // free-text "preferred start" from the form
   cohortId    String?
   goals       String?

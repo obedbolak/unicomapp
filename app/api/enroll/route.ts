@@ -10,6 +10,7 @@ const PHONE_RE = /^\+(?:[1-9]\d{1,3})[\d\s.-]{6,14}$/;
 type IncomingPayload = EnrollmentPayload & {
   type?: "training" | "internship";
   portfolio?: string;
+  deliveryMode?: "PHYSICAL" | "LIVE_ONLINE" | "SELF_PACED";
 };
 
 function validate(body: Partial<IncomingPayload>) {
@@ -26,6 +27,8 @@ function validate(body: Partial<IncomingPayload>) {
     "plan",
   ];
   for (const key of required) {
+    // Self-paced online courses have no fixed duration.
+    if (key === "months" && body.deliveryMode === "SELF_PACED") continue;
     if (!body[key] || !String(body[key]).trim()) return `Missing field: ${key}`;
   }
   if (!EMAIL_RE.test(String(body.email))) return "Invalid email address.";
@@ -49,6 +52,14 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error }, { status: 400 });
 
   const data = body as IncomingPayload;
+  const MODE_TEXT = {
+    PHYSICAL: "Physical (in person)",
+    LIVE_ONLINE: "Live online",
+    SELF_PACED: "Online, self-paced",
+  } as const;
+  if (data.deliveryMode && data.deliveryMode in MODE_TEXT) {
+    data.mode = MODE_TEXT[data.deliveryMode];
+  }
   const email = data.email.trim().toLowerCase();
   const type = data.type === "internship" ? "INTERNSHIP" : "TRAINING";
 
@@ -97,6 +108,12 @@ export async function POST(req: Request) {
         category: data.category || null,
         level: data.level,
         months: data.months ? Number(data.months) : null,
+        deliveryMode:
+          data.deliveryMode === "PHYSICAL" ||
+          data.deliveryMode === "LIVE_ONLINE" ||
+          data.deliveryMode === "SELF_PACED"
+            ? data.deliveryMode
+            : null,
         cohortLabel: data.cohort,
         goals: data.goals,
         plan: data.plan === "Monthly Installments" ? "INSTALLMENTS" : "FULL",

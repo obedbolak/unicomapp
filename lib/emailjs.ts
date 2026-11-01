@@ -17,6 +17,7 @@ export type EnrollmentPayload = {
   registrationFee?: string;
   paymentNote?: string;
   months?: number;
+  mode?: string;
   cohort: string;
   level: string;
   goals: string;
@@ -37,6 +38,7 @@ function buildTable(data: EnrollmentPayload) {
   const rows = [
     ["Course", data.course],
     ...(data.category ? [["Category", data.category]] : []),
+    ...(data.mode ? [["Format", data.mode]] : []),
     ...(data.months ? [["Duration", `${data.months} months`]] : []),
     ...(data.registrationFee
       ? [["Registration Fees", data.registrationFee]]

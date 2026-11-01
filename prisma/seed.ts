@@ -8,6 +8,8 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 
+import { allCourses } from "../lib/data/trainings";
+
 dotenv.config();
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -218,200 +220,9 @@ const projects = [
   },
 ];
 
-/* ── Training programs (from app/trainings/page.tsx) ──────────────────────── */
-
-const trainings = [
-  {
-    slug: "frontend-development",
-    title: "Frontend Development",
-    subtitle: "HTML · CSS · JavaScript · React",
-    description:
-      "Master the fundamentals of the web. Go from zero to building fully responsive, interactive UIs with React and modern CSS.",
-    level: "BEGINNER",
-    durationLabel: "3, 6 Months",
-    durationMonths: [3, 6],
-    sessionsLabel: "24 Live Sessions",
-    mentorship: "1-on-1 Mentorship",
-    outcome: "Portfolio + Certificate",
-    topics: [] as string[],
-    icon: "🖥️",
-    accent: "rgba(255,140,0,0.12)",
-    accentBorder: "rgba(255,140,0,0.25)",
-    badgeText: "#22c55e",
-    featured: false,
-  },
-  {
-    slug: "backend-development",
-    title: "Backend Development",
-    subtitle: "Node.js · Express · PostgreSQL · REST APIs",
-    description:
-      "Build powerful server-side applications. Learn databases, authentication, REST API design, and deploy production-ready backends with confidence.",
-    level: "INTERMEDIATE",
-    durationLabel: "3, 6 Months",
-    durationMonths: [3, 6],
-    sessionsLabel: "48 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "Portfolio + Certificate",
-    topics: ["Auth & JWT", "SQL & ORMs", "Caching & Queues", "CI/CD Deploys"],
-    icon: "⚙️",
-    accent: "rgba(59,130,246,0.08)",
-    accentBorder: "rgba(59,130,246,0.2)",
-    badgeText: "#3b82f6",
-    featured: false,
-  },
-  {
-    slug: "ui-ux-design",
-    title: "UI/UX Design",
-    subtitle: "Figma · Design Systems · Prototyping",
-    description:
-      "Learn to design products people love. From wireframes to high-fidelity prototypes, build a designer's eye and a real-world portfolio.",
-    level: "INTERMEDIATE",
-    durationLabel: "3, 6 Months",
-    durationMonths: [3, 6],
-    sessionsLabel: "20 Live Sessions",
-    mentorship: "Portfolio Reviews",
-    outcome: "Figma Portfolio + Certificate",
-    topics: [],
-    icon: "🎨",
-    accent: "rgba(168,85,247,0.08)",
-    accentBorder: "rgba(168,85,247,0.2)",
-    badgeText: "#a855f7",
-    featured: false,
-  },
-  {
-    slug: "full-stack-engineering",
-    title: "Full-Stack Engineering",
-    subtitle: "React · Node · Databases · DevOps",
-    description:
-      "The complete track. Build, deploy, and scale full-stack web applications end-to-end with industry-grade tooling and battle-tested engineering practices.",
-    level: "ADVANCED",
-    durationLabel: "3, 6 Months, 1Y",
-    durationMonths: [3, 6, 12],
-    sessionsLabel: "96 Live Sessions",
-    mentorship: "Dedicated Mentor",
-    outcome: "Full Portfolio + Certificate",
-    topics: [
-      "Frontend with React",
-      "REST & GraphQL APIs",
-      "Databases & Auth",
-      "Docker & DevOps",
-      "Testing & CI/CD",
-      "System Design",
-    ],
-    icon: "🚀",
-    accent: "rgba(255,140,0,0.12)",
-    accentBorder: "rgba(255,140,0,0.25)",
-    badgeText: "#ef4444",
-    featured: true,
-  },
-  {
-    slug: "digital-marketing-training",
-    title: "Digital Marketing",
-    subtitle: "SEO · Ads · Social Media · Analytics",
-    description:
-      "Drive traffic, generate leads, and grow brands online. Master SEO, paid ads, content strategy, and data-driven marketing.",
-    level: "BEGINNER",
-    durationLabel: "3, 6 Months",
-    durationMonths: [3, 6],
-    sessionsLabel: "18 Live Sessions",
-    mentorship: "Strategy Reviews",
-    outcome: "Campaign Portfolio + Certificate",
-    topics: [],
-    icon: "📈",
-    accent: "rgba(34,197,94,0.08)",
-    accentBorder: "rgba(34,197,94,0.2)",
-    badgeText: "#22c55e",
-    featured: false,
-  },
-  {
-    slug: "mobile-development",
-    title: "Mobile Development",
-    subtitle: "React Native · Expo · App Store Deployment",
-    description:
-      "Build cross-platform mobile apps for iOS and Android. Learn React Native, state management, and ship real apps to the stores.",
-    level: "INTERMEDIATE",
-    durationLabel: "3, 6 Months, 1Y",
-    durationMonths: [3, 6, 12],
-    sessionsLabel: "40 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "App Portfolio + Certificate",
-    topics: ["RN Fundamentals", "Navigation", "Native APIs", "Store Deploy"],
-    icon: "📱",
-    accent: "rgba(251,191,36,0.08)",
-    accentBorder: "rgba(251,191,36,0.2)",
-    badgeText: "#fbbf24",
-    featured: false,
-  },
-  {
-    slug: "desktop-app-development",
-    title: "Desktop App Development",
-    subtitle: "Electron · Tauri · Cross-Platform Desktop",
-    description:
-      "Build native-feeling desktop applications for Windows, macOS, and Linux. Learn Electron and Tauri, packaging, auto-updates, and shipping installable apps.",
-    level: "ADVANCED",
-    durationLabel: "3, 6 Months, 1Y",
-    durationMonths: [3, 6, 12],
-    sessionsLabel: "36 Live Sessions",
-    mentorship: "Weekly Reviews",
-    outcome: "Desktop App Portfolio + Certificate",
-    topics: [
-      "Electron & Tauri",
-      "Native Menus & APIs",
-      "Packaging & Installers",
-      "Auto-Updates",
-    ],
-    icon: "💻",
-    accent: "rgba(14,165,233,0.08)",
-    accentBorder: "rgba(14,165,233,0.2)",
-    badgeText: "#0ea5e9",
-    featured: false,
-  },
-];
-
-const crashCourses = [
-  {
-    slug: "graphics-design-crash-course",
-    title: "Graphics Design (Crash Course)",
-    subtitle: "Photoshop · Illustrator · Canva",
-    description:
-      "Design logos, flyers, social posts, and brand kits in weeks. Perfect for freelancers and side hustles.",
-    durationLabel: "1,2,4 Weeks",
-    sessionsLabel: "8 Live Sessions",
-    icon: "🎨",
-    accent: "rgba(236,72,153,0.12)",
-    accentBorder: "rgba(236,72,153,0.3)",
-    badgeText: "#ec4899",
-  },
-  {
-    slug: "microsoft-excel-crash-course",
-    title: "Microsoft Excel (Crash Course)",
-    subtitle: "Formulas · Pivot Tables · Dashboards",
-    description:
-      "Go from beginner to spreadsheet pro. Master formulas, charts, pivot tables, and automation that employers love.",
-    durationLabel: "1,2,3 Weeks",
-    sessionsLabel: "6 Live Sessions",
-    icon: "📊",
-    accent: "rgba(34,197,94,0.12)",
-    accentBorder: "rgba(34,197,94,0.3)",
-    badgeText: "#22c55e",
-  },
-  {
-    slug: "microsoft-office-crash-course",
-    title: "Microsoft Office (Crash Course)",
-    subtitle: "Word · Excel · PowerPoint · Outlook",
-    description:
-      "Become office-ready fast. Master the everyday tools every workplace expects you to know inside out.",
-    durationLabel: "1,2,4 Weeks",
-    sessionsLabel: "8 Live Sessions",
-    icon: "🗂️",
-    accent: "rgba(59,130,246,0.12)",
-    accentBorder: "rgba(59,130,246,0.3)",
-    badgeText: "#3b82f6",
-  },
-];
-
 const CRASH_PAYMENT_NOTE =
   "Send registration Fees to\nMOMO: 681529488\nName: Obed Bolak fuchu\n• Send Confirmation via WhatsApp";
+
 
 /* ── Internship roles (from app/trainings/internships/page.tsx) ───────────── */
 
@@ -616,56 +427,70 @@ async function main() {
   }
   console.log(`✅ ${projects.length} projects (+ clients)`);
 
-  // ── Programs ───────────────────────────────────────────────────────────
-  for (const [i, t] of trainings.entries()) {
-    const data = {
-      kind: "TRAINING" as const,
-      title: t.title,
-      subtitle: t.subtitle,
-      description: t.description,
-      level: t.level as any,
-      durationLabel: t.durationLabel,
-      durationMonths: t.durationMonths,
-      sessionsLabel: t.sessionsLabel,
-      mentorship: t.mentorship,
-      outcome: t.outcome,
-      topics: t.topics,
-      priceFrom: 75000,
-      currency: "XAF",
-      icon: t.icon,
-      accent: t.accent,
-      accentBorder: t.accentBorder,
-      badgeText: t.badgeText,
-      featured: t.featured,
-      sortOrder: i,
-    };
-    await prisma.program.upsert({
-      where: { slug: t.slug },
-      update: data,
-      create: { slug: t.slug, ...data },
-    });
+  // ── Programs (professional, online, crash) — from lib/data/trainings.ts ─
+  // Older seeds used different slugs for a few rows; rename them in place so
+  // re-running the seed updates those rows instead of duplicating them.
+  const legacySlugs: Record<string, string> = {
+    "digital-marketing-training": "digital-marketing",
+    "graphics-design-crash-course": "graphics-design-crash",
+    "microsoft-excel-crash-course": "microsoft-excel-crash",
+    "microsoft-office-crash-course": "microsoft-office-crash",
+  };
+  for (const [from, to] of Object.entries(legacySlugs)) {
+    const [oldRow, newRow] = await Promise.all([
+      prisma.program.findUnique({ where: { slug: from }, select: { id: true } }),
+      prisma.program.findUnique({ where: { slug: to }, select: { id: true } }),
+    ]);
+    if (oldRow && !newRow) {
+      await prisma.program.update({ where: { id: oldRow.id }, data: { slug: to } });
+    }
   }
 
-  for (const [i, c] of crashCourses.entries()) {
+  const levelFor = (badge: string) =>
+    badge === "Beginner"
+      ? "BEGINNER"
+      : badge === "Intermediate"
+        ? "INTERMEDIATE"
+        : badge === "Advanced"
+          ? "ADVANCED"
+          : badge === "Crash Course"
+            ? "CRASH_COURSE"
+            : undefined;
+
+  const sortBase = { TRAINING: 0, ONLINE_COURSE: 50, CRASH_COURSE: 100 };
+
+  for (const [i, c] of allCourses.entries()) {
+    const cheapest = c.variants[0];
+    const digits = (s: string) => Number(s.replace(/[^0-9]/g, "")) || null;
     const data = {
-      kind: "CRASH_COURSE" as const,
+      kind: c.kind as any,
       title: c.title,
       subtitle: c.subtitle,
       description: c.description,
-      level: "CRASH_COURSE" as const,
-      durationLabel: c.durationLabel,
-      durationMonths: [] as number[],
-      sessionsLabel: c.sessionsLabel,
-      topics: [] as string[],
-      priceFrom: 25000,
-      registrationFee: 5000,
+      level: levelFor(c.badge) as any,
+      durationLabel: c.variants.map((v) => v.duration).join(", "),
+      durationMonths: c.variants.flatMap((v) => (v.months ? [v.months] : [])),
+      sessionsLabel: cheapest.sessions,
+      mentorship: cheapest.mentorship,
+      outcome: cheapest.outcome,
+      topics: c.topics ?? [],
+      deliveryModes: c.modes as any,
+      category: c.category,
+      variants: c.variants as any,
+      curriculum: (c.curriculum ?? undefined) as any,
+      instructor: c.instructor ?? null,
+      priceFrom: digits(cheapest.price),
+      registrationFee: c.kind === "CRASH_COURSE" ? 5000 : null,
+      paymentNote: c.kind === "CRASH_COURSE" ? CRASH_PAYMENT_NOTE : null,
       currency: "XAF",
-      paymentNote: CRASH_PAYMENT_NOTE,
       icon: c.icon,
       accent: c.accent,
       accentBorder: c.accentBorder,
       badgeText: c.badgeText,
-      sortOrder: 100 + i,
+      badgeColor: c.badgeColor,
+      badgeBorder: c.badgeBorder,
+      featured: c.featured,
+      sortOrder: sortBase[c.kind] + i,
     };
     await prisma.program.upsert({
       where: { slug: c.slug },
@@ -673,6 +498,7 @@ async function main() {
       create: { slug: c.slug, ...data },
     });
   }
+
 
   for (const [i, n] of internships.entries()) {
     const data = {
@@ -699,7 +525,7 @@ async function main() {
     });
   }
   console.log(
-    `✅ ${trainings.length} trainings, ${crashCourses.length} crash courses, ${internships.length} internship roles`,
+    `✅ ${allCourses.length} courses (professional + online + crash), ${internships.length} internship roles`,
   );
 
   // ── The existing certificate (from lib/certificates.ts) ────────────────
